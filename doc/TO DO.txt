@@ -1,0 +1,27 @@
+• You need to design and implement a multi-hop adhoc network between
+the 4 devices of your group using WiFi.
+• You can use the multicast facility of the WiFi network to send packets to
+all other devices of your group which are within radio range of each other.
+For Java, use the Multicast Socket class, see:
+http://download.java.net/jdk7/archive/b123/docs/api/java/net/MulticastSocket.html
+Also see Section 1.3 for more details.
+(Corresponding instructions for C++ for the EE students will be added
+later.)
+• You will have to come up with some forwarding and routing mechanism
+to also exchange packets between nodes which can reach each other only
+via one or more intermediate nodes.
+• Make sure your routing/forwarding algorithm is robust, so that even when
+the connectivity changes, packets cannot run around endlessly.
+• Each device should broadcast its presence periodically.
+• You need to consider link unreliability and the packet lost probability and
+ensure that messages are sent and received reliably. Think here about
+using acknowledgements of sequence numbers, for example.
+1
+• You need to decide what type of messages you support in your chat application.
+Think of short text messages, text files, audio files, or video
+files.
+• You need to ensure the order of sent messages at the receiving device. For
+this, you may add time-stamp to each packet or a sequence number.
+• Think how you can make the chat secure. You may consider for instance
+encryption.
+• Think about the user interface.
