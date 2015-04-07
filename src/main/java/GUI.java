@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -143,7 +145,12 @@ public class GUI extends JFrame {
             String command = commandField.getText();
             sendString(name, command);
             commandField.setText("");
-            applicationLayer.send(null, command);
+            try {
+				applicationLayer.send(InetAddress.getLocalHost(), command);
+			} catch (UnknownHostException e) {
+				// TODO Betere error-handling
+				e.printStackTrace();
+			}
 
         }else{
             System.err.println("INVALID IP");
