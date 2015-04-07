@@ -16,7 +16,7 @@ public class NetworkLayer implements Network {
 		try {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
-			multicast = InetAddress.getByName("224.0.255.255");
+			multicast = InetAddress.getByName("228.0.0.0");
 			socket.joinGroup(multicast);
 		} catch (IOException e) {
 			// TODO betere error handling
