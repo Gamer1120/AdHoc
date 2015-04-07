@@ -143,7 +143,7 @@ public class GUI extends JFrame {
             String command = commandField.getText();
             sendString(name, command);
             commandField.setText("");
-            //TODO doorsturen naar app layer;
+            applicationLayer.send(null, command);
 
         }else{
             System.err.println("INVALID IP");
