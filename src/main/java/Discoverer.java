@@ -12,8 +12,8 @@ public class Discoverer extends TimerTask {
 
     Timer timer;
 
-    private HashMap<String, Integer> hostMap = new HashMap<String,Integer>();
-    private Set<String> knownHosts = new HashSet<String>();
+    private HashMap<Inet4Address, Integer> hostMap = new HashMap<Inet4Address,Integer>();
+    private Set<Inet4Address> knownHosts = new HashSet<Inet4Address>();
     private int TTL = 10;
     private int TDI = 5; //Time Discovery Intveral
     private int counter = 0;
@@ -22,11 +22,10 @@ public class Discoverer extends TimerTask {
     public Discoverer(){
         timer = new Timer();
         timer.schedule(this, 0, 1000);
-        addHost("test");
     }
 
 
-    public void addHost(String address){
+    public void addHost(Inet4Address address){
         knownHosts.add(address);
         hostMap.put(address, TTL);
     }
@@ -35,10 +34,8 @@ public class Discoverer extends TimerTask {
     @Override
     public void run() {
         counter ++;
-        System.out.println("TICK");
-        for(String a:hostMap.keySet()){
+        for(Inet4Address a:hostMap.keySet()){
             Integer i = hostMap.get(a) -1;
-            System.out.println(a +"TTL is "+i);
             if(i!=0){
                 hostMap.put(a, i);
             }else{
@@ -54,9 +51,6 @@ public class Discoverer extends TimerTask {
         }
     }
 
-    public static void main(String[] args){
-        new Discoverer();
-    }
 
 
 
