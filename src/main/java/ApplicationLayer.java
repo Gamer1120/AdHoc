@@ -3,38 +3,108 @@
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
-import java.io.File;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class ApplicationLayer implements Application {
 
+	private Transport transportLayer;
+	private GUI gui;
+
 	/**
-	 * Sends a packet to the Network Layer.
+	 * Creates a new ApplicationLayer using a given GUI. Also starts the
+	 * TransportLayer.
+	 * 
+	 * @param gui
+	 */
+	public ApplicationLayer(GUI gui) {
+		this.gui = gui;
+		this.transportLayer = new TransportLayer(this);
+	}
+
+	/**
+	 * Sends a packet to the Transport Layer.
+	 * 
+	 * @param dest
+	 *            The final destination of this packet
+	 * @param input
+	 *            The Object that should be sent. This can be either text or a
+	 *            file.
 	 */
 	@Override
 	public void send(InetAddress dest, Object input) {
 		if (input instanceof String) {
 			// TODO: Add some bytes to determine whether the message is text or
 			// a file.
-			NetworkLayer.send(dest, ((String) input).getBytes());
-		} else if (input instanceof File) {
-			Path path = Paths.get(((File) input).getAbsolutePath());
-			NetworkLayer.sendFile(dest, Files.readAllBytes(path));
+			byte[] sender = null;
+			try {
+				sender = InetAddress.getLocalHost().getAddress();
+				transportLayer.send(dest,
+						merge(sender, ((String) input).getBytes()));
+			} catch (UnknownHostException e) {
+				System.out.println("Could not get localhost somehow.");
+			}
 		}
+		/*
+		 * else if (input instanceof File) { Path path = Paths.get(((File)
+		 * input).getAbsolutePath()); TransportLayer.sendFile(dest,
+		 * Files.readAllBytes(path)); }
+		 */
 	}
 
 	/**
 	 * Sends a packet to the GUI.
+	 * 
+	 * @param packet
+	 *            The packet to be sent.
 	 */
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		GUI.sendString(Arrays.toString(bytestream));
+		// Breaks up the packet in a sender and the message.
+		gui.sendString(getSender(bytestream), getData(bytestream));
 	}
+
+	/**
+	 * Gets the sender of the packet as String, required for the GUI. The sender
+	 * is the first 4 bytes in a packet.
+	 * 
+	 * @param bytestream
+	 *            Said packet.
+	 * @return The sender of the packet as String.
+	 */
+	public String getSender(byte[] bytestream) {
+		return bytestream[0] + "." + bytestream[1] + "." + bytestream[2] + "."
+				+ bytestream[3];
+	}
+
+	/**
+	 * Returns the text that is in the packet as String, required for the GUI.
+	 * The data is everything after the first 4 bytes in a packet.
+	 * 
+	 * @param bytestream
+	 *            Said packet.
+	 * @return The text in that packet.
+	 */
+	public String getData(byte[] bytestream) {
+		return Arrays.toString(Arrays.copyOfRange(bytestream, 4,
+				bytestream.length - 1));
+	}
+
+	/**
+	 * Merges two arrays into one.
+	 * 
+	 * @param first
+	 * @param second
+	 * @return The first and second array merged.
+	 */
+	public byte[] merge(byte[] first, byte[] second) {
+		byte[] retByte = new byte[first.length + second.length];
+		System.arraycopy(first, 0, retByte, 0, first.length);
+		System.arraycopy(second, 0, retByte, first.length, second.length);
+		return retByte;
+	}
+
 }
