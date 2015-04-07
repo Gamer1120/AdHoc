@@ -16,7 +16,6 @@ the connectivity changes, packets cannot run around endlessly.
 • You need to consider link unreliability and the packet lost probability and
 ensure that messages are sent and received reliably. Think here about
 using acknowledgements of sequence numbers, for example.
-1
 • You need to decide what type of messages you support in your chat application.
 Think of short text messages, text files, audio files, or video
 files.
