@@ -27,6 +27,9 @@ public class NetworkLayer implements Network {
 	@Override
 	public void send(byte[] data) {
 		// Create a packet and send it to the multicast address
+		byte[] packetData = new byte[data.length + 1];
+		packetData[0] = TTL;
+		System.arraycopy(data, 0, packetData, 1, data.length);
 		DatagramPacket packet = new DatagramPacket(data, data.length,
 				multicast, PORT);
 		try {
@@ -47,6 +50,16 @@ public class NetworkLayer implements Network {
 			// TODO betere error handling
 			e.printStackTrace();
 		}
+		byte[] data = packet.getData();
+		if (--data[0] > 0) {
+			try {
+				socket.send(packet);
+			} catch (IOException e) {
+				// TODO betere error handling
+				e.printStackTrace();
+			}
+		}
+		packet.setData(data, 1, data.length - 1);
 		transportLayer.processPacket(packet);
 	}
 }
