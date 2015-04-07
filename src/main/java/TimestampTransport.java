@@ -76,7 +76,7 @@ public class TimestampTransport implements Transport {
                 data.add(entry.getValue().remove());
             }
 
-            networkLayer.send(new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
+            networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
 
         }
@@ -104,7 +104,7 @@ public class TimestampTransport implements Transport {
                 primBytes[i] = b;
             }
 
-            ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES);
+            ByteBuffer buf = ByteBuffer.allocate(data.length + Long.SIZE / 8);
             buf.put(primBytes);
             buf.putLong(timeStamp);
 

@@ -25,7 +25,7 @@ public class NetworkLayer implements Network {
 	}
 
 	@Override
-	public void send(byte[] data) {
+	public void send(InetAddress dest, byte[] data) {
 		// Create a packet and send it to the multicast address
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
