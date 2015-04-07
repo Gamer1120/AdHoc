@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-public class SuperTransport implements Transport {
+public class TimestampTransport implements Transport {
 
     /**
      *
@@ -24,7 +24,7 @@ public class SuperTransport implements Transport {
 
     // ------------------- Constructors ---------------------
 
-    public SuperTransport(Network networkLayer) {
+    public TimestampTransport(Network networkLayer) {
 
         this.networkLayer = null;
         running = true;
