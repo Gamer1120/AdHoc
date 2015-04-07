@@ -1,11 +1,5 @@
-import java.net.DatagramPacket;
-import java.net.InetAddress;
+public interface Network extends Runnable {
 
-public interface Network {
-
-    public void send(InetAddress dest, byte[] data);
-
-    public void processPacket(DatagramPacket packet);
-
+	public void send(byte[] data);
 
 }
