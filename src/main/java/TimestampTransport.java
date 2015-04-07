@@ -51,7 +51,7 @@ public class TimestampTransport implements Transport {
         for(byte b : data) {
             queue.add(b);
         }
-
+        sendQueues.put(dest, queue);
         processSendQueue();
 
     }
