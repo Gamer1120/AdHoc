@@ -1,0 +1,2 @@
+Moeten we Multiple Access Control implementeren?
+Moeten we rekening houden met damaged packets?
