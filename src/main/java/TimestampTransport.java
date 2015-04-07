@@ -75,9 +75,13 @@ public class TimestampTransport implements Transport {
 
             List<Byte> data = new LinkedList<>();
 
-            while(entry.getValue().poll() != null && data.size() < 1400) {
-                data.add(entry.getValue().remove());
+
+            // TODO Check for packet size
+
+            for(byte b : entry.getValue()) {
+                data.add(b);
             }
+
 
             networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
