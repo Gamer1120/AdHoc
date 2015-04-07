@@ -20,14 +20,16 @@ public class TimestampTransport implements Transport {
 
     private Map<InetAddress, Queue<Byte>> sendQueues;
 
-    private boolean running;
+    private Application app;
 
     // ------------------- Constructors ---------------------
 
-    public TimestampTransport(Network networkLayer) {
+    public TimestampTransport(Application app) {
 
-        this.networkLayer = null;
-        running = true;
+        this.app = app;
+        this.networkLayer = new NetworkLayer(this);
+
+        new Thread(networkLayer).start();
 
     }
 
@@ -57,6 +59,8 @@ public class TimestampTransport implements Transport {
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
+        app.processPacket(packet);
+
 
 
 
@@ -72,7 +76,7 @@ public class TimestampTransport implements Transport {
                 data.add(entry.getValue().remove());
             }
 
-            networkLayer.send(entry.getKey(), new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
+            networkLayer.send(new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
 
         }
