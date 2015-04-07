@@ -1,3 +1,7 @@
 0 - Text
-1 - Image
-2 - 
+1 - File
+
+
+1 byte : Wat is het?
+4 bytes: Sender (IPv4-adres)
+? bytes: De overige data.
