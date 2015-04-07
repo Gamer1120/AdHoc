@@ -96,7 +96,7 @@ public class GUI extends JFrame {
         textArea.append(user+": "+msg + "\n");
     }
 
-    
+
 
     /**
      * Checks whether a string is a valid IPv4 address. All credit to user
