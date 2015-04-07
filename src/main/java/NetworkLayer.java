@@ -43,7 +43,7 @@ public class NetworkLayer implements Network {
 	@Override
 	public void run() {
 		// Receive packets and forward them to the transport layer
-		DatagramPacket packet = new DatagramPacket(null, 0);
+		DatagramPacket packet = new DatagramPacket(new byte[0], 0);
 		try {
 			socket.receive(packet);
 		} catch (IOException e) {
