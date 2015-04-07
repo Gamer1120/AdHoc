@@ -9,6 +9,6 @@
 target/
 
 .idea/
-
+.settings/
 
 *.iml
