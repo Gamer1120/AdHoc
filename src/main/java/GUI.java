@@ -22,6 +22,7 @@ public class GUI extends JFrame {
     private String name = "you";
     private boolean clicked = false;
     private JTextField ipField;
+    private Application applicationLayer;
 
 
     /**
@@ -82,6 +83,7 @@ public class GUI extends JFrame {
             }
         });
 
+        applicationLayer = new ApplicationLayer(this);
     }
 
 
