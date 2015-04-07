@@ -1,10 +1,12 @@
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TimestampTransport implements Transport {
 
@@ -28,7 +30,7 @@ public class TimestampTransport implements Transport {
 
         this.app = app;
         this.networkLayer = new NetworkLayer(this);
-
+        this.sendQueues=new HashMap<InetAddress,Queue<Byte>>();
         new Thread(networkLayer).start();
 
     }
@@ -44,6 +46,7 @@ public class TimestampTransport implements Transport {
     public void send(InetAddress dest, byte[] data) {
 
         Queue<Byte> queue = sendQueues.get(dest);
+        queue = queue == null ? new LinkedList<Byte>() : queue;
 
         for(byte b : data) {
             queue.add(b);
