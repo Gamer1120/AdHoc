@@ -21,7 +21,8 @@ public class ApplicationLayer implements Application {
 	 */
 	public ApplicationLayer(GUI gui) {
 		this.gui = gui;
-		this.transportLayer = new TransportLayer(this);
+		// this.transportLayer = new TransportLayer(this);
+		this.transportLayer = null;
 	}
 
 	/**
@@ -41,8 +42,7 @@ public class ApplicationLayer implements Application {
 			byte[] sender = null;
 			try {
 				sender = InetAddress.getLocalHost().getAddress();
-				transportLayer.send(dest,
-						merge(sender, ((String) input).getBytes()));
+				transportLayer.send(dest, generatePacket(null, null, null));
 			} catch (UnknownHostException e) {
 				System.out.println("Could not get localhost somehow.");
 			}
@@ -65,6 +65,11 @@ public class ApplicationLayer implements Application {
 		byte[] bytestream = packet.getData();
 		// Breaks up the packet in a sender and the message.
 		gui.sendString(getSender(bytestream), getData(bytestream));
+	}
+
+	public byte[] generatePacket(byte[] type, byte[] sender, byte[] data) {
+		// byte[] retArray = merge(sender, ((String) input).getBytes());
+		return null;
 	}
 
 	/**
