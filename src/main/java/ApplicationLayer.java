@@ -30,7 +30,7 @@ public class ApplicationLayer implements Application {
 	 */
 	public ApplicationLayer(GUI gui) {
 		this.gui = gui;
-		this.transportLayer = new TransportLayer(this);
+		this.transportLayer = new TimestampTransport(this);
 	}
 
 	// ---------------------------//
