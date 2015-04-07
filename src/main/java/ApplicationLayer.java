@@ -55,8 +55,6 @@ public class ApplicationLayer implements Application {
 			System.out.println("Could not get localhost somehow.");
 		}
 		if (input instanceof String) {
-			// TODO: Add some bytes to determine whether the message is text or
-			// a file.
 			transportLayer.send(
 					dest,
 					generatePacket(new byte[] { 0 }, sender,
@@ -94,7 +92,8 @@ public class ApplicationLayer implements Application {
 	// ---------------//
 
 	/**
-	 * Sends a packet to the GUI.
+	 * After determining which type of packet it is, it sends the data to the
+	 * GUI.
 	 * 
 	 * @param packet
 	 *            The packet to be sent.
@@ -108,7 +107,9 @@ public class ApplicationLayer implements Application {
 			gui.sendString(getSender(bytestream), getData(bytestream));
 			break;
 		case FILE:
-			gui.sendString(getSender(bytestream), "René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:");
+			gui.sendString(
+					getSender(bytestream),
+					"René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:");
 			break;
 		case UNDEFINED:
 			gui.sendString(getSender(bytestream),
@@ -116,8 +117,6 @@ public class ApplicationLayer implements Application {
 							+ bytestream[0]);
 			break;
 		}
-
-		// Breaks up the packet in a sender and the message.
 	}
 
 	/**
