@@ -5,6 +5,7 @@ import java.net.MulticastSocket;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
+	private final static int LENGTH = 1500;
 	private final static int PORT = 7777;
 	private final static int TTL = 4;
 	private Transport transportLayer;
@@ -43,7 +44,7 @@ public class NetworkLayer implements Network {
 	@Override
 	public void run() {
 		// Receive packets and forward them to the transport layer
-		DatagramPacket packet = new DatagramPacket(new byte[0], 0);
+		DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 		try {
 			socket.receive(packet);
 		} catch (IOException e) {
