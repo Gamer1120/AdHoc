@@ -5,3 +5,10 @@
 *.checkstyle
 *.tmp
 ~$*
+
+target/
+
+.idea/
+
+
+*.iml
