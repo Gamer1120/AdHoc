@@ -42,7 +42,7 @@ class TransportSegment {
         ByteBuffer buf = ByteBuffer.wrap(data);
         long timestamp = buf.getLong();
 
-        byte[] actualData = new byte[buf.limit() - buf.position()];
+        byte[] actualData = new byte[buf.remaining()];
 
         for(int i = 0; buf.hasRemaining(); i++) {
             actualData[i] = buf.get();
