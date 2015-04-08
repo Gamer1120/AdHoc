@@ -62,7 +62,7 @@ public class NetworkLayer implements Network {
 	}
 
 	private NetworkInterface detectInterface() throws SocketException {
-		NetworkInterface netIf = NetworkInterface.getByIndex(0);
+		NetworkInterface netIf = NetworkInterface.getByIndex(1);
 		loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
 				.getNetworkInterfaces(); ifaces.hasMoreElements();) {
 			NetworkInterface iface = ifaces.nextElement();
