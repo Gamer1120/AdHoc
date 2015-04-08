@@ -1,4 +1,4 @@
 Netwerk laag - Sven
-com.procoder.Application laag - Michael
-com.procoder.GUI en Link laag - Rene
-com.procoder.transport.Transport laag - Wouter
+Application laag - Michael
+GUI en Link laag - Rene
+Transport laag - Wouter

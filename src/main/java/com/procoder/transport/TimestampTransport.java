@@ -20,7 +20,7 @@ public class TimestampTransport implements Transport {
 
     private Network networkLayer;
 
-    private Queue<byte[]> unAckedData;
+    private Queue<TransportSegment> unAckedData;
 
     private Map<InetAddress, Queue<Byte>> sendQueues;
 
@@ -66,7 +66,10 @@ public class TimestampTransport implements Transport {
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
-        app.processPacket(AirKont.toPrimitiveArray(receivedSegment.data));
+        DatagramPacket newPacket = packet;
+        newPacket.setData(AirKont.toPrimitiveArray(receivedSegment.data));
+
+        app.processPacket(newPacket);
 
 
 
