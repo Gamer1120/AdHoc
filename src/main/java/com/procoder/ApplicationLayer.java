@@ -70,8 +70,7 @@ public class ApplicationLayer implements Application {
 		}
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
-			System.out.println("[AL] Sending: "
-					+ Arrays.toString(packet));
+			System.out.println("[AL] Sending: " + Arrays.toString(packet));
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());
@@ -101,20 +100,19 @@ public class ApplicationLayer implements Application {
 	}
 
 	// ---------------//
-	// SENDING TO com.procoder.GUI //
+	// SENDING TO GUI //
 	// ---------------//
 
 	/**
 	 * After determining which type of packet it is, it sends the data to the
-	 * com.procoder.GUI.
+	 * GUI.
 	 * 
 	 * @param bytestream
 	 *            The packet to be sent.
 	 */
 	@Override
 	public void processPacket(byte[] bytestream) {
-		System.out.println("[AL] Received: "
-				+ Arrays.toString(bytestream));
+		System.out.println("[AL] Received: " + Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
 		case TEXT:
@@ -178,7 +176,7 @@ public class ApplicationLayer implements Application {
 		String dinges = "";
 		try {
 			dinges = new String(Arrays.copyOfRange(bytestream, 5,
-					bytestream.length - 1), ENCODING);
+					bytestream.length), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");
