@@ -11,7 +11,6 @@ import com.procoder.transport.Transport;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -72,7 +71,7 @@ public class ApplicationLayer implements Application {
 		}
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
-			System.out.println("In the sent packet was: "
+			System.out.println("[AL] In the sent packet was: "
 					+ Arrays.toString(packet));
 
 		} else if (input instanceof File) {
@@ -110,14 +109,13 @@ public class ApplicationLayer implements Application {
 	 * After determining which type of packet it is, it sends the data to the
 	 * com.procoder.GUI.
 	 * 
-	 * @param packet
+	 * @param bytestream
 	 *            The packet to be sent.
 	 */
 	@Override
-	public void processPacket(DatagramPacket packet) {
+	public void processPacket(byte[] bytestream) {
 		System.out.println("[AL] Received a message!");
-		byte[] bytestream = packet.getData();
-		System.out.println("In the received packet was: "
+		System.out.println("[AL] In the received packet was: "
 				+ Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {

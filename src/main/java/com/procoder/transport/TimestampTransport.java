@@ -64,10 +64,11 @@ public class TimestampTransport implements Transport {
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
-        TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
-        packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
+        System.out.println("[TL] Received " + packet.getLength() + " bytes of data");
 
-        app.processPacket(packet);
+        TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
+
+        app.processPacket(AirKont.toPrimitiveArray(receivedSegment.data));
 
 
 
