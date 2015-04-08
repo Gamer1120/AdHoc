@@ -69,9 +69,9 @@ public class ApplicationLayer implements Application {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
+		System.out.println("[AL] Sending: " + Arrays.toString(packet));
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
-			System.out.println("[AL] Sending: " + Arrays.toString(packet));
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());

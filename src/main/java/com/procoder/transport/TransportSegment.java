@@ -26,12 +26,9 @@ class TransportSegment {
         byte[] primBytes = AirKont.toPrimitiveArray(data);
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + 8);
-        System.out.println("[TL] original data: " + Arrays.toString(primBytes));
         buf.putLong(timeStamp);
         buf.put(primBytes);
         buf.flip();
-
-        System.out.println("[TL] data + timestamp: " + Arrays.toString(buf.array()));
 
         return buf.array();
 
