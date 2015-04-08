@@ -4,6 +4,7 @@ import com.procoder.transport.Transport;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
@@ -23,24 +24,22 @@ public class NetworkLayer implements Network {
 			NetworkInterface iface = NetworkInterface.getByName("wlan0");
 			socket.joinGroup(new InetSocketAddress(multicast, PORT), iface);
 		} catch (IOException e) {
-			// TODO betere error handling
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void send(InetAddress dest, byte[] data) {
-		System.out.println("[NL] Sending a message!");
 		// Create a packet and send it to the multicast address
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
 		System.arraycopy(data, 0, packetData, 1, data.length);
-		DatagramPacket packet = new DatagramPacket(data, data.length,
-				multicast, PORT);
+		System.out.println("[NL] Sending: " + Arrays.toString(packetData));
+		DatagramPacket packet = new DatagramPacket(packetData,
+				packetData.length, multicast, PORT);
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
-			// TODO betere error handling
 			e.printStackTrace();
 		}
 	}
@@ -52,17 +51,17 @@ public class NetworkLayer implements Network {
 			DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 			try {
 				socket.receive(packet);
-				System.out.println("[NL] Received a message!");
 			} catch (IOException e) {
-				// TODO betere error handling
 				e.printStackTrace();
 			}
-			byte[] data = packet.getData();
+			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
+					packet.getLength());
+			System.out.println("[NL] Received: " + Arrays.toString(data));
+			packet.setData(data, 0, data.length);
 			if (--data[0] > 0) {
 				try {
 					socket.send(packet);
 				} catch (IOException e) {
-					// TODO betere error handling
 					e.printStackTrace();
 				}
 			}
