@@ -1,4 +1,6 @@
-package com.procoder; /**
+package com.procoder;
+
+/**
  * com.procoder.Application Layer for the Ad hoc multi-client chat application.
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
@@ -29,8 +31,8 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Creates a new com.procoder.ApplicationLayer using a given com.procoder.GUI. Also starts the
-	 * TransportLayer.
+	 * Creates a new com.procoder.ApplicationLayer using a given
+	 * com.procoder.GUI. Also starts the TransportLayer.
 	 * 
 	 * @param gui
 	 */
@@ -61,16 +63,17 @@ public class ApplicationLayer implements Application {
 		} catch (UnknownHostException e) {
 			System.out.println("Could not get localhost somehow.");
 		}
+		byte[] packet = null;
+		try {
+			packet = generatePacket(new byte[] { 0 }, sender,
+					((String) input).getBytes(ENCODING));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 		if (input instanceof String) {
-			try {
-				transportLayer.send(
-						dest,
-						generatePacket(new byte[] { 0 }, sender,
-								((String) input).getBytes(ENCODING)));
-			} catch (UnsupportedEncodingException e) {
-				System.out.println(ENCODING
-						+ " is not supported on this system.");
-			}
+			transportLayer.send(dest, packet);
+			System.out.println("In the sent packet was: "
+					+ Arrays.toString(packet));
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());
@@ -114,6 +117,8 @@ public class ApplicationLayer implements Application {
 	public void processPacket(DatagramPacket packet) {
 		System.out.println("[AL] Received a message!");
 		byte[] bytestream = packet.getData();
+		System.out.println("In the received packet was: "
+				+ Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
 		case TEXT:
@@ -151,8 +156,8 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Gets the sender of the packet as String, required for the com.procoder.GUI. The sender
-	 * is the 2nd to 5th byte in a packet.
+	 * Gets the sender of the packet as String, required for the
+	 * com.procoder.GUI. The sender is the 2nd to 5th byte in a packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
@@ -164,8 +169,9 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Returns the text that is in the packet as String, required for the com.procoder.GUI.
-	 * The data is everything after the first 5 bytes in a packet.
+	 * Returns the text that is in the packet as String, required for the
+	 * com.procoder.GUI. The data is everything after the first 5 bytes in a
+	 * packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
