@@ -42,7 +42,13 @@ class TransportSegment {
         ByteBuffer buf = ByteBuffer.wrap(data);
         long timestamp = buf.getLong();
 
-        return new TransportSegment(AirKont.toObjectArray(buf.array()), timestamp);
+        byte[] actualData = new byte[buf.limit() - buf.position()];
+
+        for(int i = 0; buf.hasRemaining(); i++) {
+            actualData[i] = buf.get();
+        }
+
+        return new TransportSegment(AirKont.toObjectArray(actualData), timestamp);
 
 
 
