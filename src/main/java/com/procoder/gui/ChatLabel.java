@@ -1,5 +1,6 @@
 package com.procoder.gui;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 
 /**
@@ -13,7 +14,8 @@ public class ChatLabel extends Label {
 
     public ChatLabel(){
         super("Chats");
-        this.setStyle("-fx-font: 100px Tahoma; -fx-background-color: #6AD6FA;");
+        this.setStyle("-fx-font: 100px Tahoma; -fx-background-color: #FDFDFD;");
+        this.setAlignment(Pos.CENTER);
         this.setPrefSize(widht, height);
 
 

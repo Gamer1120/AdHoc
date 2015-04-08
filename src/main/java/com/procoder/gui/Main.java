@@ -44,7 +44,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("AWESOME ADHOC com.procoder.GUI");
+        primaryStage.setTitle("AWESOME ADHOC");
         mainPane = new BorderPane();
         chatMap = new HashMap<IdLabel, ChatPane>();
         padding = new Insets(10);
@@ -55,7 +55,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         Scene mainScene = new Scene(mainPane, 900, 900);
 
         //mainScene.getStylesheets().add("Css.css");
-        //addLabel("192.168.2.2");
+        addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -119,6 +119,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     public void addAllChat(){
         IdLabel newLabel = new IdLabel("AllChat");
         newLabel.setSelected(true);
+        selected = newLabel;
         side.getChildren().add(newLabel);
         ChatPane chatPane = new ChatPane();
 
