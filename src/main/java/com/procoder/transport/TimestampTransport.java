@@ -93,9 +93,7 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void sendDiscovery() {
-        TransportSegment discoverSegment = new TransportSegment(new Byte[0]);
-        discoverSegment.setDiscover();
-        networkLayer.send(null, discoverSegment.toByteArray());
+        networkLayer.send(null, TransportSegment.genDiscoveryPacket().toByteArray());
     }
 
     public void processSendQueue() {

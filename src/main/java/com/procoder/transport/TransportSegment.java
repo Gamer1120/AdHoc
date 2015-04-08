@@ -10,11 +10,11 @@ class TransportSegment {
     int seq;
     int ack;
     Byte[] data;
+    //|SEQ 1bit|ACK 1bit|DISCOVERY 1bit|SYN 1bit|
     byte flags;
 
-    TransportSegment(Byte[] data) {
+    public TransportSegment(Byte[] data) {
         this.data = data;
-        //|SEQ 1bit|ACK 1bit|DISCOVERY 1bit|
         flags = 0;
 
     }
@@ -26,15 +26,15 @@ class TransportSegment {
         this.data = data;
     }
 
-    boolean isDiscover() {
+    public boolean isDiscover() {
         return (flags & 0B001) != 0;
     }
 
-    void setDiscover() {
+    private void setDiscover() {
         flags = (byte) (flags | 0B001);
     }
 
-    byte[] toByteArray() {
+    public byte[] toByteArray() {
         byte[] primBytes = AirKont.toPrimitiveArray(data);
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
@@ -51,12 +51,12 @@ class TransportSegment {
 
     }
 
-    static TransportSegment parseNetworkData(byte[] data) {
+    public static TransportSegment parseNetworkData(byte[] data) {
 
         ByteBuffer buf = ByteBuffer.wrap(data);
+        byte flags = buf.get();
         int seq = buf.getInt();
         int ack = buf.getInt();
-        byte flags = buf.get();
 
         byte[] actualData = new byte[buf.remaining()];
 
@@ -68,6 +68,12 @@ class TransportSegment {
 
 
 
+    }
+
+    public static TransportSegment genDiscoveryPacket() {
+        TransportSegment result = new TransportSegment(new Byte[0]);
+        result.setDiscover();
+        return result;
     }
 
 }
