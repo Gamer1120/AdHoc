@@ -46,7 +46,6 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-    	System.out.println("[TL] Sending a message!");
         Queue<Byte> queue = sendQueues.get(dest);
         queue = queue == null ? new LinkedList<Byte>() : queue;
 
@@ -60,11 +59,10 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void processPacket(DatagramPacket packet) {
-    	System.out.println("[TL] Received a message!");
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
-        System.out.println("[TL] Received " + packet.getLength() + " bytes of data");
+        System.out.println("[TL] Received: " + Arrays.toString(data));
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
@@ -91,7 +89,8 @@ public class TimestampTransport implements Transport {
                 // This data will be sent, so it can be removed from the queue
                 it.remove();
             }
-
+            byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
+            System.out.println("[TL] Sending: " + Arrays.toString(packet));
             networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
 
