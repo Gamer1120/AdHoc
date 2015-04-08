@@ -127,38 +127,46 @@ public class ApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
-		System.out.println("Begin: "
-				+ Arrays.toString(Arrays.copyOfRange(bytestream, 0, 4))
-				+ " to: "
-				+ Arrays.toString(new byte[] { BEGIN, BEGIN, BEGIN, BEGIN }));
-		System.out.println("End: "
-				+ Arrays.toString(Arrays.copyOfRange(bytestream,
-						bytestream.length - 4, bytestream.length)) + " to: "
-				+ Arrays.toString(new byte[] { END, END, END, END }));
-		InetAddress sender = packet.getAddress();
-		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 4), new byte[] {
-				BEGIN, BEGIN, BEGIN, BEGIN })) {
-			if (Arrays.equals(Arrays.copyOfRange(bytestream,
+		if (bytestream.length > 0) {
+			System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
+			System.out
+					.println("Begin: "
+							+ Arrays.toString(Arrays.copyOfRange(bytestream, 0,
+									4))
+							+ " to: "
+							+ Arrays.toString(new byte[] { BEGIN, BEGIN, BEGIN,
+									BEGIN }));
+			System.out.println("End: "
+					+ Arrays.toString(Arrays.copyOfRange(bytestream,
+							bytestream.length - 4, bytestream.length))
+					+ " to: "
+					+ Arrays.toString(new byte[] { END, END, END, END }));
+			InetAddress sender = packet.getAddress();
+			if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 4), new byte[] {
+					BEGIN, BEGIN, BEGIN, BEGIN })) {
+				if (Arrays.equals(Arrays.copyOfRange(bytestream,
+						bytestream.length - 4, bytestream.length), new byte[] {
+						END, END, END, END })) {
+					System.out
+							.println("[AL] Detected end of packet. This is a full packet!");
+					gui.sendString(getSender(bytestream), getData(bytestream));
+				} else {
+					System.out.println("[AL] Detected begin of packet.");
+					receivedPackets.put(sender, bytestream);
+				}
+			} else if (Arrays.equals(Arrays.copyOfRange(bytestream,
 					bytestream.length - 4, bytestream.length), new byte[] {
 					END, END, END, END })) {
-				System.out
-						.println("[AL] Detected end of packet. This is a full packet!");
-				gui.sendString(getSender(bytestream), getData(bytestream));
+				System.out.println("[AL] Detected end of a splitted packet.");
+				byte[] fullPacket = merge(receivedPackets.get(sender),
+						bytestream);
+				gui.sendString(getSender(fullPacket), getData(fullPacket));
 			} else {
-				System.out.println("[AL] Detected begin of packet.");
-				receivedPackets.put(sender, bytestream);
+				System.out.println("[AL] Detected no beginning nor end.");
+				byte[] fullPacket = merge(receivedPackets.get(sender),
+						bytestream);
+				receivedPackets.put(sender, fullPacket);
 			}
-		} else if (Arrays.equals(Arrays.copyOfRange(bytestream,
-				bytestream.length - 4, bytestream.length), new byte[] { END,
-				END, END, END })) {
-			System.out.println("[AL] Detected end of a splitted packet.");
-			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
-			gui.sendString(getSender(fullPacket), getData(fullPacket));
-		} else {
-			System.out.println("[AL] Detected no beginning nor end.");
-			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
-			receivedPackets.put(sender, fullPacket);
 		}
 	}
 
