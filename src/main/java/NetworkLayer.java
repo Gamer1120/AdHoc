@@ -29,6 +29,7 @@ public class NetworkLayer implements Network {
 
 	@Override
 	public void send(InetAddress dest, byte[] data) {
+		System.out.println("[NL] Sending a message!");
 		// Create a packet and send it to the multicast address
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
@@ -46,23 +47,26 @@ public class NetworkLayer implements Network {
 	@Override
 	public void run() {
 		// Receive packets and forward them to the transport layer
-		DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
-		try {
-			socket.receive(packet);
-		} catch (IOException e) {
-			// TODO betere error handling
-			e.printStackTrace();
-		}
-		byte[] data = packet.getData();
-		if (--data[0] > 0) {
+		while (true) {
+			DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 			try {
-				socket.send(packet);
+				socket.receive(packet);
+				System.out.println("[NL] Received a message!");
 			} catch (IOException e) {
 				// TODO betere error handling
 				e.printStackTrace();
 			}
+			byte[] data = packet.getData();
+			if (--data[0] > 0) {
+				try {
+					socket.send(packet);
+				} catch (IOException e) {
+					// TODO betere error handling
+					e.printStackTrace();
+				}
+			}
+			packet.setData(data, 1, data.length - 1);
+			transportLayer.processPacket(packet);
 		}
-		packet.setData(data, 1, data.length - 1);
-		transportLayer.processPacket(packet);
 	}
 }

@@ -48,6 +48,7 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void send(InetAddress dest, Object input) {
+		System.out.println("[AL] Sending a message!");
 		byte[] sender = null;
 		try {
 			sender = InetAddress.getLocalHost().getAddress();
@@ -100,6 +101,7 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void processPacket(DatagramPacket packet) {
+		System.out.println("[AL] Received a message!");
 		byte[] bytestream = packet.getData();
 		PacketType type = getType(bytestream);
 		switch (type) {
