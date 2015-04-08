@@ -20,8 +20,7 @@ public class TimestampTransport implements Transport {
 
     private Network networkLayer;
 
-    private Queue<TransportSegment> unAckedData;
-
+    private Map<InetAddress, Queue<TransportSegment>> unAckedSegments;
     private Map<InetAddress, Queue<Byte>> sendQueues;
 
     private Application app;
@@ -34,7 +33,8 @@ public class TimestampTransport implements Transport {
 
         this.app = app;
         this.networkLayer = new NetworkLayer(this);
-        this.sendQueues=new HashMap<InetAddress,Queue<Byte>>();
+        this.sendQueues=new HashMap<>();
+        this.unAckedSegments = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);
 
@@ -43,6 +43,11 @@ public class TimestampTransport implements Transport {
 
     // ----------------------- Queries ----------------------
 
+    @Override
+    public HostList getKnownHostList() {
+        return disco.getHostList();
+    }
+
 
     // ----------------------- Commands ---------------------
 
@@ -50,7 +55,7 @@ public class TimestampTransport implements Transport {
     @Override
     public void send(InetAddress dest, byte[] data) {
         Queue<Byte> queue = sendQueues.get(dest);
-        queue = queue == null ? new LinkedList<Byte>() : queue;
+        queue = queue == null ? new LinkedList<>() : queue;
 
         for(byte b : data) {
             queue.add(b);
@@ -86,11 +91,6 @@ public class TimestampTransport implements Transport {
         TransportSegment discoverSegment = new TransportSegment(new Byte[0]);
         discoverSegment.setDiscover();
         networkLayer.send(null, discoverSegment.toByteArray());
-    }
-
-    @Override
-    public HostList getKnownHostList() {
-        return disco.getHostList();
     }
 
     public void processSendQueue() {

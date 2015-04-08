@@ -3,6 +3,7 @@ package com.procoder.transport;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Observable;
+import java.util.Set;
 
 public class HostList extends Observable {
 
@@ -20,6 +21,10 @@ public class HostList extends Observable {
         }
         hostMap.put(address, TTL);
         notifyObservers(hostMap.keySet());
+    }
+
+    public Set<InetAddress> getKnownHosts() {
+        return hostMap.keySet();
     }
 
     public void decrementTTL() {
