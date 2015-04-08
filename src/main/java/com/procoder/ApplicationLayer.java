@@ -24,7 +24,7 @@ public class ApplicationLayer implements Application {
 
 	private static final String ENCODING = "UTF-8";
 	private static final int BEGIN = 0;
-	private static final int END = 64;
+	private static final int END = -64;
 	private HashMap<InetAddress, byte[]> receivedPackets;
 
 	private Transport transportLayer;
@@ -126,7 +126,8 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void processPacket(DatagramPacket packet) {
-		byte[] bytestream = packet.getData();
+		byte[] bytestream = new byte[] { 0, 0, 0, 0, 0, 1, 1, 1, 1, 64, 63, 65, 66,
+				67, 68 };
 		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		System.out.println("Begin: "
 				+ Arrays.toString(Arrays.copyOfRange(bytestream, 0, 4))
@@ -160,16 +161,6 @@ public class ApplicationLayer implements Application {
 			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
 			receivedPackets.put(sender, fullPacket);
 		}
-		/*
-		 * System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
-		 * PacketType type = getType(bytestream); switch (type) { case TEXT:
-		 * gui.sendString(getSender(bytestream), getData(bytestream)); break;
-		 * case FILE: gui.sendString( getSender(bytestream),
-		 * "René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:"
-		 * ); break; case UNDEFINED: gui.sendString(getSender(bytestream),
-		 * "Received a packet from this source with an unknown type, namely: " +
-		 * bytestream[0]); break;
-		 */
 	}
 
 	/**
