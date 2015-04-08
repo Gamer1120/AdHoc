@@ -1,8 +1,5 @@
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
+import java.net.*;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
@@ -18,9 +15,9 @@ public class NetworkLayer implements Network {
 		try {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
-			socket.setNetworkInterface(NetworkInterface.getByName("wlan0"));
 			multicast = InetAddress.getByName("228.0.0.0");
-			socket.joinGroup(multicast);
+			NetworkInterface iface = NetworkInterface.getByName("wlan0");
+			socket.joinGroup(new InetSocketAddress(multicast, PORT), iface);
 		} catch (IOException e) {
 			// TODO betere error handling
 			e.printStackTrace();
