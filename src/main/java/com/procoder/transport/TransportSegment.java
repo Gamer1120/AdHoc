@@ -7,23 +7,23 @@ import java.util.Arrays;
 
 class TransportSegment {
 
-    long timeStamp;
+    int seq;
+    int ack;
     Byte[] data;
     byte flags;
 
     TransportSegment(Byte[] data) {
-
-        timeStamp = System.currentTimeMillis();
         this.data = data;
         //|SEQ 1bit|ACK 1bit|DISCOVERY 1bit|
         flags = 0;
 
     }
 
-    private TransportSegment(Byte[] data, long timeStamp, byte flags) {
-        this.timeStamp = timeStamp;
-        this.data = data;
+    private TransportSegment(Byte[] data, byte flags, int seq, int ack) {
         this.flags = flags;
+        this.seq = seq;
+        this.ack = ack;
+        this.data = data;
     }
 
     boolean isDiscover() {
@@ -39,8 +39,9 @@ class TransportSegment {
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
         System.out.println("[TL] original data: " + Arrays.toString(primBytes));
-        buf.putLong(timeStamp);
         buf.put(flags);
+        buf.putInt(seq);
+        buf.putInt(ack);
         buf.put(primBytes);
         buf.flip();
 
@@ -53,7 +54,8 @@ class TransportSegment {
     static TransportSegment parseNetworkData(byte[] data) {
 
         ByteBuffer buf = ByteBuffer.wrap(data);
-        long timestamp = buf.getLong();
+        int seq = buf.getInt();
+        int ack = buf.getInt();
         byte flags = buf.get();
 
         byte[] actualData = new byte[buf.remaining()];
@@ -62,7 +64,7 @@ class TransportSegment {
             actualData[i] = buf.get();
         }
 
-        return new TransportSegment(AirKont.toObjectArray(actualData), timestamp, flags);
+        return new TransportSegment(AirKont.toObjectArray(actualData),flags,  seq, ack);
 
 
 

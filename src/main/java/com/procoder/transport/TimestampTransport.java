@@ -12,16 +12,12 @@ import java.util.*;
 
 public class TimestampTransport implements Transport {
 
-    /**
-     *
-     */
 
     // ------------------ Instance variables ----------------
 
     private Network networkLayer;
 
-    private Map<InetAddress, Queue<TransportSegment>> unAckedSegments;
-    private Map<InetAddress, Queue<Byte>> sendQueues;
+    private Map<InetAddress, TransportConnection> connections;
 
     private Application app;
 
@@ -33,8 +29,7 @@ public class TimestampTransport implements Transport {
 
         this.app = app;
         this.networkLayer = new NetworkLayer(this);
-        this.sendQueues=new HashMap<>();
-        this.unAckedSegments = new HashMap<>();
+        this.connections = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);
 
@@ -48,6 +43,15 @@ public class TimestampTransport implements Transport {
         return disco.getHostList();
     }
 
+    private TransportConnection findConnection(InetAddress host) {
+
+        // De connectie is misschien nog niet opgezet
+        TransportConnection result = connections.getOrDefault(host, new TransportConnection(host, networkLayer));
+        // Voeg de connectie toe aan de lijst (voor het geval het er nog niet in zat)
+        connections.put(host, result);
+        return result;
+    }
+
 
     // ----------------------- Commands ---------------------
 
@@ -56,13 +60,11 @@ public class TimestampTransport implements Transport {
     public void send(InetAddress dest, byte[] data) {
         // Dest wordt nu genegeerd
         for(InetAddress host : getKnownHostList().getKnownHosts()) {
-            Queue<Byte> queue = sendQueues.get(host);
-            queue = queue == null ? new LinkedList<>() : queue;
+            TransportConnection connection = findConnection(host);
 
             for(byte b : data) {
-                queue.add(b);
+                connection.sendByte(b);
             }
-            sendQueues.put(host, queue);
         }
 
         processSendQueue();
@@ -98,39 +100,7 @@ public class TimestampTransport implements Transport {
 
     public void processSendQueue() {
 
-        for(Map.Entry<InetAddress, Queue<Byte>> entry : sendQueues.entrySet()) {
-
-            InetAddress address = entry.getKey();
-
-            List<Byte> data = new LinkedList<>();
-
-            Iterator<Byte> it = entry.getValue().iterator();
-
-            while (it.hasNext()) {
-
-                while (it.hasNext() && data.size() < 1400) {
-                    // Add byte to data to be sent
-                    data.add(it.next());
-                    // This data will be sent, so it can be removed from the queue
-                    it.remove();
-                }
-                byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-                System.out.println("[TL] [SND]: " + Arrays.toString(packet));
-                TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]));
-                networkLayer.send(null, segment.toByteArray());
-
-
-                // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
-                Queue<TransportSegment> segmentQueue = unAckedSegments.get(address);
-                segmentQueue = segmentQueue == null ? new LinkedList<>() : segmentQueue;
-                segmentQueue.add(segment);
-
-            }
-
-
-
-
-        }
+        connections.values().forEach(TransportConnection::processSendQueue);
 
     }
 
