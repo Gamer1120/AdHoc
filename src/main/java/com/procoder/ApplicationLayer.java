@@ -18,10 +18,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class ApplicationLayer implements Application {
 
 	private static final String ENCODING = "UTF-8";
+	private static final int BEGIN = 0;
+	private static final int END = 64;
+	private HashMap<InetAddress, byte[]> receivedPackets;
 
 	private Transport transportLayer;
 	private GUI gui;
@@ -38,6 +42,7 @@ public class ApplicationLayer implements Application {
 	 */
 	public ApplicationLayer(GUI gui) {
 		this.gui = gui;
+		this.receivedPackets = new HashMap<InetAddress, byte[]>();
 		this.transportLayer = new TimestampTransport(this);
 	}
 
@@ -97,7 +102,11 @@ public class ApplicationLayer implements Application {
 	 * @return A packet with all these combined.
 	 */
 	public byte[] generatePacket(byte[] type, byte[] sender, byte[] data) {
-		return merge(type, merge(sender, data));
+		return merge(
+				new byte[] { BEGIN, BEGIN, BEGIN, BEGIN },
+				merge(type,
+						merge(sender,
+								merge(data, new byte[] { END, END, END, END }))));
 	}
 
 	// ---------------//
@@ -114,7 +123,12 @@ public class ApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
+
+		if (Arrays.copyOfRange(bytestream, 0, 3).equals(
+				new byte[] { BEGIN, BEGIN, BEGIN, BEGIN })) {
+		}
+		/*
+		 System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
 		case TEXT:
@@ -130,7 +144,7 @@ public class ApplicationLayer implements Application {
 					"Received a packet from this source with an unknown type, namely: "
 							+ bytestream[0]);
 			break;
-		}
+		 */
 	}
 
 	/**
