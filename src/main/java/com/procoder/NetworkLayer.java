@@ -34,7 +34,8 @@ public class NetworkLayer implements Network {
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
 		System.arraycopy(data, 0, packetData, 1, data.length);
-		System.out.println("[NL] Sending: " + Arrays.toString(packetData));
+		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
+		System.out.println();
 		DatagramPacket packet = new DatagramPacket(packetData,
 				packetData.length, multicast, PORT);
 		try {
@@ -56,7 +57,7 @@ public class NetworkLayer implements Network {
 			}
 			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
 					packet.getLength());
-			System.out.println("[NL] Received: " + Arrays.toString(data));
+			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
 			packet.setData(data, 0, data.length);
 			if (--data[0] > 0) {
 				try {

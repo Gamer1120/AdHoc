@@ -62,7 +62,7 @@ public class TimestampTransport implements Transport {
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
-        System.out.println("[TL] Received: " + Arrays.toString(data));
+        System.out.println("[TL] [RCD]: " + Arrays.toString(data));
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
@@ -93,7 +93,7 @@ public class TimestampTransport implements Transport {
                 it.remove();
             }
             byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-            System.out.println("[TL] Sending: " + Arrays.toString(packet));
+            System.out.println("[TL] [SND]: " + Arrays.toString(packet));
             networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
 

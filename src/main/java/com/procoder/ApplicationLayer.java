@@ -69,7 +69,7 @@ public class ApplicationLayer implements Application {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println("[AL] Sending: " + Arrays.toString(packet));
+		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
 
@@ -114,7 +114,7 @@ public class ApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		System.out.println("[AL] Received: " + Arrays.toString(bytestream));
+		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
 		case TEXT:

@@ -97,7 +97,8 @@ public class GUI extends JFrame {
      */
 
     public void sendString(String user, String msg){
-    	System.out.println("[GUI] Received: " + msg);
+    	System.out.println("[UI] [RCD]: " + msg);
+        System.out.println();
         textArea.append(user+": "+msg + "\n");
     }
 
@@ -144,7 +145,7 @@ public class GUI extends JFrame {
         if(validIP(des)||des.isEmpty()) {
 
             String command = commandField.getText();
-            System.out.println("[GUI] Sending: " + command);
+            System.out.println("[UI] [SND]: " + command);
             sendString(name, command);
             commandField.setText("");
             try {
