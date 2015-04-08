@@ -12,14 +12,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
-import java.util.HashMap;
+import java.net.InetAddress;
+import java.util.*;
 
 
 /**
  * Created by reneb_000 on 7-4-2015.
  */
-public class Main extends Application implements EventHandler<javafx.event.ActionEvent> {
+public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
     private VBox side;
     private BorderPane mainPane;
@@ -29,12 +29,14 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private ScrollPane scrollPane;
     //private VBox drawPane;
     private HashMap<IdLabel, ChatPane> chatMap;
-
+    private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
 
     private Button sendButton;
     //private TextField ipField;
     private TextField text;
     private Insets padding;
+    private IdLabel selected;
+    
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -42,14 +44,14 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         mainPane = new BorderPane();
         chatMap = new HashMap<IdLabel, ChatPane>();
         padding = new Insets(10);
-
+        selected = null;
         setupCenter();
         setupSideBar();
 
         Scene mainScene = new Scene(mainPane, 900, 900);
 
         //mainScene.getStylesheets().add("Css.css");
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -70,18 +72,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private void setupCenter() {
         center = new BorderPane();
 
-        //drawPane = new VBox();
         scrollPane = new ScrollPane();
-        //scrollPane.setPrefSize(550, Double.MAX_VALUE);
         scrollPane.setPrefHeight(Double.MAX_VALUE);
-        //scrollPane.setFitToWidth(true);
-        //scrollPane.setFitToHeight(true);
+        scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
-
-        //scrollPane.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-
-
 
         commandPanel = new HBox();
         //ipField = new TextField("TODO");
@@ -112,16 +106,15 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         side.setPrefSize(300, 900);
         side.setStyle("-fx-background-color: #FFFFFF;");
         side.getChildren().add(new ChatLabel());
-        //addLabel("AllChat");
         addAllChat();
         mainPane.setLeft(side);
-        //scrollPane.setContent(chatMap.get());
 
 
     }
 
     public void addAllChat(){
         IdLabel newLabel = new IdLabel("AllChat");
+        newLabel.setSelected(true);
         side.getChildren().add(newLabel);
         //VBox newPane = new VBox();
         ChatPane chatPane = new ChatPane();
@@ -130,7 +123,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                scrollPane.setContent(chatMap.get(event.getSource()));
+                idLabelClick(event);
             }
         });
         scrollPane.setContent(chatPane);
@@ -138,15 +131,23 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     public void addLabel(String name){
         IdLabel newLabel = new IdLabel(name);
         side.getChildren().add(newLabel);
-        //VBox newPane = new VBox();
         ChatPane chatPane = new ChatPane();
         chatMap.put(newLabel, chatPane);
         newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                scrollPane.setContent(chatMap.get(event.getSource()));
+                idLabelClick(event);
             }
         });
+    }
+
+    private void idLabelClick(MouseEvent event){
+        if (selected != null) {
+            selected.setSelected(false);
+        }
+        selected = (IdLabel) event.getSource();
+        scrollPane.setContent(chatMap.get(selected));
+        selected.setSelected(true);
     }
 
     public void addMsg(String msg){
@@ -154,14 +155,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         if(!msg.isEmpty()) {
             ChatPane h = (ChatPane) scrollPane.getContent();
             if (h != null) {
-                //h.getChildren().add(new Label(msg));
-                //Cloud newCloud = new Cloud(msg);
-                //h.setAlignment(newCloud, Pos.CENTER_LEFT);
-                //h.getChildren().add(new Cloud(msg));
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
-
-                //System.out.println(((ChatPane)(scrollPane.getContent())).getHeight());
                 scrollPane.setVvalue(1.0);
             }
         }
@@ -180,5 +175,48 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         if(event.getSource().equals(sendButton)){
             addMsg(text.getText());
         }
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Set<InetAddress> newAdres = (Set<InetAddress>) arg;
+        Set<InetAddress> copie = new HashSet<InetAddress>();
+        copie.addAll(knownAdresses);
+
+        copie.removeAll(newAdres);
+        for(InetAddress a:copie){
+            setInactive(a);
+        }
+
+        for(InetAddress a:knownAdresses){
+            if(newAdres.contains(a)){
+                setActive(a);
+            }
+        }
+
+        newAdres.removeAll(knownAdresses);
+        for(InetAddress a:newAdres){
+            addLabel(a.toString());
+            knownAdresses.add(a);
+        }
+
+    }
+
+    public void setInactive(InetAddress inactive) {
+        getIdLabel(inactive).setActive(false);
+    }
+
+
+    private IdLabel getIdLabel(InetAddress a){
+        for(IdLabel i:chatMap.keySet()){
+            if(i.getAdress().equals(a.toString())){
+                return i;
+            }
+        }
+        return null;
+    }
+
+    public void setActive(InetAddress active) {
+        getIdLabel(active).setActive(true);
     }
 }
