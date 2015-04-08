@@ -126,8 +126,7 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void processPacket(DatagramPacket packet) {
-		byte[] bytestream = new byte[] { 0, 0, 0, 0, 0, 1, 1, 1, 1, 64, 63, 65, 66,
-				67, 68 };
+		byte[] bytestream = packet.getData();
 		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		System.out.println("Begin: "
 				+ Arrays.toString(Arrays.copyOfRange(bytestream, 0, 4))
