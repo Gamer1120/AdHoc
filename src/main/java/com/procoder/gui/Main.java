@@ -1,10 +1,8 @@
-package gui;
+package com.procoder.gui;
 
 import javafx.application.Application;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -13,8 +11,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
-import java.awt.event.ActionEvent;
 import java.util.HashMap;
+
 
 /**
  * Created by reneb_000 on 7-4-2015.
@@ -38,7 +36,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("AWESOME ADHOC GUI");
+        primaryStage.setTitle("AWESOME ADHOC com.procoder.GUI");
         mainPane = new BorderPane();
         chatMap = new HashMap<IdLabel, ChatPane>();
         padding = new Insets(10);

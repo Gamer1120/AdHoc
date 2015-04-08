@@ -31,7 +31,7 @@ echo "Computer number:  "$COMPUTER_NUMBER
 echo "Multicast subnet: "$MULTICAST_SUBNET
 echo ""
 
-echo -ne "Stopping Network Manager..."
+echo -ne "Stopping com.procoder.Network Manager..."
 service network-manager stop &> /dev/null
 sleep 1
 tput cuf $(($(tput cols)-36))

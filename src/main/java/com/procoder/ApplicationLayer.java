@@ -1,11 +1,16 @@
+package com.procoder;
+
 /**
- * Application Layer for the Ad hoc multi-client chat application.
+ * com.procoder.Application Layer for the Ad hoc multi-client chat application.
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.DatagramPacket;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -15,6 +20,8 @@ import java.util.Arrays;
 
 public class ApplicationLayer implements Application {
 
+	private static final String ENCODING = "UTF-8";
+
 	private Transport transportLayer;
 	private GUI gui;
 
@@ -23,8 +30,8 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Creates a new ApplicationLayer using a given GUI. Also starts the
-	 * TransportLayer.
+	 * Creates a new com.procoder.ApplicationLayer using a given
+	 * com.procoder.GUI. Also starts the TransportLayer.
 	 * 
 	 * @param gui
 	 */
@@ -38,7 +45,7 @@ public class ApplicationLayer implements Application {
 	// ---------------------------//
 
 	/**
-	 * Sends a packet to the Transport Layer.
+	 * Sends a packet to the com.procoder.transport.Transport Layer.
 	 * 
 	 * @param dest
 	 *            The final destination of this packet
@@ -48,17 +55,24 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void send(InetAddress dest, Object input) {
+		System.out.println("[AL] Sending a message!");
 		byte[] sender = null;
 		try {
 			sender = InetAddress.getLocalHost().getAddress();
 		} catch (UnknownHostException e) {
 			System.out.println("Could not get localhost somehow.");
 		}
+		byte[] packet = null;
+		try {
+			packet = generatePacket(new byte[] { 0 }, sender,
+					((String) input).getBytes(ENCODING));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 		if (input instanceof String) {
-			transportLayer.send(
-					dest,
-					generatePacket(new byte[] { 0 }, sender,
-							((String) input).getBytes()));
+			transportLayer.send(dest, packet);
+			System.out.println("[AL] In the sent packet was: "
+					+ Arrays.toString(packet));
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());
@@ -88,19 +102,21 @@ public class ApplicationLayer implements Application {
 	}
 
 	// ---------------//
-	// SENDING TO GUI //
+	// SENDING TO com.procoder.GUI //
 	// ---------------//
 
 	/**
 	 * After determining which type of packet it is, it sends the data to the
-	 * GUI.
+	 * com.procoder.GUI.
 	 * 
-	 * @param packet
+	 * @param bytestream
 	 *            The packet to be sent.
 	 */
 	@Override
-	public void processPacket(DatagramPacket packet) {
-		byte[] bytestream = packet.getData();
+	public void processPacket(byte[] bytestream) {
+		System.out.println("[AL] Received a message!");
+		System.out.println("[AL] In the received packet was: "
+				+ Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
 		case TEXT:
@@ -138,8 +154,8 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Gets the sender of the packet as String, required for the GUI. The sender
-	 * is the 2nd to 5th byte in a packet.
+	 * Gets the sender of the packet as String, required for the
+	 * com.procoder.GUI. The sender is the 2nd to 5th byte in a packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
@@ -151,16 +167,26 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Returns the text that is in the packet as String, required for the GUI.
-	 * The data is everything after the first 5 bytes in a packet.
+	 * Returns the text that is in the packet as String, required for the
+	 * com.procoder.GUI. The data is everything after the first 5 bytes in a
+	 * packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
 	 * @return The text in that packet.
+	 * @throws UnsupportedEncodingException
 	 */
 	public String getData(byte[] bytestream) {
-		return Arrays.toString(Arrays.copyOfRange(bytestream, 5,
-				bytestream.length - 1));
+		String dinges = "";
+		try {
+			dinges = new String(Arrays.copyOfRange(bytestream, 5,
+					bytestream.length - 1), ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			System.out.println(ENCODING
+					+ " is not supported on this system. CRASHING...");
+			e.printStackTrace();
+		}
+		return dinges;
 	}
 
 	// --------------- //

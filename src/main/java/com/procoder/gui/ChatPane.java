@@ -1,4 +1,4 @@
-package gui;
+package com.procoder.gui;
 
 import javafx.geometry.Insets;
 import javafx.scene.layout.HBox;

@@ -1,4 +1,4 @@
-package gui;
+package com.procoder.gui;
 
 import javafx.geometry.Pos;
 import javafx.scene.Node;

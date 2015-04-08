@@ -1,4 +1,4 @@
-
+package com.procoder;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -97,6 +97,7 @@ public class GUI extends JFrame {
      */
 
     public void sendString(String user, String msg){
+    	System.out.println("[GUI] Received a message!");
         textArea.append(user+": "+msg + "\n");
     }
 
@@ -139,6 +140,7 @@ public class GUI extends JFrame {
     }
 
     private void sendMsg(){
+    	System.out.println("[GUI] Sending a message!");
         String des = ipField.getText();
         if(validIP(des)||des.isEmpty()) {
 

@@ -3,7 +3,7 @@ Packet loss detection (seq/ack, timestamp).
 Header length.
 Type bericht (chat, video, etc.).
 
-Network layer:
+com.procoder.Network layer:
 Routing tables.
 Source, destination.
 (ID?)

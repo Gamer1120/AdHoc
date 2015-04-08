@@ -1,3 +1,5 @@
+package com.procoder;
+
 import java.net.InetAddress;
 
 public interface Network extends Runnable {
