@@ -5,9 +5,6 @@ package com.procoder;
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
-import com.procoder.transport.TimestampTransport;
-import com.procoder.transport.Transport;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
 
 public class ApplicationLayer implements Application {
 
