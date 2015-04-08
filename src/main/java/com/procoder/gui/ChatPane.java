@@ -1,6 +1,7 @@
 package com.procoder.gui;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -29,6 +30,7 @@ public class ChatPane extends Pane {
         //main.setPadding(padding);
         main.getChildren().addAll(leftBox, rightBox);
         this.getChildren().add(main);
+
     }
 
 

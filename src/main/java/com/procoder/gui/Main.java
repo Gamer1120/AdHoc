@@ -1,6 +1,7 @@
 package com.procoder.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -10,6 +11,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.HashMap;
 
@@ -50,7 +52,16 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
-        h.add(new Cloud("test", false), true);
+        //h.add(new Cloud("test", false), true);
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+            }
+        });
+
+
         primaryStage.setScene(mainScene);
         primaryStage.show();
 
@@ -63,10 +74,13 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane = new ScrollPane();
         //scrollPane.setPrefSize(550, Double.MAX_VALUE);
         scrollPane.setPrefHeight(Double.MAX_VALUE);
-        scrollPane.setFitToWidth(true);
+        //scrollPane.setFitToWidth(true);
+        //scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
+
         //scrollPane.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        center.setCenter(scrollPane);
+
 
 
         commandPanel = new HBox();
@@ -76,7 +90,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         text.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if(event.getCode()== KeyCode.ENTER){
+                if (event.getCode() == KeyCode.ENTER) {
                     addMsg(text.getText());
                 }
             }
@@ -89,6 +103,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         commandPanel.getChildren().addAll(text, sendButton);
         center.setBottom(commandPanel);
+        center.setCenter(scrollPane);
         mainPane.setCenter(center);
     }
 
@@ -111,7 +126,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         //VBox newPane = new VBox();
         ChatPane chatPane = new ChatPane();
 
-        chatMap.put(newLabel,chatPane);
+        chatMap.put(newLabel, chatPane);
         newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -125,7 +140,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         side.getChildren().add(newLabel);
         //VBox newPane = new VBox();
         ChatPane chatPane = new ChatPane();
-        chatMap.put(newLabel,chatPane);
+        chatMap.put(newLabel, chatPane);
         newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -145,11 +160,20 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 //h.getChildren().add(new Cloud(msg));
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
-                scrollPane.setVvalue(scrollPane.getHmax());
+
+                //System.out.println(((ChatPane)(scrollPane.getContent())).getHeight());
+                scrollPane.setVvalue(1.0);
             }
         }
     }
 
+    public void sendString(String user, String msg){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        if(h!=null){
+            h.add(new Cloud(msg, false),true);
+            scrollPane.setVvalue(scrollPane.getVmax());
+        }
+    }
 
     @Override
     public void handle(javafx.event.ActionEvent event) {
