@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
 
@@ -27,19 +28,7 @@ public class NetworkLayer implements Network {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
 			multicast = InetAddress.getByName("228.0.0.0");
-			NetworkInterface netIf = NetworkInterface.getByIndex(0);
-			loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-					.getNetworkInterfaces(); ifaces.hasMoreElements();) {
-				NetworkInterface iface = ifaces.nextElement();
-				for (Enumeration<InetAddress> addresses = iface
-						.getInetAddresses(); addresses.hasMoreElements();) {
-					InetAddress address = addresses.nextElement();
-					if (address.getHostName().startsWith("192.168.5.")) {
-						netIf = iface;
-						break loop;
-					}
-				}
-			}
+			NetworkInterface netIf = detectInterface();
 			socket.joinGroup(new InetSocketAddress(multicast, PORT), netIf);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -70,6 +59,23 @@ public class NetworkLayer implements Network {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private NetworkInterface detectInterface() throws SocketException {
+		NetworkInterface netIf = NetworkInterface.getByIndex(0);
+		loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+				.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+			NetworkInterface iface = ifaces.nextElement();
+			for (Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses
+					.hasMoreElements();) {
+				InetAddress address = addresses.nextElement();
+				if (address.getHostName().startsWith("192.168.5.")) {
+					netIf = iface;
+					break loop;
+				}
+			}
+		}
+		return netIf;
 	}
 
 	@Override
