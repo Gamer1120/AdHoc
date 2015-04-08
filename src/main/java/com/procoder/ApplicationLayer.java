@@ -1,8 +1,11 @@
-/**
- * Application Layer for the Ad hoc multi-client chat application.
+package com.procoder; /**
+ * com.procoder.Application Layer for the Ad hoc multi-client chat application.
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -23,7 +26,7 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Creates a new ApplicationLayer using a given GUI. Also starts the
+	 * Creates a new com.procoder.ApplicationLayer using a given com.procoder.GUI. Also starts the
 	 * TransportLayer.
 	 * 
 	 * @param gui
@@ -38,7 +41,7 @@ public class ApplicationLayer implements Application {
 	// ---------------------------//
 
 	/**
-	 * Sends a packet to the Transport Layer.
+	 * Sends a packet to the com.procoder.transport.Transport Layer.
 	 * 
 	 * @param dest
 	 *            The final destination of this packet
@@ -89,12 +92,12 @@ public class ApplicationLayer implements Application {
 	}
 
 	// ---------------//
-	// SENDING TO GUI //
+	// SENDING TO com.procoder.GUI //
 	// ---------------//
 
 	/**
 	 * After determining which type of packet it is, it sends the data to the
-	 * GUI.
+	 * com.procoder.GUI.
 	 * 
 	 * @param packet
 	 *            The packet to be sent.
@@ -140,7 +143,7 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Gets the sender of the packet as String, required for the GUI. The sender
+	 * Gets the sender of the packet as String, required for the com.procoder.GUI. The sender
 	 * is the 2nd to 5th byte in a packet.
 	 * 
 	 * @param bytestream
@@ -153,7 +156,7 @@ public class ApplicationLayer implements Application {
 	}
 
 	/**
-	 * Returns the text that is in the packet as String, required for the GUI.
+	 * Returns the text that is in the packet as String, required for the com.procoder.GUI.
 	 * The data is everything after the first 5 bytes in a packet.
 	 * 
 	 * @param bytestream

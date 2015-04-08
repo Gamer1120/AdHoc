@@ -1,3 +1,7 @@
+package com.procoder;
+
+import com.procoder.transport.Transport;
+
 import java.io.IOException;
 import java.net.*;
 
@@ -43,7 +47,7 @@ public class NetworkLayer implements Network {
 
 	@Override
 	public void run() {
-		// Receive packets and forward them to the transport layer
+		// Receive packets and forward them to the com.procoder.transport layer
 		while (true) {
 			DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 			try {
