@@ -13,9 +13,10 @@ import com.procoder.transport.Transport;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
-	private final static int LENGTH = 1500;
+	private final static int LENGTH = 1472;
 	private final static int PORT = 7777;
-	private final static int TTL = 4;
+	private final static int HEADER = 5;
+	private final static byte TTL = 4;
 	private Transport transportLayer;
 	private InetAddress multicast;
 	private MulticastSocket socket;
@@ -47,20 +48,23 @@ public class NetworkLayer implements Network {
 
 	@Override
 	public void send(InetAddress dest, byte[] data) {
+		send(dest, data, TTL);
+	}
+
+	private void send(InetAddress dest, byte[] data, byte ttl) {
 		// Create a packet and send it to the multicast address
-		byte[] packetData = new byte[data.length + 1];
-		packetData[0] = TTL;
-		System.arraycopy(data, 0, packetData, 1, data.length);
+		if (dest == null) {
+			dest = multicast;
+		}
+		byte[] packetData = new byte[data.length + HEADER];
+		packetData[0] = ttl;
+		byte[] address = dest.getAddress();
+		System.arraycopy(address, 0, packetData, 1, address.length);
+		System.arraycopy(data, 0, packetData, HEADER, data.length);
 		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
 		System.out.println();
-		DatagramPacket packet;
-		if (dest == null) {
-			packet = new DatagramPacket(packetData, packetData.length,
-					multicast, PORT);
-		} else {
-			packet = new DatagramPacket(packetData, packetData.length, dest,
-					PORT);
-		}
+		DatagramPacket packet = new DatagramPacket(packetData,
+				packetData.length, dest, PORT);
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
@@ -70,7 +74,7 @@ public class NetworkLayer implements Network {
 
 	@Override
 	public void run() {
-		// Receive packets and forward them to the com.procoder.transport layer
+		// Receive packets and forward them to the transport layer
 		while (true) {
 			DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 			try {
@@ -81,17 +85,19 @@ public class NetworkLayer implements Network {
 			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
 					packet.getLength());
 			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
-			packet.setData(data, 0, data.length);
-			if (--data[0] > 0) {
+			byte ttl = data[0];
+			byte[] ip = Arrays.copyOfRange(data, 1, HEADER);
+			data = Arrays.copyOfRange(data, HEADER, data.length);
+			packet.setData(data);
+			transportLayer.processPacket(packet);
+			if (--ttl > 0) {
 				try {
-					socket.send(packet);
+					InetAddress dest = InetAddress.getByAddress(ip);
+					send(dest, data, ttl);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			data = Arrays.copyOfRange(data, 1, data.length);
-			packet.setData(data);
-			transportLayer.processPacket(packet);
 		}
 	}
 }
