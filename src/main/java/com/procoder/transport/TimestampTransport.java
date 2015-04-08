@@ -26,6 +26,8 @@ public class TimestampTransport implements Transport {
 
     private Application app;
 
+    private Discoverer disco;
+
     // ------------------- Constructors ---------------------
 
     public TimestampTransport(Application app) {
@@ -34,6 +36,7 @@ public class TimestampTransport implements Transport {
         this.networkLayer = new NetworkLayer(this);
         this.sendQueues=new HashMap<InetAddress,Queue<Byte>>();
         new Thread(networkLayer).start();
+        disco = new Discoverer(this);
 
     }
 
@@ -66,16 +69,28 @@ public class TimestampTransport implements Transport {
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
-        DatagramPacket newPacket = packet;
-        newPacket.setData(AirKont.toPrimitiveArray(receivedSegment.data));
+        if (receivedSegment.isDiscover()) {
+            disco.addHost(packet.getAddress());
+        } else {
+            packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
 
-        app.processPacket(newPacket);
+            app.processPacket(packet);
+        }
 
 
 
+    }
 
+    @Override
+    public void sendDiscovery() {
+        TransportSegment discoverSegment = new TransportSegment(new Byte[0]);
+        discoverSegment.setDiscover();
+        networkLayer.send(null, discoverSegment.toByteArray());
+    }
 
-
+    @Override
+    public HostList getKnownHostList() {
+        return disco.getHostList();
     }
 
     public void processSendQueue() {

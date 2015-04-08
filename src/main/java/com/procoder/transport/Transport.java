@@ -8,4 +8,8 @@ public interface Transport {
     public void send(InetAddress dest, byte[] data);
 
     public void processPacket(DatagramPacket packet);
+
+    public void sendDiscovery();
+
+    public HostList getKnownHostList();
 }
