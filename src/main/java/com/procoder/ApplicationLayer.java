@@ -127,12 +127,19 @@ public class ApplicationLayer implements Application {
 		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 3), new byte[] {
 				BEGIN, BEGIN, BEGIN, BEGIN })) {
 			if (Arrays.equals(Arrays.copyOfRange(bytestream,
-					bytestream.length - 5, bytestream.length-1), new byte[] {
+					bytestream.length - 5, bytestream.length - 1), new byte[] {
 					END, END, END, END })) {
 				gui.sendString(getSender(bytestream), getData(bytestream));
-			} else{
+			} else {
 				receivedPackets.put(packet.getAddress(), bytestream);
 			}
+		} else if (Arrays.equals(Arrays.copyOfRange(bytestream,
+				bytestream.length - 5, bytestream.length - 1), new byte[] {
+				END, END, END, END })) {
+			merge(receivedPackets.get(packet.getAddress()), bytestream);
+			// Samenvoegen en doorsturen
+		} else {
+			// Samenvoegen
 		}
 		/*
 		 * System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
