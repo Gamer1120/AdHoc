@@ -28,6 +28,8 @@ public class Cloud extends BorderPane {
         message.setPrefWidth(maxWidth);
         message.setMinHeight(25);
         message.setPadding(new Insets(5,10,5,10));
+        message.setWrapText(true);
+
         //message.setStyle("-fx-font: 100;");
         //HBox box = new HBox();
         //box.setAlignment(Pos.CENTER);
