@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Enumeration;
 
@@ -18,6 +19,7 @@ public class NetworkLayer implements Network {
 	private final static int HEADER = 5;
 	private final static byte TTL = 4;
 	private Transport transportLayer;
+	private InetAddress source;
 	private InetAddress multicast;
 	private MulticastSocket socket;
 
@@ -26,8 +28,9 @@ public class NetworkLayer implements Network {
 		try {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
-			NetworkInterface netIf = NetworkInterface.getByIndex(1);
-			boolean loopback = true;
+
+			source = multicast = InetAddress.getLocalHost();
+			NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
 			loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
 					.getNetworkInterfaces(); ifaces.hasMoreElements();) {
 				NetworkInterface iface = ifaces.nextElement();
@@ -35,17 +38,14 @@ public class NetworkLayer implements Network {
 						.getInetAddresses(); addresses.hasMoreElements();) {
 					InetAddress address = addresses.nextElement();
 					if (address.getHostName().startsWith("192.168.5.")) {
+						source = address;
 						netIf = iface;
-						loopback = false;
+						multicast = InetAddress.getByName("228.0.0.0");
 						break loop;
 					}
 				}
 			}
-			if (loopback) {
-				multicast = InetAddress.getByName("127.0.0.1");
-			} else {
-				multicast = InetAddress.getByName("228.0.0.0");
-			}
+
 			socket.joinGroup(new InetSocketAddress(multicast, PORT), netIf);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -69,6 +69,8 @@ public class NetworkLayer implements Network {
 		System.arraycopy(data, 0, packetData, HEADER, data.length);
 		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
 		System.out.println();
+
+		// TODO: dest moet mogelijk nog steeds multicast zijn inplaats van ip
 		DatagramPacket packet = new DatagramPacket(packetData,
 				packetData.length, dest, PORT);
 		try {
@@ -88,21 +90,27 @@ public class NetworkLayer implements Network {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
 			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
 					packet.getLength());
 			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
 			byte ttl = data[0];
-			byte[] ip = Arrays.copyOfRange(data, 1, HEADER);
+
+			InetAddress dest = null;
+			try {
+				dest = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
+						HEADER));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
 			data = Arrays.copyOfRange(data, HEADER, data.length);
-			packet.setData(data);
-			transportLayer.processPacket(packet);
-			if (--ttl > 0) {
-				try {
-					InetAddress dest = InetAddress.getByAddress(ip);
-					send(dest, data, ttl);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+
+			if (multicast.equals(dest) || source.equals(dest)) {
+				packet.setData(data);
+				transportLayer.processPacket(packet);
+			}
+			if (--ttl > 0 && !source.equals(dest)) {
+				send(dest, data, ttl);
 			}
 		}
 	}
