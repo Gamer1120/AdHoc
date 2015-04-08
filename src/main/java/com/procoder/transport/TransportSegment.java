@@ -23,11 +23,7 @@ class TransportSegment {
     }
 
     byte[] toByteArray() {
-        byte[] primBytes = new byte[data.length];
-        int i = 0;
-        for (Byte b : data) {
-            primBytes[i++] = b;
-        }
+        byte[] primBytes = AirKont.toPrimitiveArray(data);
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + 8);
         System.out.println("[TL] original data: " + Arrays.toString(primBytes));
