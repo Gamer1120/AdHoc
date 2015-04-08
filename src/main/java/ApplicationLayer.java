@@ -16,6 +16,8 @@ import java.util.Arrays;
 
 public class ApplicationLayer implements Application {
 
+	private static final String ENCODING = "UTF-8";
+
 	private Transport transportLayer;
 	private GUI gui;
 
@@ -61,9 +63,10 @@ public class ApplicationLayer implements Application {
 				transportLayer.send(
 						dest,
 						generatePacket(new byte[] { 0 }, sender,
-								((String) input).getBytes("UTF-8")));
+								((String) input).getBytes(ENCODING)));
 			} catch (UnsupportedEncodingException e) {
-				System.out.println("UTF-8 is not supported on this system.");
+				System.out.println(ENCODING
+						+ " is not supported on this system.");
 			}
 
 		} else if (input instanceof File) {
@@ -164,15 +167,16 @@ public class ApplicationLayer implements Application {
 	 * @param bytestream
 	 *            Said packet.
 	 * @return The text in that packet.
-	 * @throws UnsupportedEncodingException 
+	 * @throws UnsupportedEncodingException
 	 */
 	public String getData(byte[] bytestream) {
 		String dinges = "";
 		try {
 			dinges = new String(Arrays.copyOfRange(bytestream, 5,
-				bytestream.length - 1), "UTF-8");
+					bytestream.length - 1), ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			System.out.println("UTF-8 is not supported on this system. CRASHING...");
+			System.out.println(ENCODING
+					+ " is not supported on this system. CRASHING...");
 			e.printStackTrace();
 		}
 		return dinges;
