@@ -123,23 +123,38 @@ public class ApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-
-		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 3), new byte[] {
+		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
+		System.out.println("Begin: "
+				+ Arrays.toString(Arrays.copyOfRange(bytestream, 0, 4))
+				+ " to: "
+				+ Arrays.toString(new byte[] { BEGIN, BEGIN, BEGIN, BEGIN }));
+		System.out.println("End: "
+				+ Arrays.toString(Arrays.copyOfRange(bytestream,
+						bytestream.length - 4, bytestream.length)) + " to: "
+				+ Arrays.toString(new byte[] { END, END, END, END }));
+		InetAddress sender = packet.getAddress();
+		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 4), new byte[] {
 				BEGIN, BEGIN, BEGIN, BEGIN })) {
 			if (Arrays.equals(Arrays.copyOfRange(bytestream,
-					bytestream.length - 5, bytestream.length - 1), new byte[] {
+					bytestream.length - 4, bytestream.length), new byte[] {
 					END, END, END, END })) {
+				System.out
+						.println("[AL] Detected end of packet. This is a full packet!");
 				gui.sendString(getSender(bytestream), getData(bytestream));
 			} else {
-				receivedPackets.put(packet.getAddress(), bytestream);
+				System.out.println("[AL] Detected begin of packet.");
+				receivedPackets.put(sender, bytestream);
 			}
 		} else if (Arrays.equals(Arrays.copyOfRange(bytestream,
-				bytestream.length - 5, bytestream.length - 1), new byte[] {
-				END, END, END, END })) {
-			merge(receivedPackets.get(packet.getAddress()), bytestream);
-			// Samenvoegen en doorsturen
+				bytestream.length - 4, bytestream.length), new byte[] { END,
+				END, END, END })) {
+			System.out.println("[AL] Detected end of a splitted packet.");
+			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
+			gui.sendString(getSender(fullPacket), getData(fullPacket));
 		} else {
-			// Samenvoegen
+			System.out.println("[AL] Detected no beginning nor end.");
+			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
+			receivedPackets.put(sender, fullPacket);
 		}
 		/*
 		 * System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
@@ -161,7 +176,7 @@ public class ApplicationLayer implements Application {
 	 * @return What type this packet is.
 	 */
 	public PacketType getType(byte[] bytestream) {
-		int packetByte = bytestream[0];
+		int packetByte = bytestream[4];
 		if (packetByte == 0) {
 			return PacketType.TEXT;
 		} else if (packetByte == 1) {
@@ -180,8 +195,8 @@ public class ApplicationLayer implements Application {
 	 * @return The sender of the packet as String.
 	 */
 	public String getSender(byte[] bytestream) {
-		return bytestream[1] + "." + bytestream[2] + "." + bytestream[3] + "."
-				+ bytestream[4];
+		return bytestream[5] + "." + bytestream[6] + "." + bytestream[7] + "."
+				+ bytestream[8];
 	}
 
 	/**
@@ -197,8 +212,8 @@ public class ApplicationLayer implements Application {
 	public String getData(byte[] bytestream) {
 		String dinges = "";
 		try {
-			dinges = new String(Arrays.copyOfRange(bytestream, 5,
-					bytestream.length), ENCODING);
+			dinges = new String(Arrays.copyOfRange(bytestream, 9,
+					bytestream.length-4), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");
