@@ -4,6 +4,7 @@ import com.procoder.transport.Transport;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
@@ -57,7 +58,8 @@ public class NetworkLayer implements Network {
 				// TODO betere error handling
 				e.printStackTrace();
 			}
-			byte[] data = packet.getData();
+			byte[] data = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+			packet.setData(data, 0, data.length);
 			if (--data[0] > 0) {
 				try {
 					socket.send(packet);
