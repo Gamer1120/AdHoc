@@ -1,9 +1,11 @@
-
+package com.procoder;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,6 +24,7 @@ public class GUI extends JFrame {
     private String name = "you";
     private boolean clicked = false;
     private JTextField ipField;
+    private Application applicationLayer;
 
 
     /**
@@ -82,6 +85,7 @@ public class GUI extends JFrame {
             }
         });
 
+        applicationLayer = new ApplicationLayer(this);
     }
 
 
@@ -93,6 +97,7 @@ public class GUI extends JFrame {
      */
 
     public void sendString(String user, String msg){
+    	System.out.println("[GUI] Received a message!");
         textArea.append(user+": "+msg + "\n");
     }
 
@@ -135,12 +140,19 @@ public class GUI extends JFrame {
     }
 
     private void sendMsg(){
+    	System.out.println("[GUI] Sending a message!");
         String des = ipField.getText();
         if(validIP(des)||des.isEmpty()) {
 
             String command = commandField.getText();
             sendString(name, command);
             commandField.setText("");
+            try {
+				applicationLayer.send(InetAddress.getLocalHost(), command);
+			} catch (UnknownHostException e) {
+				// TODO Betere error-handling
+				e.printStackTrace();
+			}
 
         }else{
             System.err.println("INVALID IP");

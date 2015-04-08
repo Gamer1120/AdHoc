@@ -1,10 +1,13 @@
+package com.procoder;
+
+import com.procoder.transport.Transport;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
+	private final static int LENGTH = 1500;
 	private final static int PORT = 7777;
 	private final static int TTL = 4;
 	private Transport transportLayer;
@@ -16,8 +19,9 @@ public class NetworkLayer implements Network {
 		try {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
-			multicast = InetAddress.getByName("224.0.255.255");
-			socket.joinGroup(multicast);
+			multicast = InetAddress.getByName("228.0.0.0");
+			NetworkInterface iface = NetworkInterface.getByName("wlan0");
+			socket.joinGroup(new InetSocketAddress(multicast, PORT), iface);
 		} catch (IOException e) {
 			// TODO betere error handling
 			e.printStackTrace();
@@ -25,7 +29,8 @@ public class NetworkLayer implements Network {
 	}
 
 	@Override
-	public void send(byte[] data) {
+	public void send(InetAddress dest, byte[] data) {
+		System.out.println("[NL] Sending a message!");
 		// Create a packet and send it to the multicast address
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
@@ -42,24 +47,27 @@ public class NetworkLayer implements Network {
 
 	@Override
 	public void run() {
-		// Receive packets and forward them to the transport layer
-		DatagramPacket packet = new DatagramPacket(null, 0);
-		try {
-			socket.receive(packet);
-		} catch (IOException e) {
-			// TODO betere error handling
-			e.printStackTrace();
-		}
-		byte[] data = packet.getData();
-		if (--data[0] > 0) {
+		// Receive packets and forward them to the com.procoder.transport layer
+		while (true) {
+			DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
 			try {
-				socket.send(packet);
+				socket.receive(packet);
+				System.out.println("[NL] Received a message!");
 			} catch (IOException e) {
 				// TODO betere error handling
 				e.printStackTrace();
 			}
+			byte[] data = packet.getData();
+			if (--data[0] > 0) {
+				try {
+					socket.send(packet);
+				} catch (IOException e) {
+					// TODO betere error handling
+					e.printStackTrace();
+				}
+			}
+			packet.setData(data, 1, data.length - 1);
+			transportLayer.processPacket(packet);
 		}
-		packet.setData(data, 1, data.length - 1);
-		transportLayer.processPacket(packet);
 	}
 }
