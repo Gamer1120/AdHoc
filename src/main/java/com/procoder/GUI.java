@@ -154,7 +154,7 @@ public class GUI extends JFrame {
             sendString(name, command);
             commandField.setText("");
             try {
-				applicationLayer.send(InetAddress.getLocalHost(), command);
+				applicationLayer.send(InetAddress.getByName(des), command);
 			} catch (UnknownHostException e) {
 				// TODO Betere error-handling
 				e.printStackTrace();

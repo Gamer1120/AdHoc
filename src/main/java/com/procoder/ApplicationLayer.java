@@ -63,7 +63,11 @@ public class ApplicationLayer implements Application {
 	public void send(InetAddress dest, Object input) {
 		byte[] sender = null;
 		try {
-			sender = InetAddress.getLocalHost().getAddress();
+			if (dest != null) {
+				sender = dest.getAddress();
+			} else {
+				sender = InetAddress.getLocalHost().getAddress();
+			}
 		} catch (UnknownHostException e) {
 			System.out.println("Could not get localhost somehow.");
 		}
@@ -213,7 +217,7 @@ public class ApplicationLayer implements Application {
 		String dinges = "";
 		try {
 			dinges = new String(Arrays.copyOfRange(bytestream, 9,
-					bytestream.length-4), ENCODING);
+					bytestream.length - 4), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");
