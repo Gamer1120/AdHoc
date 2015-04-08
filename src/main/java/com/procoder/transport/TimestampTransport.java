@@ -54,20 +54,23 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        Queue<Byte> queue = sendQueues.get(dest);
-        queue = queue == null ? new LinkedList<>() : queue;
+        // Dest wordt nu genegeerd
+        for(InetAddress host : getKnownHostList().getKnownHosts()) {
+            Queue<Byte> queue = sendQueues.get(host);
+            queue = queue == null ? new LinkedList<>() : queue;
 
-        for(byte b : data) {
-            queue.add(b);
+            for(byte b : data) {
+                queue.add(b);
+            }
+            sendQueues.put(host, queue);
         }
-        sendQueues.put(dest, queue);
+
         processSendQueue();
 
     }
 
     @Override
     public void processPacket(DatagramPacket packet) {
-        InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
         System.out.println("[TL] [RCD]: " + Arrays.toString(data));
@@ -96,19 +99,34 @@ public class TimestampTransport implements Transport {
 
         for(Map.Entry<InetAddress, Queue<Byte>> entry : sendQueues.entrySet()) {
 
+            InetAddress address = entry.getKey();
+
             List<Byte> data = new LinkedList<>();
 
             Iterator<Byte> it = entry.getValue().iterator();
 
-            while (it.hasNext() && data.size() < 1400) {
-                // Add byte to data to be sent
-                data.add(it.next());
-                // This data will be sent, so it can be removed from the queue
-                it.remove();
+            while (it.hasNext()) {
+
+                while (it.hasNext() && data.size() < 1400) {
+                    // Add byte to data to be sent
+                    data.add(it.next());
+                    // This data will be sent, so it can be removed from the queue
+                    it.remove();
+                }
+                byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
+                System.out.println("[TL] [SND]: " + Arrays.toString(packet));
+                TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]));
+                networkLayer.send(null, segment.toByteArray());
+
+
+                // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
+                Queue<TransportSegment> segmentQueue = unAckedSegments.get(address);
+                segmentQueue = segmentQueue == null ? new LinkedList<>() : segmentQueue;
+                segmentQueue.add(segment);
+
             }
-            byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-            System.out.println("[TL] [SND]: " + Arrays.toString(packet));
-            networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
+
+
 
 
         }
