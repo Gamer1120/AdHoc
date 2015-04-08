@@ -55,7 +55,6 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void send(InetAddress dest, Object input) {
-		System.out.println("[AL] Sending a message!");
 		byte[] sender = null;
 		try {
 			sender = InetAddress.getLocalHost().getAddress();
@@ -71,7 +70,7 @@ public class ApplicationLayer implements Application {
 		}
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
-			System.out.println("[AL] In the sent packet was: "
+			System.out.println("[AL] Sending: "
 					+ Arrays.toString(packet));
 
 		} else if (input instanceof File) {
@@ -114,8 +113,7 @@ public class ApplicationLayer implements Application {
 	 */
 	@Override
 	public void processPacket(byte[] bytestream) {
-		System.out.println("[AL] Received a message!");
-		System.out.println("[AL] In the received packet was: "
+		System.out.println("[AL] Received: "
 				+ Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
