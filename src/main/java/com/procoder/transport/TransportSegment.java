@@ -3,6 +3,7 @@ package com.procoder.transport;
 import com.procoder.util.AirKont;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 class TransportSegment {
 
@@ -25,12 +26,16 @@ class TransportSegment {
         byte[] primBytes = new byte[data.length];
         int i = 0;
         for (Byte b : data) {
-            primBytes[i] = b;
+            primBytes[i++] = b;
         }
 
-        ByteBuffer buf = ByteBuffer.allocate(data.length + Long.SIZE / 8);
+        ByteBuffer buf = ByteBuffer.allocate(data.length + 8);
+        System.out.println("[TL] original data: " + Arrays.toString(primBytes));
         buf.putLong(timeStamp);
         buf.put(primBytes);
+        buf.flip();
+
+        System.out.println("[TL] data + timestamp: " + Arrays.toString(buf.array()));
 
         return buf.array();
 
