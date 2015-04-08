@@ -16,7 +16,8 @@ public class NetworkLayer implements Network {
 	// TODO routing tables
 	private final static int LENGTH = 1472;
 	private final static int PORT = 7777;
-	private final static int HEADER = 5;
+	private final static int IPLENGTH = 4;
+	private final static int HEADER = 2 * IPLENGTH + 1;
 	private final static byte TTL = 4;
 	private Transport transportLayer;
 	private InetAddress source;
@@ -29,7 +30,8 @@ public class NetworkLayer implements Network {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
 
-			source = multicast = InetAddress.getLocalHost();
+			source = InetAddress.getLocalHost();
+			multicast = InetAddress.getByName("228.0.0.0");
 			NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
 			loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
 					.getNetworkInterfaces(); ifaces.hasMoreElements();) {
@@ -40,7 +42,6 @@ public class NetworkLayer implements Network {
 					if (address.getHostName().startsWith("192.168.5.")) {
 						source = address;
 						netIf = iface;
-						multicast = InetAddress.getByName("228.0.0.0");
 						break loop;
 					}
 				}
@@ -64,8 +65,10 @@ public class NetworkLayer implements Network {
 		}
 		byte[] packetData = new byte[data.length + HEADER];
 		packetData[0] = ttl;
-		byte[] address = dest.getAddress();
-		System.arraycopy(address, 0, packetData, 1, address.length);
+		byte[] sourceAddress = source.getAddress();
+		byte[] destAddress = dest.getAddress();
+		System.arraycopy(sourceAddress, 0, packetData, 1, IPLENGTH);
+		System.arraycopy(destAddress, 0, packetData, 1 + IPLENGTH, IPLENGTH);
 		System.arraycopy(data, 0, packetData, HEADER, data.length);
 		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
 		System.out.println();
@@ -96,16 +99,21 @@ public class NetworkLayer implements Network {
 			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
 			byte ttl = data[0];
 
+			InetAddress src = null;
 			InetAddress dest = null;
 			try {
-				dest = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
-						HEADER));
+				src = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
+						IPLENGTH + 1));
+				dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
+						IPLENGTH + 1, HEADER));
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}
 			data = Arrays.copyOfRange(data, HEADER, data.length);
 
-			if (multicast.equals(dest) || source.equals(dest)) {
+			// FIXME
+			if (/*!source.equals(src)
+					&&*/ (multicast.equals(dest) || source.equals(dest))) {
 				packet.setData(data);
 				transportLayer.processPacket(packet);
 			}
