@@ -40,7 +40,7 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-
+    	System.out.println("[TL] Sending a message!");
         Queue<Byte> queue = sendQueues.get(dest);
         queue = queue == null ? new LinkedList<Byte>() : queue;
 
@@ -54,7 +54,7 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void processPacket(DatagramPacket packet) {
-
+    	System.out.println("[TL] Received a message!");
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
