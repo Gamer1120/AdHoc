@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
 
@@ -240,6 +241,10 @@ public class ApplicationLayer implements Application {
 		System.arraycopy(first, 0, retByte, 0, first.length);
 		System.arraycopy(second, 0, retByte, first.length, second.length);
 		return retByte;
+	}
+	
+	public HostList getKnownHostList(){
+		return transportLayer.getKnownHostList();
 	}
 
 }
