@@ -36,8 +36,14 @@ public class NetworkLayer implements Network {
 		System.arraycopy(data, 0, packetData, 1, data.length);
 		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
 		System.out.println();
-		DatagramPacket packet = new DatagramPacket(packetData,
-				packetData.length, multicast, PORT);
+		DatagramPacket packet;
+		if (dest == null) {
+			packet = new DatagramPacket(packetData, packetData.length,
+					multicast, PORT);
+		} else {
+			packet = new DatagramPacket(packetData, packetData.length, dest,
+					PORT);
+		}
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
