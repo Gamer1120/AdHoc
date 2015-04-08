@@ -79,6 +79,7 @@ public class TimestampTransport implements Transport {
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());
+            System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
             packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
             app.processPacket(packet);

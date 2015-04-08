@@ -31,7 +31,7 @@ class TransportSegment {
     }
 
     void setDiscover() {
-        flags &= 0B001;
+        flags = (byte) (flags | 0B001);
     }
 
     byte[] toByteArray() {
