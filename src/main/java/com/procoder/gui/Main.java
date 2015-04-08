@@ -32,14 +32,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private BorderPane mainPane;
     private BorderPane center;
     private HBox commandPanel; //onder textfield voor invullen voor tekst en knop om te verzenden
-    //private TextArea textArea;
     private ScrollPane scrollPane;
-    //private VBox drawPane;
     private HashMap<IdLabel, ChatPane> chatMap;
     private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
 
     private Button sendButton;
-    //private TextField ipField;
     private TextField text;
     private Insets padding;
     private IdLabel selected;
@@ -123,7 +120,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         IdLabel newLabel = new IdLabel("AllChat");
         newLabel.setSelected(true);
         side.getChildren().add(newLabel);
-        //VBox newPane = new VBox();
         ChatPane chatPane = new ChatPane();
 
         chatMap.put(newLabel, chatPane);
