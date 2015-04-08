@@ -65,7 +65,9 @@ public class NetworkLayer implements Network {
 					e.printStackTrace();
 				}
 			}
-			packet.setData(data, 1, data.length - 1);
+			data = Arrays.copyOfRange(data, 1,
+					data.length - 1);
+			packet.setData(data);
 			transportLayer.processPacket(packet);
 		}
 	}
