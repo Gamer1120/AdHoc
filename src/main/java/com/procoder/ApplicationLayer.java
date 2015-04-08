@@ -124,26 +124,25 @@ public class ApplicationLayer implements Application {
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
 
-		if (Arrays.copyOfRange(bytestream, 0, 3).equals(
-				new byte[] { BEGIN, BEGIN, BEGIN, BEGIN })) {
+		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 3), new byte[] {
+				BEGIN, BEGIN, BEGIN, BEGIN })) {
+			if (Arrays.equals(Arrays.copyOfRange(bytestream,
+					bytestream.length - 5, bytestream.length-1), new byte[] {
+					END, END, END, END })) {
+				gui.sendString(getSender(bytestream), getData(bytestream));
+			} else{
+				receivedPackets.put(packet.getAddress(), bytestream);
+			}
 		}
 		/*
-		 System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
-		PacketType type = getType(bytestream);
-		switch (type) {
-		case TEXT:
-			gui.sendString(getSender(bytestream), getData(bytestream));
-			break;
-		case FILE:
-			gui.sendString(
-					getSender(bytestream),
-					"René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:");
-			break;
-		case UNDEFINED:
-			gui.sendString(getSender(bytestream),
-					"Received a packet from this source with an unknown type, namely: "
-							+ bytestream[0]);
-			break;
+		 * System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
+		 * PacketType type = getType(bytestream); switch (type) { case TEXT:
+		 * gui.sendString(getSender(bytestream), getData(bytestream)); break;
+		 * case FILE: gui.sendString( getSender(bytestream),
+		 * "René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:"
+		 * ); break; case UNDEFINED: gui.sendString(getSender(bytestream),
+		 * "Received a packet from this source with an unknown type, namely: " +
+		 * bytestream[0]); break;
 		 */
 	}
 
