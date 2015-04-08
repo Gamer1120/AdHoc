@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -28,25 +29,9 @@ public class NetworkLayer implements Network {
 		this.transportLayer = transportLayer;
 		try {
 			socket = new MulticastSocket(PORT);
-			socket.setTimeToLive(TTL);
-
 			source = InetAddress.getLocalHost();
 			multicast = InetAddress.getByName("228.0.0.0");
-			NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
-			loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-					.getNetworkInterfaces(); ifaces.hasMoreElements();) {
-				NetworkInterface iface = ifaces.nextElement();
-				for (Enumeration<InetAddress> addresses = iface
-						.getInetAddresses(); addresses.hasMoreElements();) {
-					InetAddress address = addresses.nextElement();
-					if (address.getHostName().startsWith("192.168.5.")) {
-						source = address;
-						netIf = iface;
-						break loop;
-					}
-				}
-			}
-
+			NetworkInterface netIf = detectNetwork();
 			socket.joinGroup(new InetSocketAddress(multicast, PORT), netIf);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -59,7 +44,7 @@ public class NetworkLayer implements Network {
 	}
 
 	private void send(InetAddress dest, byte[] data, byte ttl) {
-		// Create a packet and send it to the multicast address
+		// Create a packet and send it to the destination
 		if (dest == null) {
 			dest = multicast;
 		}
@@ -81,6 +66,25 @@ public class NetworkLayer implements Network {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private NetworkInterface detectNetwork() throws SocketException {
+		// Tries to find the Ad-hoc network
+		NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
+		loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+				.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+			NetworkInterface iface = ifaces.nextElement();
+			for (Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses
+					.hasMoreElements();) {
+				InetAddress address = addresses.nextElement();
+				if (address.getHostName().startsWith("192.168.5.")) {
+					source = address;
+					netIf = iface;
+					break loop;
+				}
+			}
+		}
+		return netIf;
 	}
 
 	@Override
@@ -112,8 +116,8 @@ public class NetworkLayer implements Network {
 			data = Arrays.copyOfRange(data, HEADER, data.length);
 
 			// FIXME
-			if (/*!source.equals(src)
-					&&*/ (multicast.equals(dest) || source.equals(dest))) {
+			if (/* !source.equals(src) && */
+					(multicast.equals(dest) || source.equals(dest))) {
 				packet.setData(data);
 				transportLayer.processPacket(packet);
 			}
