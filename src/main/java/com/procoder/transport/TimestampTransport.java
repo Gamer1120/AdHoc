@@ -1,13 +1,19 @@
 package com.procoder.transport;
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+
 import com.procoder.Application;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
 import com.procoder.util.AirKont;
-
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.util.*;
 
 
 public class TimestampTransport implements Transport {
@@ -70,7 +76,7 @@ public class TimestampTransport implements Transport {
         InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
-        System.out.println("[TL] Received: " + Arrays.toString(data));
+        System.out.println("[TL] [RCD]: " + Arrays.toString(data));
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
@@ -108,7 +114,7 @@ public class TimestampTransport implements Transport {
                 it.remove();
             }
             byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-            System.out.println("[TL] Sending: " + Arrays.toString(packet));
+            System.out.println("[TL] [SND]: " + Arrays.toString(packet));
             networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
 

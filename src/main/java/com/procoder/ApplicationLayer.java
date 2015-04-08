@@ -5,9 +5,6 @@ package com.procoder;
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
-import com.procoder.transport.TimestampTransport;
-import com.procoder.transport.Transport;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -18,10 +15,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
 
 public class ApplicationLayer implements Application {
 
 	private static final String ENCODING = "UTF-8";
+	private static final int BEGIN = 0;
+	private static final int END = -64;
+	private HashMap<InetAddress, byte[]> receivedPackets;
 
 	private Transport transportLayer;
 	private GUI gui;
@@ -38,6 +42,7 @@ public class ApplicationLayer implements Application {
 	 */
 	public ApplicationLayer(GUI gui) {
 		this.gui = gui;
+		this.receivedPackets = new HashMap<InetAddress, byte[]>();
 		this.transportLayer = new TimestampTransport(this);
 	}
 
@@ -58,7 +63,11 @@ public class ApplicationLayer implements Application {
 	public void send(InetAddress dest, Object input) {
 		byte[] sender = null;
 		try {
-			sender = InetAddress.getLocalHost().getAddress();
+			if (dest != null) {
+				sender = dest.getAddress();
+			} else {
+				sender = InetAddress.getLocalHost().getAddress();
+			}
 		} catch (UnknownHostException e) {
 			System.out.println("Could not get localhost somehow.");
 		}
@@ -69,9 +78,9 @@ public class ApplicationLayer implements Application {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
+		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
 		if (input instanceof String) {
 			transportLayer.send(dest, packet);
-			System.out.println("[AL] Sending: " + Arrays.toString(packet));
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());
@@ -97,7 +106,11 @@ public class ApplicationLayer implements Application {
 	 * @return A packet with all these combined.
 	 */
 	public byte[] generatePacket(byte[] type, byte[] sender, byte[] data) {
-		return merge(type, merge(sender, data));
+		return merge(
+				new byte[] { BEGIN, BEGIN, BEGIN, BEGIN },
+				merge(type,
+						merge(sender,
+								merge(data, new byte[] { END, END, END, END }))));
 	}
 
 	// ---------------//
@@ -114,22 +127,38 @@ public class ApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		System.out.println("[AL] Received: " + Arrays.toString(bytestream));
-		PacketType type = getType(bytestream);
-		switch (type) {
-		case TEXT:
-			gui.sendString(getSender(bytestream), getData(bytestream));
-			break;
-		case FILE:
-			gui.sendString(
-					getSender(bytestream),
-					"René, dinges stuurde net een bestand. Ik kan hem niet doorsturen. FIX JE SHIT D:");
-			break;
-		case UNDEFINED:
-			gui.sendString(getSender(bytestream),
-					"Received a packet from this source with an unknown type, namely: "
-							+ bytestream[0]);
-			break;
+		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
+		System.out.println("Begin: "
+				+ Arrays.toString(Arrays.copyOfRange(bytestream, 0, 4))
+				+ " to: "
+				+ Arrays.toString(new byte[] { BEGIN, BEGIN, BEGIN, BEGIN }));
+		System.out.println("End: "
+				+ Arrays.toString(Arrays.copyOfRange(bytestream,
+						bytestream.length - 4, bytestream.length)) + " to: "
+				+ Arrays.toString(new byte[] { END, END, END, END }));
+		InetAddress sender = packet.getAddress();
+		if (Arrays.equals(Arrays.copyOfRange(bytestream, 0, 4), new byte[] {
+				BEGIN, BEGIN, BEGIN, BEGIN })) {
+			if (Arrays.equals(Arrays.copyOfRange(bytestream,
+					bytestream.length - 4, bytestream.length), new byte[] {
+					END, END, END, END })) {
+				System.out
+						.println("[AL] Detected end of packet. This is a full packet!");
+				gui.sendString(getSender(bytestream), getData(bytestream));
+			} else {
+				System.out.println("[AL] Detected begin of packet.");
+				receivedPackets.put(sender, bytestream);
+			}
+		} else if (Arrays.equals(Arrays.copyOfRange(bytestream,
+				bytestream.length - 4, bytestream.length), new byte[] { END,
+				END, END, END })) {
+			System.out.println("[AL] Detected end of a splitted packet.");
+			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
+			gui.sendString(getSender(fullPacket), getData(fullPacket));
+		} else {
+			System.out.println("[AL] Detected no beginning nor end.");
+			byte[] fullPacket = merge(receivedPackets.get(sender), bytestream);
+			receivedPackets.put(sender, fullPacket);
 		}
 	}
 
@@ -141,7 +170,7 @@ public class ApplicationLayer implements Application {
 	 * @return What type this packet is.
 	 */
 	public PacketType getType(byte[] bytestream) {
-		int packetByte = bytestream[0];
+		int packetByte = bytestream[4];
 		if (packetByte == 0) {
 			return PacketType.TEXT;
 		} else if (packetByte == 1) {
@@ -160,8 +189,8 @@ public class ApplicationLayer implements Application {
 	 * @return The sender of the packet as String.
 	 */
 	public String getSender(byte[] bytestream) {
-		return bytestream[1] + "." + bytestream[2] + "." + bytestream[3] + "."
-				+ bytestream[4];
+		return bytestream[5] + "." + bytestream[6] + "." + bytestream[7] + "."
+				+ bytestream[8];
 	}
 
 	/**
@@ -177,8 +206,8 @@ public class ApplicationLayer implements Application {
 	public String getData(byte[] bytestream) {
 		String dinges = "";
 		try {
-			dinges = new String(Arrays.copyOfRange(bytestream, 5,
-					bytestream.length), ENCODING);
+			dinges = new String(Arrays.copyOfRange(bytestream, 9,
+					bytestream.length - 4), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");

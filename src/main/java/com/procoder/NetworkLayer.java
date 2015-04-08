@@ -1,10 +1,15 @@
 package com.procoder;
 
-import com.procoder.transport.Transport;
-
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.util.Arrays;
+import java.util.Enumeration;
+
+import com.procoder.transport.Transport;
 
 public class NetworkLayer implements Network {
 	// TODO routing tables
@@ -21,8 +26,20 @@ public class NetworkLayer implements Network {
 			socket = new MulticastSocket(PORT);
 			socket.setTimeToLive(TTL);
 			multicast = InetAddress.getByName("228.0.0.0");
-			NetworkInterface iface = NetworkInterface.getByName("wlan0");
-			socket.joinGroup(new InetSocketAddress(multicast, PORT), iface);
+			NetworkInterface netIf = NetworkInterface.getByIndex(0);
+			loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+					.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+				NetworkInterface iface = ifaces.nextElement();
+				for (Enumeration<InetAddress> addresses = iface
+						.getInetAddresses(); addresses.hasMoreElements();) {
+					InetAddress address = addresses.nextElement();
+					if (address.getHostName().startsWith("192.168.5.")) {
+						netIf = iface;
+						break loop;
+					}
+				}
+			}
+			socket.joinGroup(new InetSocketAddress(multicast, PORT), netIf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -34,9 +51,16 @@ public class NetworkLayer implements Network {
 		byte[] packetData = new byte[data.length + 1];
 		packetData[0] = TTL;
 		System.arraycopy(data, 0, packetData, 1, data.length);
-		System.out.println("[NL] Sending: " + Arrays.toString(packetData));
-		DatagramPacket packet = new DatagramPacket(packetData,
-				packetData.length, multicast, PORT);
+		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
+		System.out.println();
+		DatagramPacket packet;
+		if (dest == null) {
+			packet = new DatagramPacket(packetData, packetData.length,
+					multicast, PORT);
+		} else {
+			packet = new DatagramPacket(packetData, packetData.length, dest,
+					PORT);
+		}
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
@@ -56,7 +80,7 @@ public class NetworkLayer implements Network {
 			}
 			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
 					packet.getLength());
-			System.out.println("[NL] Received: " + Arrays.toString(data));
+			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
 			packet.setData(data, 0, data.length);
 			if (--data[0] > 0) {
 				try {

@@ -29,6 +29,7 @@ public class ChatPane extends Pane {
         //main.setPadding(padding);
         main.getChildren().addAll(leftBox, rightBox);
         this.getChildren().add(main);
+
     }
 
 
