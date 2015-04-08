@@ -11,6 +11,7 @@ import com.procoder.transport.Transport;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -111,7 +112,8 @@ public class ApplicationLayer implements Application {
 	 *            The packet to be sent.
 	 */
 	@Override
-	public void processPacket(byte[] bytestream) {
+	public void processPacket(DatagramPacket packet) {
+		byte[] bytestream = packet.getData();
 		System.out.println("[AL] Received: " + Arrays.toString(bytestream));
 		PacketType type = getType(bytestream);
 		switch (type) {
