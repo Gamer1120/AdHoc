@@ -9,17 +9,27 @@ class TransportSegment {
 
     long timeStamp;
     Byte[] data;
+    byte flags;
 
     TransportSegment(Byte[] data) {
 
         timeStamp = System.currentTimeMillis();
         this.data = data;
+        flags = 0;
 
     }
 
     private TransportSegment(Byte[] data, long timeStamp) {
         this.timeStamp = timeStamp;
         this.data = data;
+    }
+
+    boolean isDiscover() {
+        return false;
+    }
+
+    void setDiscover() {
+
     }
 
     byte[] toByteArray() {
