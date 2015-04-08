@@ -1,11 +1,7 @@
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class TimestampTransport implements Transport {
@@ -75,13 +71,14 @@ public class TimestampTransport implements Transport {
 
             List<Byte> data = new LinkedList<>();
 
+            Iterator<Byte> it = entry.getValue().iterator();
 
-            // TODO Check for packet size
-
-            for(byte b : entry.getValue()) {
-                data.add(b);
+            while (it.hasNext() && data.size() < 1400) {
+                // Add byte to data to be sent
+                data.add(it.next());
+                // This data will be sent, so it can be removed from the queue
+                it.remove();
             }
-
 
             networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
 
