@@ -3,7 +3,10 @@ package com.procoder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -65,7 +68,8 @@ public class GUI extends JFrame {
         commandField.setFocusable(true);
         commandField.requestFocus();
 		commandField.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent evt) {
+            @Override
+			public void keyPressed(KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
                     //System.out.println("Pressed");
                     sendMsg();
@@ -78,7 +82,8 @@ public class GUI extends JFrame {
 		 * genotifyt
 		 */
         sentCommandButton.addMouseListener(new MouseAdapter(){
-            public void mouseClicked(MouseEvent e){
+            @Override
+			public void mouseClicked(MouseEvent e){
                 synchronized(self){
                     sendMsg();
                 }
@@ -149,7 +154,7 @@ public class GUI extends JFrame {
             sendString(name, command);
             commandField.setText("");
             try {
-				applicationLayer.send(InetAddress.getLocalHost(), command);
+				applicationLayer.send(InetAddress.getByName(des), command);
 			} catch (UnknownHostException e) {
 				// TODO Betere error-handling
 				e.printStackTrace();
