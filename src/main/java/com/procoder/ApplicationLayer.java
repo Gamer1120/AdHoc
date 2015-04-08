@@ -8,6 +8,7 @@ import com.procoder.transport.Transport;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -17,6 +18,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class ApplicationLayer implements Application {
+
+	private static final String ENCODING = "UTF-8";
 
 	private Transport transportLayer;
 	private GUI gui;
@@ -59,10 +62,15 @@ public class ApplicationLayer implements Application {
 			System.out.println("Could not get localhost somehow.");
 		}
 		if (input instanceof String) {
-			transportLayer.send(
-					dest,
-					generatePacket(new byte[] { 0 }, sender,
-							((String) input).getBytes()));
+			try {
+				transportLayer.send(
+						dest,
+						generatePacket(new byte[] { 0 }, sender,
+								((String) input).getBytes(ENCODING)));
+			} catch (UnsupportedEncodingException e) {
+				System.out.println(ENCODING
+						+ " is not supported on this system.");
+			}
 
 		} else if (input instanceof File) {
 			Path path = Paths.get(((File) input).getAbsolutePath());
@@ -162,10 +170,19 @@ public class ApplicationLayer implements Application {
 	 * @param bytestream
 	 *            Said packet.
 	 * @return The text in that packet.
+	 * @throws UnsupportedEncodingException
 	 */
 	public String getData(byte[] bytestream) {
-		return Arrays.toString(Arrays.copyOfRange(bytestream, 5,
-				bytestream.length - 1));
+		String dinges = "";
+		try {
+			dinges = new String(Arrays.copyOfRange(bytestream, 5,
+					bytestream.length - 1), ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			System.out.println(ENCODING
+					+ " is not supported on this system. CRASHING...");
+			e.printStackTrace();
+		}
+		return dinges;
 	}
 
 	// --------------- //
