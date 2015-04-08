@@ -67,6 +67,8 @@ public class TimestampTransport implements Transport {
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
         packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
 
+        app.processPacket(packet);
+
 
 
 
