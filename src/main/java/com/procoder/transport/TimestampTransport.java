@@ -3,7 +3,7 @@ package com.procoder.transport;
 import com.procoder.Application;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
-import com.procoder.util.AirKont;
+import com.procoder.util.ArrayUtils;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -83,7 +83,7 @@ public class TimestampTransport implements Transport {
             disco.addHost(packet.getAddress());
             System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
-            packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
+            packet.setData(ArrayUtils.toPrimitiveArray(receivedSegment.data));
             app.processPacket(packet);
         }
 

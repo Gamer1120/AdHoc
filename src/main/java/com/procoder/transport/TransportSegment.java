@@ -1,11 +1,16 @@
 package com.procoder.transport;
 
-import com.procoder.util.AirKont;
+import com.procoder.util.ArrayUtils;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 class TransportSegment {
+
+    public static final byte SEQ_FLAG = (byte) 0B10000000;
+    public static final byte ACK_FLAG = (byte) 0B01000000;
+    public static final byte DIS_FLAG = (byte) 0B00100000;
+    public static final byte SYN_FLAG = (byte) 0B00010000;
 
     int seq;
     int ack;
@@ -13,7 +18,12 @@ class TransportSegment {
     //|SEQ 1bit|ACK 1bit|DISCOVERY 1bit|SYN 1bit|
     byte flags;
 
-    public TransportSegment(Byte[] data) {
+    public TransportSegment(Byte[] data, int seq) {
+        this(data);
+        setSeq(seq);
+    }
+
+    private TransportSegment(Byte[] data) {
         this.data = data;
         flags = 0;
 
@@ -27,15 +37,24 @@ class TransportSegment {
     }
 
     public boolean isDiscover() {
-        return (flags & 0B001) != 0;
+        return (flags & DIS_FLAG) != 0;
+    }
+
+    public boolean validSeq() {
+        return (flags & SEQ_FLAG) != 0;
     }
 
     private void setDiscover() {
-        flags = (byte) (flags | 0B001);
+        flags = (byte) (flags | DIS_FLAG);
+    }
+
+    private void setSeq(int seq) {
+        this.seq = seq;
+        flags = (byte) (flags | SEQ_FLAG);
     }
 
     public byte[] toByteArray() {
-        byte[] primBytes = AirKont.toPrimitiveArray(data);
+        byte[] primBytes = ArrayUtils.toPrimitiveArray(data);
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
         System.out.println("[TL] original data: " + Arrays.toString(primBytes));
@@ -64,7 +83,7 @@ class TransportSegment {
             actualData[i] = buf.get();
         }
 
-        return new TransportSegment(AirKont.toObjectArray(actualData),flags,  seq, ack);
+        return new TransportSegment(ArrayUtils.toObjectArray(actualData),flags,  seq, ack);
 
 
 

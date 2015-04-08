@@ -14,6 +14,7 @@ public class TransportConnection {
     private Queue<TransportSegment> unAckedSegments;
     private Queue<Byte> sendQueue;
     private Network networkLayer;
+    private int seq;
 
 
 // --------------------- Constructors -------------------
@@ -23,6 +24,7 @@ public class TransportConnection {
         unAckedSegments = new LinkedList<>();
         sendQueue = new LinkedList<>();
         this.networkLayer = networkLayer;
+        seq = new Random().nextInt();
     }
 
 // ----------------------- Queries ----------------------
@@ -47,9 +49,9 @@ public class TransportConnection {
                 // This data will be sent, so it can be removed from the queue
                 it.remove();
             }
-            byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-            System.out.println("[TL] [SND]: " + Arrays.toString(packet));
-            TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]));
+            TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]), seq);
+            seq += data.size();
+            System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
             networkLayer.send(receivingHost, segment.toByteArray());
 
 

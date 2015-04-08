@@ -1,6 +1,6 @@
 package com.procoder.util;
 
-public class AirKont {
+public class ArrayUtils {
 
     public static Byte[] toObjectArray(byte[] arr) {
         Byte[] result = new Byte[arr.length];
