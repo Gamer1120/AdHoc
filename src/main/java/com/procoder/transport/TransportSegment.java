@@ -44,6 +44,10 @@ class TransportSegment {
         return (flags & SEQ_FLAG) != 0;
     }
 
+    public boolean validAck() {
+        return (flags & ACK_FLAG) != 0;
+    }
+
     private void setDiscover() {
         flags = (byte) (flags | DIS_FLAG);
     }
@@ -52,6 +56,21 @@ class TransportSegment {
         this.seq = seq;
         flags = (byte) (flags | SEQ_FLAG);
     }
+
+    public void setAck(int ack) {
+        this.ack = ack;
+        flags = (byte) (flags | ACK_FLAG);
+    }
+
+    public void setSyn() {
+        flags = (byte) (flags | SYN_FLAG);
+    }
+
+    public boolean isSyn() {
+        return (flags & SYN_FLAG) != 0;
+    }
+
+
 
     public byte[] toByteArray() {
         byte[] primBytes = ArrayUtils.toPrimitiveArray(data);

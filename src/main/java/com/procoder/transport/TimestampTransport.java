@@ -3,11 +3,12 @@ package com.procoder.transport;
 import com.procoder.Application;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
-import com.procoder.util.ArrayUtils;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class TimestampTransport implements Transport {
@@ -46,7 +47,7 @@ public class TimestampTransport implements Transport {
     private TransportConnection findConnection(InetAddress host) {
 
         // De connectie is misschien nog niet opgezet
-        TransportConnection result = connections.getOrDefault(host, new TransportConnection(host, networkLayer));
+        TransportConnection result = connections.getOrDefault(host, new TransportConnection(host, networkLayer, app));
         // Voeg de connectie toe aan de lijst (voor het geval het er nog niet in zat)
         connections.put(host, result);
         return result;
@@ -83,8 +84,11 @@ public class TimestampTransport implements Transport {
             disco.addHost(packet.getAddress());
             System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
-            packet.setData(ArrayUtils.toPrimitiveArray(receivedSegment.data));
-            app.processPacket(packet);
+            TransportConnection connection = connections.get(packet.getAddress());
+
+            if (connection != null) {
+                connection.receiveData(receivedSegment);
+            }
         }
 
 
