@@ -43,7 +43,7 @@ import com.procoder.LongApplicationLayer;
 @SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private VBox side;
     private BorderPane mainPane;
@@ -374,7 +374,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
 
     public void setInactive(InetAddress inactive) {
-        getIdLabel(inactive).setActive(false);
+        IdLabel l = getIdLabel(inactive);
+        if(l!=null) {
+            getIdLabel(inactive).setActive(false);
+        }
     }
 
 
@@ -388,7 +391,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     }
 
     public void setActive(InetAddress active) {
-        getIdLabel(active).setActive(true);
+        IdLabel l = getIdLabel(active);
+        if(l!=null) {
+            getIdLabel(active).setActive(true);
+        }
+        //getIdLabel(active).setActive(true);
     }
 
     public static void main(String[] args){
