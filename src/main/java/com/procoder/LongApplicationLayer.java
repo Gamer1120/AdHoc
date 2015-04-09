@@ -138,6 +138,7 @@ public class LongApplicationLayer implements Application {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
+		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		InetAddress sender = packet.getAddress();
 		Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
 		savedQueues = savedQueues == null ? new Queues() : savedQueues;
