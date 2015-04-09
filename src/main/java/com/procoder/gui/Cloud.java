@@ -13,6 +13,7 @@ import javafx.scene.shape.Polygon;
 /**
  * Created by reneb_000 on 8-4-2015.
  */
+@SuppressWarnings("restriction")
 public class Cloud extends BorderPane {
 
     private double widht = 300;

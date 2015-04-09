@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 /**
  * Created by reneb_000 on 7-4-2015.
  */
+@SuppressWarnings("restriction")
 public class IdLabel extends BorderPane {
 
     private double widht = 300;

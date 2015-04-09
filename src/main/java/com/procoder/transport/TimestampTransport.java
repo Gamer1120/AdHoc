@@ -2,7 +2,6 @@ package com.procoder.transport;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,30 +66,22 @@ public class TimestampTransport implements Transport {
                 connection.sendByte(b);
             }
         }
-
         processSendQueue();
-
     }
 
     @Override
     public void processPacket(DatagramPacket packet) {
         byte[] data = packet.getData();
 
-        System.out.println("[TL] [RCD]: " + Arrays.toString(data));
-
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());
-            System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
             TransportConnection connection = findConnection(packet.getAddress());
 
             connection.receiveData(receivedSegment);
         }
-
-
-
     }
 
     @Override
@@ -99,11 +90,6 @@ public class TimestampTransport implements Transport {
     }
 
     public void processSendQueue() {
-
         connections.values().forEach(TransportConnection::processSendQueue);
-
     }
-
-
-
 }

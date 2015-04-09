@@ -55,10 +55,7 @@ public class NetworkLayer implements Network {
 		System.arraycopy(sourceAddress, 0, packetData, 1, IPLENGTH);
 		System.arraycopy(destAddress, 0, packetData, 1 + IPLENGTH, IPLENGTH);
 		System.arraycopy(data, 0, packetData, HEADER, data.length);
-		System.out.println("[NL] [SND]: " + Arrays.toString(packetData));
-		System.out.println();
 
-		// TODO: dest moet mogelijk nog steeds multicast zijn inplaats van ip
 		DatagramPacket packet = new DatagramPacket(packetData,
 				packetData.length, dest, PORT);
 		try {
@@ -100,7 +97,6 @@ public class NetworkLayer implements Network {
 
 			byte[] data = Arrays.copyOfRange(packet.getData(), 0,
 					packet.getLength());
-			System.out.println("[NL] [RCD]: " + Arrays.toString(data));
 			byte ttl = data[0];
 
 			InetAddress src = null;

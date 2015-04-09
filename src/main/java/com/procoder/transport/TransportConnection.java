@@ -1,17 +1,20 @@
 package com.procoder.transport;
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+
 import com.procoder.AdhocApplication;
 import com.procoder.Network;
 import com.procoder.util.ArrayUtils;
 
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.util.*;
-
 public class TransportConnection {
 
 // ------------------ Instance variables ----------------
-
 
     private InetAddress receivingHost;
     private Queue<TransportSegment> unAckedSegments;
@@ -23,9 +26,6 @@ public class TransportConnection {
     private int nextAck;
     private boolean established;
     private boolean synReceived;
-
-
-
 
 // --------------------- Constructors -------------------
 
@@ -51,8 +51,6 @@ public class TransportConnection {
 
     public void processSendQueue() {
 
-
-
         List<Byte> data = new LinkedList<>();
 
         Iterator<Byte> it = sendQueue.iterator();
@@ -74,28 +72,22 @@ public class TransportConnection {
                 segment.setAck(nextAck);
             }
             seq += data.size();
-            System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
-            networkLayer.send(receivingHost, segment.toByteArray());
 
+            networkLayer.send(receivingHost, segment.toByteArray());
 
             // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
             unAckedSegments.add(segment);
             data.clear();
-
         }
     }
 
     public void receiveData(TransportSegment segment) {
-
-        System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
-
         if(!synReceived) {
             synReceived = segment.isSyn();
             nextAck = segment.seq;
         }
 
         // Dit werkt nog niet voor out of order data
-
         if(synReceived) {
             if(segment.validSeq()) {
                 for(byte b : segment.data) {
@@ -113,12 +105,5 @@ public class TransportConnection {
                 }
             }
         }
-
-
-
-
-
-
     }
-
 }

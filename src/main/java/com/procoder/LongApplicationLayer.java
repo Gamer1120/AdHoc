@@ -30,6 +30,7 @@ import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
 import com.procoder.util.ArrayUtils;
 
+@SuppressWarnings("restriction")
 public class LongApplicationLayer implements AdhocApplication {
 
 	private static final String ENCODING = "UTF-8";
@@ -77,18 +78,17 @@ public class LongApplicationLayer implements AdhocApplication {
 				sender = InetAddress.getLocalHost().getAddress();
 			}
 		} catch (UnknownHostException e) {
-			System.out.println("Could not get localhost somehow.");
+			e.printStackTrace();
 		}
+
 		byte[] packet = null;
 		try {
 			packet = generatePacket(new byte[] { 0 }, sender,
 					input.getBytes(ENCODING));
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
-		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
 		transportLayer.send(dest, packet);
-
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class LongApplicationLayer implements AdhocApplication {
 				sender = InetAddress.getLocalHost().getAddress();
 			}
 		} catch (UnknownHostException e) {
-			System.out.println("Could not get localhost somehow.");
+			e.printStackTrace();
 		}
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
@@ -109,10 +109,8 @@ public class LongApplicationLayer implements AdhocApplication {
 			packet = generatePacket(new byte[] { 1 }, sender,
 					Files.readAllBytes(path));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
 		transportLayer.send(dest, packet);
 	}
 
@@ -159,27 +157,31 @@ public class LongApplicationLayer implements AdhocApplication {
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
-		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		InetAddress sender = packet.getAddress();
 		Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
 		savedQueues = savedQueues == null ? new Queues() : savedQueues;
 		receivedPackets.put(sender, savedQueues);
+
 		// Add all bytes from this message to incoming.
 		for (byte b : bytestream) {
 			savedQueues.incoming.add(b);
 		}
+
 		if (savedQueues.remaining == 0
 				&& savedQueues.incoming.size() >= Long.BYTES) {
+
 			// Get the length of the message
 			ByteBuffer buf = ByteBuffer.wrap(ArrayUtils
 					.toPrimitiveArray(savedQueues.incoming
 							.toArray(new Byte[savedQueues.incoming.size()])));
 			savedQueues.remaining = buf.getLong();
+
 			// Remove the length from the message
 			for (int i = 0; i < Long.BYTES; i++) {
 				savedQueues.incoming.remove();
 			}
 		}
+
 		if (savedQueues.remaining != 0) {
 			while (savedQueues.remaining != 0
 					&& savedQueues.incoming.size() > 0) {
@@ -192,6 +194,7 @@ public class LongApplicationLayer implements AdhocApplication {
 				byte[] message = ArrayUtils
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
+
 				PacketType type = getType(message);
 				switch (type) {
 				case TEXT:
@@ -271,8 +274,6 @@ public class LongApplicationLayer implements AdhocApplication {
 			data = new String(Arrays.copyOfRange(bytestream, 5,
 					bytestream.length), ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			System.out.println(ENCODING
-					+ " is not supported on this system. CRASHING...");
 			e.printStackTrace();
 		}
 		return data;

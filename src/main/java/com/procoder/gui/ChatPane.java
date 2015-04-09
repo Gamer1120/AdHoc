@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 /**
  * Created by reneb_000 on 8-4-2015.
  */
+@SuppressWarnings("restriction")
 public class ChatPane extends GridPane {
 
 

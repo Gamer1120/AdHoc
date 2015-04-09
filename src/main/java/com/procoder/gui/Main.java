@@ -117,7 +117,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             public void handle(KeyEvent event) {
                 if(event.getCode()==KeyCode.SPACE){
                     scrollPane.setVvalue(scrollPane.getVmax());
-                    System.out.println("SCROLLED");
                 }
             }
         });
@@ -303,7 +302,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                     e.printStackTrace();
                 }
                 Platform.runLater(() ->scrollPane.setVvalue(scrollPane.getVmax()));
-                //System.out.println("WAITED");
                 return null;
             }
         });

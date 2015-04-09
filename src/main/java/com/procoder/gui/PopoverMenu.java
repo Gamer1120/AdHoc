@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox;
 /**
  * Created by reneb_000 on 9-4-2015.
  */
+@SuppressWarnings("restriction")
 public class PopoverMenu extends VBox {
 
     private Button uploadButton;

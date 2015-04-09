@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 /**
  * Created by reneb_000 on 7-4-2015.
  */
+@SuppressWarnings("restriction")
 public class ChatLabel extends Label {
 
     private double widht = 300;
