@@ -115,6 +115,9 @@ public class TransportConnection {
             }
         }*/
 
+        for(byte b : segment.data) {
+            receiveQueue.add(b);
+        }
         byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
         DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
         adhocApplication.processPacket(packet);

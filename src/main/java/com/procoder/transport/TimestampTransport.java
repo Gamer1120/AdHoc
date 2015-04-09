@@ -84,11 +84,9 @@ public class TimestampTransport implements Transport {
             disco.addHost(packet.getAddress());
             System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
-            TransportConnection connection = connections.get(packet.getAddress());
+            TransportConnection connection = findConnection(packet.getAddress());
 
-            if (connection != null) {
-                connection.receiveData(receivedSegment);
-            }
+            connection.receiveData(receivedSegment);
         }
 
 
