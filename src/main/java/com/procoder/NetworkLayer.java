@@ -31,8 +31,8 @@ public class NetworkLayer implements Network {
 			socket = new MulticastSocket(PORT);
 			source = InetAddress.getLocalHost();
 			multicast = InetAddress.getByName("228.0.0.0");
-			NetworkInterface netIf = detectNetwork();
-			socket.joinGroup(new InetSocketAddress(multicast, PORT), netIf);
+			socket.joinGroup(new InetSocketAddress(multicast, PORT),
+					detectNetwork());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -117,7 +117,7 @@ public class NetworkLayer implements Network {
 
 			// FIXME
 			if (/* !source.equals(src) && */
-					(multicast.equals(dest) || source.equals(dest))) {
+			(multicast.equals(dest) || source.equals(dest))) {
 				packet.setData(data);
 				transportLayer.processPacket(packet);
 			}
