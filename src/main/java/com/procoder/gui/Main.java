@@ -65,7 +65,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private PopOver popover;
     private PopoverMenu popoverMenu;
 
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("AWESOME ADHOC");
@@ -140,6 +139,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         popover = new PopOver(popoverMenu);
         //popover.setHideOnEscape(true);
         popover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
+
 
 
         text.requestFocus();
@@ -317,14 +317,20 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             addMsg(text.getText());
         }else if(event.getSource().equals(optionButton)){
             //TODO
+            if(popover.isShowing()){
+                popover.hide();
+            }else{
+                popover.show(optionButton);
+            }
 
-            popover.show(optionButton);
         }else if(event.getSource().equals(popoverMenu.getUploadButton())){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
             File file = fileChooser.showOpenDialog(new Stage());
             //Image image = new Image(file.toURI().toString());
-            sendImage(file);
+            if(file!=null) {
+                sendImage(file);
+            }
             popover.hide();
         }
     }
