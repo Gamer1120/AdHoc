@@ -57,8 +57,6 @@ public class TransportConnection {
 
         Iterator<Byte> it = sendQueue.iterator();
 
-        //TODO Waarschijnlijk oneindige loep als bericht langer dan 1400 tekens.
-
         while (it.hasNext()) {
 
             while (it.hasNext() && data.size() < 1400) {
@@ -82,6 +80,7 @@ public class TransportConnection {
 
             // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
             unAckedSegments.add(segment);
+            data.clear();
 
         }
     }
