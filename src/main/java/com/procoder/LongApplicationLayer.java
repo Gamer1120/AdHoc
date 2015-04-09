@@ -6,6 +6,7 @@ package com.procoder;
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter Timmermans s1004751, René Boschma s???
  */
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,6 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javafx.scene.image.Image;
 
 import com.procoder.gui.Main;
 import com.procoder.transport.HostList;
@@ -87,8 +90,6 @@ public class LongApplicationLayer implements AdhocApplication {
 		transportLayer.send(dest, packet);
 
 	}
-	
-	
 
 	@Override
 	public void send(InetAddress dest, File input) {
@@ -197,7 +198,9 @@ public class LongApplicationLayer implements AdhocApplication {
 					gui.processString(getSender(message), getData(message));
 					break;
 				case FILE:
-					// FIXME
+					ByteArrayInputStream in = new ByteArrayInputStream(
+							Arrays.copyOfRange(message, 5, message.length));
+					gui.processImage(getSender(message), new Image(in));
 					break;
 				case UNDEFINED:
 					System.out
