@@ -176,7 +176,19 @@ public class LongApplicationLayer implements AdhocApplication {
 				byte[] message = ArrayUtils
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
-				gui.sendString(getSender(message), getData(message));
+				PacketType type = getType(message);
+				switch (type){
+				case TEXT:
+					gui.sendString(getSender(message), getData(message));
+					break;
+				case FILE:
+					//FIXME
+					break;
+				case UNDEFINED:
+					System.out.println("Just received a packet with an undefined type, namely " + message[0]);
+					break;
+				}
+				
 				savedQueues.message = new LinkedList<Byte>();
 			}
 		}
@@ -220,8 +232,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return The sender of the packet as String.
 	 */
 	public String getSender(byte[] bytestream) {
-		return bytestream[1] + "." + bytestream[2]
-				+ "." + bytestream[3] + "."
+		return bytestream[1] + "." + bytestream[2] + "." + bytestream[3] + "."
 				+ bytestream[4];
 	}
 
