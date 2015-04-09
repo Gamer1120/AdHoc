@@ -271,23 +271,23 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     @Override
     public void update(Observable o, Object arg) {
-        Set<InetAddress> newAdres = (Set<InetAddress>) arg;
+        Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>)arg);
         Set<InetAddress> copie = new HashSet<InetAddress>();
         copie.addAll(knownAdresses);
 
-        copie.removeAll(newAdres);
+        copie.removeAll(newAdress);
         for(InetAddress a:copie){
             updateStatus(a, false);
         }
 
         for(InetAddress a:knownAdresses){
-            if(newAdres.contains(a)){
+            if(newAdress.contains(a)){
                 updateStatus(a, true);
             }
         }
 
-        newAdres.removeAll(knownAdresses);
-        for(InetAddress a:newAdres){
+        newAdress.removeAll(knownAdresses);
+        for(InetAddress a:newAdress){
             Platform.runLater(() -> addLabel(a.toString()));
             knownAdresses.add(a);
         }
