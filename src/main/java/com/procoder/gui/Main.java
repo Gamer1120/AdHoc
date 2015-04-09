@@ -81,8 +81,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        sendString("Ikke", "Dit is een test");
-        sendString("Jije", "Dit is er ook nog een");
+        //sendString("Ikke", "Dit is een test");
+        //sendString("Jije", "Dit is er ook nog een");
 
         sender = InetAddress.getLocalHost();
         applicationLayer = new FlagApplicationLayer(this);
@@ -197,11 +197,22 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public void sendString(String user, String msg){
         ChatPane h = (ChatPane) scrollPane.getContent();
-        if(h!=null){
-            h.add(new Cloud(msg, user),true);
-            scrollPane.setVvalue(scrollPane.getVmax());
-            toBottomScroll();
-        }
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(msg, user),true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
     }
 
     private void toBottomScroll(){
