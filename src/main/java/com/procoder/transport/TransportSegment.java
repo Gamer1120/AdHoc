@@ -1,9 +1,9 @@
 package com.procoder.transport;
 
-import com.procoder.util.ArrayUtils;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import com.procoder.util.ArrayUtils;
 
 class TransportSegment {
 

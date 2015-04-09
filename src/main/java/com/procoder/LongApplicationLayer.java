@@ -79,7 +79,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		byte[] packet = null;
 		try {
 			packet = generatePacket(new byte[] { 0 }, sender,
-					((String) input).getBytes(ENCODING));
+					input.getBytes(ENCODING));
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
@@ -102,7 +102,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		} catch (UnknownHostException e) {
 			System.out.println("Could not get localhost somehow.");
 		}
-		Path path = Paths.get(((File) input).getAbsolutePath());
+		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
 			packet = generatePacket(new byte[] { 1 }, sender,
