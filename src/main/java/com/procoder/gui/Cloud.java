@@ -16,7 +16,7 @@ public class Cloud extends BorderPane {
 
     private double widht = 300;
     private double height = 100;
-    private double maxWidth = 200;
+    private double maxWidth = 300;
 
     //true voor bollonnetje voor rechts, false voor ballontje voor links
     public Cloud(String msg, boolean right){

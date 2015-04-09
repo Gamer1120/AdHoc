@@ -1,54 +1,42 @@
 package com.procoder.gui;
 
 import javafx.geometry.Insets;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.*;
 
 /**
  * Created by reneb_000 on 8-4-2015.
  */
-public class ChatPane extends Pane {
+public class ChatPane extends GridPane {
 
-    private VBox rightBox;
-    private VBox leftBox;
-    private Insets padding;
+
+    private int counter;
+    private Insets margin = new Insets(10);
 
     public ChatPane(){
-        rightBox = new VBox();
-        leftBox = new VBox();
-        rightBox.setMinWidth(300);
-        leftBox.setMinWidth(300);
-        padding = new Insets(10,10,10,10);
-        //rightBox.setPadding(padding);
-        //leftBox.setPadding(padding);
-        rightBox.setSpacing(10);
-        leftBox.setSpacing(10);
 
-        HBox main = new HBox();
-        //main.setPadding(padding);
-        main.getChildren().addAll(leftBox, rightBox);
-        this.getChildren().add(main);
+        counter = 0;
+        ColumnConstraints column1 = new ColumnConstraints();
+        ColumnConstraints column2 = new ColumnConstraints();
 
+        column1.setPercentWidth(50);
+        column2.setPercentWidth(50);
+
+        this.getColumnConstraints().addAll(column1, column2);
+        //this.setMar(new Insets(10));
     }
 
 
-    public VBox getRight(){
-        return rightBox;
-    }
-
-    public VBox getLeft(){
-        return leftBox;
-    }
     //true for right false for left
     public void add(Cloud cloud, boolean right){
-        if(right){
-            rightBox.getChildren().add(cloud);
-            leftBox.getChildren().add(cloud.getEmptyCloud());
-        }else {
-            rightBox.getChildren().add(cloud.getEmptyCloud());
-            leftBox.getChildren().add(cloud);
+        if(!right){
+            this.add(cloud, 0, counter);
+        }else{
+            this.add(cloud, 1, counter);
         }
+        counter++;
+        this.setMargin(cloud, margin);
+
     }
 
 

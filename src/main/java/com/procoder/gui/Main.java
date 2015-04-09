@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -53,7 +54,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         setupCenter();
         setupSideBar();
 
-        Scene mainScene = new Scene(mainPane, 900, 900);
+        Scene mainScene = new Scene(mainPane, 1000, 900);
 
         //mainScene.getStylesheets().add("Css.css");
         addLabel("192.168.2.2");
@@ -73,6 +74,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         primaryStage.show();
         sendString("Ikke", "Dit is een test");
         sendString("Jije", "Dit is er ook nog een");
+
     }
 
     private void setupCenter() {
@@ -82,6 +84,16 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setPrefHeight(Double.MAX_VALUE);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
+        //scrollPane.setPrefViewportHeight(500);
+        scrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(event.getCode()==KeyCode.SPACE){
+                    scrollPane.setVvalue(scrollPane.getVmax());
+                    System.out.println("SCROLLED");
+                }
+            }
+        });
 
         commandPanel = new HBox();
         //ipField = new TextField("TODO");
@@ -92,6 +104,23 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             public void handle(KeyEvent event) {
                 if (event.getCode() == KeyCode.ENTER) {
                     addMsg(text.getText());
+                    Thread t = new Thread(new Task(){
+                        @Override
+                        protected Object call() throws Exception {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            Platform.runLater(() ->scrollPane.setVvalue(scrollPane.getVmax()));
+                            //System.out.println("WAITED");
+                            return null;
+                        }
+                    });
+                    t.setDaemon(true);
+                    t.start();
+
+
                 }
             }
         });
@@ -163,9 +192,16 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             if (h != null) {
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
-                scrollPane.setVvalue(1.0);
+                text.setText("");
+                //scrollPane.setVvalue(1.0);
+                //System.out.println(scrollPane.getViewportBounds() + " Heigt of content " + h.getHeight());
+
+
+                //System.out.println(scrollPane.getHeight());
             }
         }
+
+        scrollPane.setVvalue(scrollPane.getVmax());
     }
 
     public void sendString(String user, String msg){
