@@ -96,7 +96,7 @@ public class Cloud extends BorderPane {
 
     public Node getEmptyCloud(){
         Label newLabel = new Label();
-        newLabel.setPrefSize(this.getWidth(), this.getHeight());
+        newLabel.setPrefSize(this.getPrefWidth(), this.getPrefHeight());
         return newLabel;
     }
 

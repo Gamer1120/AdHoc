@@ -40,7 +40,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private TextField text;
     private Insets padding;
     private IdLabel selected;
-    
+
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -223,5 +224,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public void setActive(InetAddress active) {
         getIdLabel(active).setActive(true);
+    }
+
+    public static void main(String[] args){
+        launch();
     }
 }
