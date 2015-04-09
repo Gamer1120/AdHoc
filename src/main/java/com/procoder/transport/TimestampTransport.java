@@ -9,9 +9,7 @@ import com.procoder.AdhocApplication;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
 
-
 public class TimestampTransport implements Transport {
-
 
     // ------------------ Instance variables ----------------
 
@@ -35,7 +33,6 @@ public class TimestampTransport implements Transport {
 
     }
 
-
     // ----------------------- Queries ----------------------
 
     @Override
@@ -46,23 +43,23 @@ public class TimestampTransport implements Transport {
     private TransportConnection findConnection(InetAddress host) {
 
         // De connectie is misschien nog niet opgezet
-        TransportConnection result = connections.getOrDefault(host, new TransportConnection(host, networkLayer, app));
-        // Voeg de connectie toe aan de lijst (voor het geval het er nog niet in zat)
+        TransportConnection result = connections.getOrDefault(host,
+                new TransportConnection(host, networkLayer, app));
+        // Voeg de connectie toe aan de lijst (voor het geval het er nog niet in
+        // zat)
         connections.put(host, result);
         return result;
     }
 
-
     // ----------------------- Commands ---------------------
-
 
     @Override
     public void send(InetAddress dest, byte[] data) {
         // Dest wordt nu genegeerd
-        for(InetAddress host : getKnownHostList().getKnownHosts()) {
+        for (InetAddress host : getKnownHostList().getKnownHosts()) {
             TransportConnection connection = findConnection(host);
 
-            for(byte b : data) {
+            for (byte b : data) {
                 connection.sendByte(b);
             }
         }
@@ -73,7 +70,8 @@ public class TimestampTransport implements Transport {
     public void processPacket(DatagramPacket packet) {
         byte[] data = packet.getData();
 
-        TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
+        TransportSegment receivedSegment = TransportSegment
+                .parseNetworkData(data);
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());
@@ -86,7 +84,8 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void sendDiscovery() {
-        networkLayer.send(null, TransportSegment.genDiscoveryPacket().toByteArray());
+        networkLayer.send(null, TransportSegment.genDiscoveryPacket()
+                .toByteArray());
     }
 
     public void processSendQueue() {

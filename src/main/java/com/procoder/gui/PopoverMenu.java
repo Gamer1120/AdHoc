@@ -13,8 +13,9 @@ public class PopoverMenu extends VBox {
     private Button smileyButton;
 
     private double minWidth = 100;
-    public PopoverMenu(Main main){
-        //this.getChildren().add(new Label("TEST"));
+
+    public PopoverMenu(Main main) {
+        // this.getChildren().add(new Label("TEST"));
         uploadButton = new Button("Upload");
         smileyButton = new Button("Smiley");
         uploadButton.setFocusTraversable(false);
@@ -24,11 +25,10 @@ public class PopoverMenu extends VBox {
 
         this.getChildren().addAll(uploadButton, smileyButton);
 
-
         uploadButton.setOnAction(main);
     }
 
-    public Button getUploadButton(){
+    public Button getUploadButton() {
         return uploadButton;
     }
 }

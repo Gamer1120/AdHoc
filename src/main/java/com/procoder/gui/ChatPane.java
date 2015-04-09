@@ -10,11 +10,10 @@ import javafx.scene.layout.GridPane;
 @SuppressWarnings("restriction")
 public class ChatPane extends GridPane {
 
-
     private int counter;
     private Insets margin = new Insets(10);
 
-    public ChatPane(){
+    public ChatPane() {
 
         counter = 0;
         ColumnConstraints column1 = new ColumnConstraints();
@@ -24,21 +23,19 @@ public class ChatPane extends GridPane {
         column2.setPercentWidth(50);
 
         this.getColumnConstraints().addAll(column1, column2);
-        //this.setMar(new Insets(10));
+        // this.setMar(new Insets(10));
     }
 
-
-    //true for right false for left
-    public void add(Cloud cloud, boolean right){
-        if(!right){
+    // true for right false for left
+    public void add(Cloud cloud, boolean right) {
+        if (!right) {
             this.add(cloud, 0, counter);
-        }else{
+        } else {
             this.add(cloud, 1, counter);
         }
         counter++;
         GridPane.setMargin(cloud, margin);
 
     }
-
 
 }

@@ -1,6 +1,5 @@
 package com.procoder.gui;
 
-
 import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -35,20 +34,20 @@ import org.controlsfx.control.PopOver;
 import com.procoder.AdhocApplication;
 import com.procoder.LongApplicationLayer;
 
-
-
 /**
  * Created by reneb_000 on 7-4-2015.
  */
 @SuppressWarnings("restriction")
-public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
+public class Main extends Application implements
+        EventHandler<javafx.event.ActionEvent>, Observer {
 
     private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
     private BorderPane center;
-    private HBox commandPanel; //onder textfield voor invullen voor tekst en knop om te verzenden
+    private HBox commandPanel; // onder textfield voor invullen voor tekst en
+                               // knop om te verzenden
     private ScrollPane scrollPane;
     private HashMap<IdLabel, ChatPane> chatMap;
     private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
@@ -58,7 +57,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private TextField text;
     private Insets padding;
     private IdLabel selected;
- 
+
     private InetAddress sender;
     private AdhocApplication applicationLayer;
 
@@ -77,11 +76,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         Scene mainScene = new Scene(mainPane, 1000, 900);
 
-        //mainScene.getStylesheets().add("Css.css");
-        //addLabel("192.168.2.2");
+        // mainScene.getStylesheets().add("Css.css");
+        // addLabel("192.168.2.2");
 
-        ChatPane h = (ChatPane)scrollPane.getContent();
-        //h.add(new Cloud("test", false), true);
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        // h.add(new Cloud("test", false), true);
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -91,13 +90,12 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             }
         });
 
-
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        //sendString("Ikke", "Dit is een test");
-        //sendString("Jije", "Dit is er ook nog een");
+        // sendString("Ikke", "Dit is een test");
+        // sendString("Jije", "Dit is er ook nog een");
 
-        if(!DEBUG) {
+        if (!DEBUG) {
             sender = InetAddress.getLocalHost();
             applicationLayer = new LongApplicationLayer(this);
             applicationLayer.getKnownHostList().addObserver(this);
@@ -110,19 +108,20 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane = new ScrollPane();
         scrollPane.setPrefHeight(Double.MAX_VALUE);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
-        //scrollPane.setPrefViewportHeight(500);
+        scrollPane
+                .setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
+        // scrollPane.setPrefViewportHeight(500);
         scrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if(event.getCode()==KeyCode.SPACE){
+                if (event.getCode() == KeyCode.SPACE) {
                     scrollPane.setVvalue(scrollPane.getVmax());
                 }
             }
         });
 
         commandPanel = new HBox();
-        //ipField = new TextField("TODO");
+        // ipField = new TextField("TODO");
         text = new TextField();
         text.setPrefWidth(500);
         text.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -136,16 +135,16 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         popoverMenu = new PopoverMenu(this);
         popover = new PopOver(popoverMenu);
-        //popover.setHideOnEscape(true);
-        popover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
-
-
+        // popover.setHideOnEscape(true);
+        popover.arrowLocationProperty().setValue(
+                PopOver.ArrowLocation.BOTTOM_CENTER);
 
         text.requestFocus();
         sendButton = new Button("Send");
 
         ImageView v = new ImageView();
-        Image i = new Image(this.getClass().getClassLoader().getResourceAsStream("gear.png"));
+        Image i = new Image(this.getClass().getClassLoader()
+                .getResourceAsStream("gear.png"));
         v.setImage(i);
         optionButton = new Button("", v);
         optionButton.setOnAction(this);
@@ -165,10 +164,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         addAllChat();
         mainPane.setLeft(side);
 
-
     }
 
-    public void addAllChat(){
+    public void addAllChat() {
         IdLabel newLabel = new IdLabel("AllChat");
         newLabel.setSelected(true);
         selected = newLabel;
@@ -185,7 +183,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setContent(chatPane);
     }
 
-    public void addLabel(String name){
+    public void addLabel(String name) {
         IdLabel newLabel = new IdLabel(name);
         side.getChildren().add(newLabel);
         ChatPane chatPane = new ChatPane();
@@ -198,7 +196,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
     }
 
-    private void idLabelClick(MouseEvent event){
+    private void idLabelClick(MouseEvent event) {
         if (selected != null) {
             selected.setSelected(false);
         }
@@ -207,15 +205,15 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         selected.setSelected(true);
     }
 
-    public void addMsg(String msg){
-        //drawPane.getChildren().add(new Label(msg));
-        if(!msg.isEmpty()) {
+    public void addMsg(String msg) {
+        // drawPane.getChildren().add(new Label(msg));
+        if (!msg.isEmpty()) {
             ChatPane h = (ChatPane) scrollPane.getContent();
             if (h != null) {
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
                 text.setText("");
-                if(!DEBUG) {
+                if (!DEBUG) {
                     applicationLayer.send(sender, msg);
                 }
             }
@@ -224,14 +222,15 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setVvalue(scrollPane.getVmax());
     }
 
-    public void processString(String user, String msg){
+    public void processString(String user, String msg) {
         ChatPane h = (ChatPane) scrollPane.getContent();
-        Thread t = new Thread(new Task(){
+        Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
                 Platform.runLater(new Runnable() {
-                    @Override public void run() {
-                        if(h!=null){
+                    @Override
+                    public void run() {
+                        if (h != null) {
                             h.add(new Cloud(msg, user), true);
                         }
                     }
@@ -244,18 +243,19 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    public void processFile(String user, File file){
-        //TODO
+    public void processFile(String user, File file) {
+        // TODO
     }
 
-    public void processImage(String user, Image img){
+    public void processImage(String user, Image img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
-        Thread t = new Thread(new Task(){
+        Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
                 Platform.runLater(new Runnable() {
-                    @Override public void run() {
-                        if(h!=null){
+                    @Override
+                    public void run() {
+                        if (h != null) {
                             h.add(new Cloud(img, user), true);
                         }
                     }
@@ -270,13 +270,15 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     private void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
-        Thread t = new Thread(new Task(){
+        Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
                 Platform.runLater(new Runnable() {
-                    @Override public void run() {
-                        if(h!=null){
-                            h.add(new Cloud(new Image(img.toURI().toString())), false);
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new Cloud(new Image(img.toURI().toString())),
+                                    false);
                         }
                     }
                 });
@@ -287,13 +289,13 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.start();
         toBottomScroll();
 
-        if(!DEBUG){
+        if (!DEBUG) {
             applicationLayer.send(selected.getInetAdress(), img);
         }
     }
 
-    private void toBottomScroll(){
-        Thread t = new Thread(new Task(){
+    private void toBottomScroll() {
+        Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
                 try {
@@ -301,7 +303,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Platform.runLater(() ->scrollPane.setVvalue(scrollPane.getVmax()));
+                Platform.runLater(() -> scrollPane.setVvalue(scrollPane
+                        .getVmax()));
                 return null;
             }
         });
@@ -311,22 +314,22 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     @Override
     public void handle(javafx.event.ActionEvent event) {
-        if(event.getSource().equals(sendButton)){
+        if (event.getSource().equals(sendButton)) {
             addMsg(text.getText());
-        }else if(event.getSource().equals(optionButton)){
-            //TODO
-            if(popover.isShowing()){
+        } else if (event.getSource().equals(optionButton)) {
+            // TODO
+            if (popover.isShowing()) {
                 popover.hide();
-            }else{
+            } else {
                 popover.show(optionButton);
             }
 
-        }else if(event.getSource().equals(popoverMenu.getUploadButton())){
+        } else if (event.getSource().equals(popoverMenu.getUploadButton())) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
             File file = fileChooser.showOpenDialog(new Stage());
-            //Image image = new Image(file.toURI().toString());
-            if(file!=null) {
+            // Image image = new Image(file.toURI().toString());
+            if (file != null) {
                 sendImage(file);
             }
             popover.hide();
@@ -335,23 +338,23 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     @Override
     public void update(Observable o, Object arg) {
-        Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>)arg);
+        Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
         Set<InetAddress> copie = new HashSet<InetAddress>();
         copie.addAll(knownAdresses);
 
         copie.removeAll(newAdress);
-        for(InetAddress a:copie){
+        for (InetAddress a : copie) {
             updateStatus(a, false);
         }
 
-        for(InetAddress a:knownAdresses){
-            if(newAdress.contains(a)){
+        for (InetAddress a : knownAdresses) {
+            if (newAdress.contains(a)) {
                 updateStatus(a, true);
             }
         }
 
         newAdress.removeAll(knownAdresses);
-        for(InetAddress a:newAdress){
+        for (InetAddress a : newAdress) {
             Platform.runLater(() -> addLabel(a.toString()));
 
             knownAdresses.add(a);
@@ -361,7 +364,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public void updateStatus(InetAddress address, boolean active) {
         Platform.runLater(() -> {
-            if(active) {
+            if (active) {
                 setActive(address);
             } else {
                 setInactive(address);
@@ -370,18 +373,16 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     }
 
-
     public void setInactive(InetAddress inactive) {
         IdLabel l = getIdLabel(inactive);
-        if(l!=null) {
+        if (l != null) {
             getIdLabel(inactive).setActive(false);
         }
     }
 
-
-    private IdLabel getIdLabel(InetAddress a){
-        for(IdLabel i:chatMap.keySet()){
-            if(i.getAdress().equals(a.getHostName())){
+    private IdLabel getIdLabel(InetAddress a) {
+        for (IdLabel i : chatMap.keySet()) {
+            if (i.getAdress().equals(a.getHostName())) {
                 return i;
             }
         }
@@ -390,13 +391,13 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public void setActive(InetAddress active) {
         IdLabel l = getIdLabel(active);
-        if(l!=null) {
+        if (l != null) {
             getIdLabel(active).setActive(true);
         }
-        //getIdLabel(active).setActive(true);
+        // getIdLabel(active).setActive(true);
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch();
     }
 }

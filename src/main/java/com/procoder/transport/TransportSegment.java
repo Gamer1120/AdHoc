@@ -14,7 +14,7 @@ class TransportSegment {
     int seq;
     int ack;
     Byte[] data;
-    //|SEQ 1bit|ACK 1bit|DISCOVERY 1bit|SYN 1bit|
+    // |SEQ 1bit|ACK 1bit|DISCOVERY 1bit|SYN 1bit|
     byte flags;
 
     public TransportSegment(Byte[] data, int seq) {
@@ -85,10 +85,11 @@ class TransportSegment {
         int seq = buf.getInt();
         int ack = buf.getInt();
         byte[] actualData = new byte[buf.remaining()];
-        for(int i = 0; buf.hasRemaining(); i++) {
+        for (int i = 0; buf.hasRemaining(); i++) {
             actualData[i] = buf.get();
         }
-        return new TransportSegment(ArrayUtils.toObjectArray(actualData),flags,  seq, ack);
+        return new TransportSegment(ArrayUtils.toObjectArray(actualData),
+                flags, seq, ack);
     }
 
     public static TransportSegment genDiscoveryPacket() {
