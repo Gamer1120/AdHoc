@@ -1,5 +1,6 @@
 package com.procoder.gui;
 
+
 import com.procoder.AdhocApplication;
 import com.procoder.LongApplicationLayer;
 import javafx.application.Application;
@@ -24,6 +25,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.controlsfx.control.PopOver;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -71,7 +73,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         Scene mainScene = new Scene(mainPane, 1000, 900);
 
         //mainScene.getStylesheets().add("Css.css");
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -177,6 +179,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         scrollPane.setContent(chatPane);
     }
+
     public void addLabel(String name){
         IdLabel newLabel = new IdLabel(name);
         side.getChildren().add(newLabel);
@@ -216,7 +219,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setVvalue(scrollPane.getVmax());
     }
 
-    public void sendString(String user, String msg){
+    public void processString(String user, String msg){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -234,6 +237,54 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.setDaemon(true);
         t.start();
         toBottomScroll();
+    }
+
+    public void processFile(File file, String user){
+        //TODO
+    }
+
+    public void processImage(Image img, String user){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(img, user), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+
+    private void sendImage(Image img) {
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(img), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+
+        if(!DEBUG){
+            applicationLayer.send(selected.getInetAdress(), img);
+        }
     }
 
     private void toBottomScroll(){
@@ -265,7 +316,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         }else if(event.getSource().equals(popoverMenu.getUploadButton())){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
-            fileChooser.showOpenDialog(new Stage());
+            File file = fileChooser.showOpenDialog(new Stage());
+            Image image = new Image(file.toURI().toString());
+            sendImage(image);
+            popover.hide();
         }
     }
 
@@ -289,6 +343,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         newAdress.removeAll(knownAdresses);
         for(InetAddress a:newAdress){
             Platform.runLater(() -> addLabel(a.toString()));
+
             knownAdresses.add(a);
         }
 
@@ -313,7 +368,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     private IdLabel getIdLabel(InetAddress a){
         for(IdLabel i:chatMap.keySet()){
-            if(i.getAdress().equals(a.toString())){
+            if(i.getAdress().equals(a.getHostName())){
                 return i;
             }
         }
