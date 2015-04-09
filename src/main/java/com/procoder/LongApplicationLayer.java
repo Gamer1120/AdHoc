@@ -238,7 +238,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		String data = "";
 		try {
 			data = new String(Arrays.copyOfRange(bytestream, 4,
-					bytestream.length), ENCODING);
+					bytestream.length-1), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");
