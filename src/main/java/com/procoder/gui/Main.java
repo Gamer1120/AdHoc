@@ -1,6 +1,7 @@
 package com.procoder.gui;
 
-import com.procoder.FlagApplicationLayer;
+import com.procoder.AdhocApplication;
+import com.procoder.LongApplicationLayer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -51,7 +52,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private IdLabel selected;
  
     private InetAddress sender;
-    private FlagApplicationLayer applicationLayer;
+    private AdhocApplication applicationLayer;
 
     private PopOver popover;
     private PopoverMenu popoverMenu;
@@ -91,7 +92,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         if(!DEBUG) {
             sender = InetAddress.getLocalHost();
-            applicationLayer = new FlagApplicationLayer(this);
+            applicationLayer = new LongApplicationLayer(this);
         }
     }
 
