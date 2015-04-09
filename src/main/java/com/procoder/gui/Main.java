@@ -1,5 +1,7 @@
 package com.procoder.gui;
 
+
+import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,8 +93,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        //sendString("Ikke", "Dit is een test");
-        //sendString("Jije", "Dit is er ook nog een");
+        sendString("Ikke", "Dit is een test");
+        sendString("Jije", "Dit is er ook nog een");
 
         if(!DEBUG) {
             sender = InetAddress.getLocalHost();
@@ -239,6 +241,50 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
+    public void sendFile(File file, String user){
+        //TODO
+    }
+
+    public void sendImage(Image img, String user){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(img, user), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+
+    private void sendImage(Image img){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(img), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+
     private void toBottomScroll(){
         Thread t = new Thread(new Task(){
             @Override
@@ -268,7 +314,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         }else if(event.getSource().equals(popoverMenu.getUploadButton())){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
-            fileChooser.showOpenDialog(new Stage());
+            File file = fileChooser.showOpenDialog(new Stage());
+            Image image = new Image(file.toURI().toString());
+            sendImage(image);
         }
     }
 
