@@ -166,9 +166,9 @@ public class LongApplicationLayer implements Application {
 
 			if (savedQueues.remaining == 0) {
 				// Stuur naar GUI en maak de message empty.
-				//FIXME
-				gui.sendString("","");
-				savedQueues.message = new LinkedList();
+				byte[] message = AirKont.toPrimitiveArray(savedQueues.message.toArray(new Byte[0]));
+				gui.sendString(getSender(message), getData(message));
+				savedQueues.message = new LinkedList<Byte>();
 			}
 		}
 	}
