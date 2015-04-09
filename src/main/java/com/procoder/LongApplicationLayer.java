@@ -17,19 +17,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Queue;
 
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
-
 import com.procoder.util.AirKont;
 
 public class LongApplicationLayer implements Application {
 
 	private static final String ENCODING = "UTF-8";
-	private static final int BEGIN = 0;
-	private static final int END = -64;
 	private HashMap<InetAddress, Queues> receivedPackets;
 
 	private Transport transportLayer;
@@ -40,8 +38,8 @@ public class LongApplicationLayer implements Application {
 	}
 
 	/**
-	 * Creates a new com.procoder.ApplicationLayer using a given
-	 * com.procoder.GUI. Also starts the TransportLayer.
+	 * Creates a new ApplicationLayer using a given GUI. Also starts the
+	 * TransportLayer.
 	 * 
 	 * @param gui
 	 */
@@ -56,7 +54,7 @@ public class LongApplicationLayer implements Application {
 	// ---------------------------//
 
 	/**
-	 * Sends a packet to the com.procoder.transport.Transport Layer.
+	 * Sends a packet to the Transport Layer.
 	 * 
 	 * @param dest
 	 *            The final destination of this packet
@@ -111,11 +109,7 @@ public class LongApplicationLayer implements Application {
 	 * @return A packet with all these combined.
 	 */
 	public byte[] generatePacket(byte[] type, byte[] sender, byte[] data) {
-		return merge(
-				new byte[] { BEGIN, BEGIN, BEGIN, BEGIN },
-				merge(type,
-						merge(sender,
-								merge(data, new byte[] { END, END, END, END }))));
+		return merge(type, merge(sender, data));
 	}
 
 	// ---------------//
@@ -126,6 +120,12 @@ public class LongApplicationLayer implements Application {
 		Queue<Byte> incoming;
 		Queue<Byte> message;
 		long remaining;
+		
+		public Queues(){
+			this.incoming = new LinkedList<Byte>();
+			this.message = new LinkedList<Byte>();
+			this.remaining = 0;
+		}
 	}
 
 	/**
@@ -140,6 +140,7 @@ public class LongApplicationLayer implements Application {
 		byte[] bytestream = packet.getData();
 		InetAddress sender = packet.getAddress();
 		Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
+		savedQueues = savedQueues == null ? new Queues() : savedQueues;
 		// Add all bytes from this message to incoming.
 		for (byte b : bytestream) {
 			savedQueues.incoming.add(b);
@@ -164,7 +165,10 @@ public class LongApplicationLayer implements Application {
 			}
 
 			if (savedQueues.remaining == 0) {
-				//Stuur naar GUI en maak de message empty.
+				// Stuur naar GUI en maak de message empty.
+				//FIXME
+				gui.sendString("","");
+				savedQueues.message = new LinkedList();
 			}
 		}
 	}
@@ -199,8 +203,8 @@ public class LongApplicationLayer implements Application {
 	}
 
 	/**
-	 * Gets the sender of the packet as String, required for the
-	 * com.procoder.GUI. The sender is the 2nd to 5th byte in a packet.
+	 * Gets the sender of the packet as String, required for the GUI. The sender
+	 * is the 2nd to 5th byte in a packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
@@ -212,9 +216,8 @@ public class LongApplicationLayer implements Application {
 	}
 
 	/**
-	 * Returns the text that is in the packet as String, required for the
-	 * com.procoder.GUI. The data is everything after the first 5 bytes in a
-	 * packet.
+	 * Returns the text that is in the packet as String, required for the GUI.
+	 * The data is everything after the first 5 bytes in a packet.
 	 * 
 	 * @param bytestream
 	 *            Said packet.
