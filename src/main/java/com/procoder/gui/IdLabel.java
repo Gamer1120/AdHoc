@@ -6,10 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-
-import javax.swing.border.Border;
 
 /**
  * Created by reneb_000 on 7-4-2015.
@@ -53,8 +50,8 @@ public class IdLabel extends BorderPane {
         BorderPane.setAlignment(statusView, Pos.CENTER);
         this.setRight(statusView);
 
-        this.setMargin(img, new Insets(10));
-        this.setMargin(statusView, new Insets(10));
+        BorderPane.setMargin(img, new Insets(10));
+        BorderPane.setMargin(statusView, new Insets(10));
 
 
         //this.getChildren().addAll(img, label, statusView);

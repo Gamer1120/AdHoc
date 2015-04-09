@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.procoder.gui.Main;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
@@ -31,7 +32,7 @@ public class LongApplicationLayer implements Application {
 	private HashMap<InetAddress, Queues> receivedPackets;
 
 	private Transport transportLayer;
-	private GUI gui;
+	private Main gui;
 
 	private enum PacketType {
 		UNDEFINED, TEXT, FILE
@@ -43,7 +44,7 @@ public class LongApplicationLayer implements Application {
 	 * 
 	 * @param gui
 	 */
-	public LongApplicationLayer(GUI gui) {
+	public LongApplicationLayer(Main gui) {
 		this.gui = gui;
 		this.receivedPackets = new HashMap<InetAddress, Queues>();
 		this.transportLayer = new TimestampTransport(this);

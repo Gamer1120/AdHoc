@@ -1,8 +1,8 @@
 package com.procoder.gui;
 
 import javafx.geometry.Insets;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.*;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 
 /**
  * Created by reneb_000 on 8-4-2015.
@@ -35,7 +35,7 @@ public class ChatPane extends GridPane {
             this.add(cloud, 1, counter);
         }
         counter++;
-        this.setMargin(cloud, margin);
+        GridPane.setMargin(cloud, margin);
 
     }
 
