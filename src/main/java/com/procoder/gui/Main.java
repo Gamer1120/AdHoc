@@ -1,7 +1,12 @@
 package com.procoder.gui;
 
-import com.procoder.AdhocApplication;
-import com.procoder.LongApplicationLayer;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -20,8 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import java.net.InetAddress;
-import java.util.*;
+import com.procoder.FlagApplicationLayer;
 
 
 
@@ -45,7 +49,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private IdLabel selected;
  
     private InetAddress sender;
-    private AdhocApplication applicationLayer;
+    private FlagApplicationLayer applicationLayer;
 
 
 
@@ -81,7 +85,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         //sendString("Jije", "Dit is er ook nog een");
 
         sender = InetAddress.getLocalHost();
-        applicationLayer = new LongApplicationLayer(this);
+        applicationLayer = new FlagApplicationLayer(this);
     }
 
     private void setupCenter() {
