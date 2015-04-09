@@ -1,5 +1,8 @@
 package com.procoder.gui;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -18,6 +21,8 @@ public class IdLabel extends BorderPane {
     private ImageView statusView;
     private Color c; //#F1F1F1
     private String adress;
+
+    private String broadcast = "228.0.0.0";
 
     public IdLabel(String name){
 
@@ -78,6 +83,23 @@ public class IdLabel extends BorderPane {
 
     public String getAdress(){
         return adress;
+    }
+
+    public InetAddress getInetAdress(){
+        if(adress.equals("AllChat")){
+            try {
+                return InetAddress.getByName(broadcast);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }else{
+            try {
+                return InetAddress.getByName(adress);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

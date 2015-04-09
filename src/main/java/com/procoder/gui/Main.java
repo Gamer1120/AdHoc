@@ -1,7 +1,14 @@
 package com.procoder.gui;
 
-import com.procoder.AdhocApplication;
-import com.procoder.LongApplicationLayer;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -22,10 +29,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
 import org.controlsfx.control.PopOver;
 
-import java.net.InetAddress;
-import java.util.*;
+import com.procoder.AdhocApplication;
+import com.procoder.LongApplicationLayer;
 
 
 
@@ -57,7 +65,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private PopOver popover;
     private PopoverMenu popoverMenu;
 
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("AWESOME ADHOC");
@@ -71,7 +78,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         Scene mainScene = new Scene(mainPane, 1000, 900);
 
         //mainScene.getStylesheets().add("Css.css");
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -134,6 +141,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         popover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
 
 
+
         text.requestFocus();
         sendButton = new Button("Send");
 
@@ -177,6 +185,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         scrollPane.setContent(chatPane);
     }
+
     public void addLabel(String name){
         IdLabel newLabel = new IdLabel(name);
         side.getChildren().add(newLabel);
@@ -216,7 +225,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setVvalue(scrollPane.getVmax());
     }
 
-    public void sendString(String user, String msg){
+    public void processString(String user, String msg){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -234,6 +243,54 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.setDaemon(true);
         t.start();
         toBottomScroll();
+    }
+
+    public void processFile(String user, File file){
+        //TODO
+    }
+
+    public void processImage(String user, Image img){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(img, user), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+
+    private void sendImage(File img) {
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        if(h!=null){
+                            h.add(new Cloud(new Image(img.toURI().toString())), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+
+        if(!DEBUG){
+            applicationLayer.send(selected.getInetAdress(), img);
+        }
     }
 
     private void toBottomScroll(){
@@ -260,12 +317,21 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             addMsg(text.getText());
         }else if(event.getSource().equals(optionButton)){
             //TODO
+            if(popover.isShowing()){
+                popover.hide();
+            }else{
+                popover.show(optionButton);
+            }
 
-            popover.show(optionButton);
         }else if(event.getSource().equals(popoverMenu.getUploadButton())){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
-            fileChooser.showOpenDialog(new Stage());
+            File file = fileChooser.showOpenDialog(new Stage());
+            //Image image = new Image(file.toURI().toString());
+            if(file!=null) {
+                sendImage(file);
+            }
+            popover.hide();
         }
     }
 
@@ -289,6 +355,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         newAdress.removeAll(knownAdresses);
         for(InetAddress a:newAdress){
             Platform.runLater(() -> addLabel(a.toString()));
+
             knownAdresses.add(a);
         }
 
@@ -313,7 +380,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     private IdLabel getIdLabel(InetAddress a){
         for(IdLabel i:chatMap.keySet()){
-            if(i.getAdress().equals(a.toString())){
+            if(i.getAdress().equals(a.getHostName())){
                 return i;
             }
         }
