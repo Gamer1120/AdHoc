@@ -3,7 +3,7 @@ package com.procoder;
 /**
  * com.procoder.Application Layer for the Ad hoc multi-client chat application.
  * 
- * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
+ * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter Timmermans s1004751, René Boschma s???
  */
 
 import com.procoder.gui.Main;
