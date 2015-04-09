@@ -43,7 +43,7 @@ import com.procoder.LongApplicationLayer;
 @SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
