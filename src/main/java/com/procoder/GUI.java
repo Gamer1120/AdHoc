@@ -90,7 +90,7 @@ public class GUI extends JFrame {
             }
         });
 
-        applicationLayer = new ApplicationLayer(this);
+        applicationLayer = new FlagApplicationLayer(this);
     }
 
 
