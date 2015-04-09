@@ -16,16 +16,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import com.procoder.FlagApplicationLayer;
+import org.controlsfx.control.PopOver;
 
 
 
@@ -34,6 +38,8 @@ import com.procoder.FlagApplicationLayer;
  */
 @SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
+
+    private static final boolean DEBUG = true;
 
     private VBox side;
     private BorderPane mainPane;
@@ -44,6 +50,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
 
     private Button sendButton;
+    private Button optionButton;
     private TextField text;
     private Insets padding;
     private IdLabel selected;
@@ -51,6 +58,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private InetAddress sender;
     private FlagApplicationLayer applicationLayer;
 
+    private PopOver popover;
+    private PopoverMenu popoverMenu;
 
 
     @Override
@@ -75,6 +84,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             @Override
             public void handle(WindowEvent t) {
                 Platform.exit();
+                System.exit(0);
             }
         });
 
@@ -84,8 +94,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         //sendString("Ikke", "Dit is een test");
         //sendString("Jije", "Dit is er ook nog een");
 
-        sender = InetAddress.getLocalHost();
-        applicationLayer = new FlagApplicationLayer(this);
+        if(!DEBUG) {
+            sender = InetAddress.getLocalHost();
+            applicationLayer = new FlagApplicationLayer(this);
+        }
     }
 
     private void setupCenter() {
@@ -119,13 +131,23 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 }
             }
         });
+        popoverMenu = new PopoverMenu(this);
+        popover = new PopOver(popoverMenu);
+        //popover.setHideOnEscape(true);
+        popover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
+
 
         text.requestFocus();
         sendButton = new Button("Send");
 
+        ImageView v = new ImageView();
+        Image i = new Image(this.getClass().getClassLoader().getResourceAsStream("gear.png"));
+        v.setImage(i);
+        optionButton = new Button("", v);
+        optionButton.setOnAction(this);
         sendButton.setOnAction(this);
 
-        commandPanel.getChildren().addAll(text, sendButton);
+        commandPanel.getChildren().addAll(text, sendButton, optionButton);
         center.setBottom(commandPanel);
         center.setCenter(scrollPane);
         mainPane.setCenter(center);
@@ -188,7 +210,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
                 text.setText("");
-                applicationLayer.send(sender, msg);
+                if(!DEBUG) {
+                    applicationLayer.send(sender, msg);
+                }
             }
         }
 
@@ -203,7 +227,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 Platform.runLater(new Runnable() {
                     @Override public void run() {
                         if(h!=null){
-                            h.add(new Cloud(msg, user),true);
+                            h.add(new Cloud(msg, user), true);
                         }
                     }
                 });
@@ -237,6 +261,14 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     public void handle(javafx.event.ActionEvent event) {
         if(event.getSource().equals(sendButton)){
             addMsg(text.getText());
+        }else if(event.getSource().equals(optionButton)){
+            //TODO
+
+            popover.show(optionButton);
+        }else if(event.getSource().equals(popoverMenu.getUploadButton())){
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Resource File");
+            fileChooser.showOpenDialog(new Stage());
         }
     }
 
