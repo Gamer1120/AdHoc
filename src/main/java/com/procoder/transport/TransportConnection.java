@@ -33,6 +33,7 @@ public class TransportConnection {
         receivingHost = host;
         unAckedSegments = new LinkedList<>();
         sendQueue = new LinkedList<>();
+        receiveQueue = new LinkedList<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
         established = false;
@@ -103,6 +104,7 @@ public class TransportConnection {
                     byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
                     DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
                     application.processPacket(packet);
+                    receiveQueue.clear();
 
                 }
             }
