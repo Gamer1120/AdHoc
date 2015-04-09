@@ -1,6 +1,6 @@
 package com.procoder.transport;
 
-import com.procoder.Application;
+import com.procoder.AdhocApplication;
 import com.procoder.Network;
 import com.procoder.util.ArrayUtils;
 
@@ -15,7 +15,7 @@ public class TransportConnection {
 
     private InetAddress receivingHost;
     private Queue<TransportSegment> unAckedSegments;
-    private Application application;
+    private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
     private Queue<Byte> receiveQueue;
     private Network networkLayer;
@@ -29,7 +29,7 @@ public class TransportConnection {
 
 // --------------------- Constructors -------------------
 
-    public TransportConnection (InetAddress host, Network networkLayer, Application app) {
+    public TransportConnection (InetAddress host, Network networkLayer, AdhocApplication app) {
         receivingHost = host;
         unAckedSegments = new LinkedList<>();
         sendQueue = new LinkedList<>();
@@ -38,7 +38,7 @@ public class TransportConnection {
         seq = new Random().nextInt();
         established = false;
         synReceived = false;
-        application = app;
+        adhocApplication = app;
     }
 
 // ----------------------- Queries ----------------------
@@ -84,11 +84,11 @@ public class TransportConnection {
 
     public void receiveData(TransportSegment segment) {
 
+        System.out.println("[TL] [RCV] Processing segment seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
+
         if(!synReceived) {
             synReceived = segment.isSyn();
-            if (synReceived) {
-                nextAck = segment.seq + segment.data.length;
-            }
+            nextAck = segment.seq;
         }
 
         // Dit werkt nog niet voor out of order data
@@ -103,8 +103,9 @@ public class TransportConnection {
                     // We hebben een aaneengesloten serie gegevens.
                     byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
                     DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
-                    application.processPacket(packet);
+                    adhocApplication.processPacket(packet);
                     receiveQueue.clear();
+                    nextAck = segment.seq + segment.data.length;
 
                 }
             }

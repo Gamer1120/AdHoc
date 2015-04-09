@@ -1,6 +1,6 @@
 package com.procoder.transport;
 
-import com.procoder.Application;
+import com.procoder.AdhocApplication;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
 
@@ -20,13 +20,13 @@ public class TimestampTransport implements Transport {
 
     private Map<InetAddress, TransportConnection> connections;
 
-    private Application app;
+    private AdhocApplication app;
 
     private Discoverer disco;
 
     // ------------------- Constructors ---------------------
 
-    public TimestampTransport(Application app) {
+    public TimestampTransport(AdhocApplication app) {
 
         this.app = app;
         this.networkLayer = new NetworkLayer(this);

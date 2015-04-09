@@ -1,7 +1,7 @@
 package com.procoder;
 
 /**
- * com.procoder.Application Layer for the Ad hoc multi-client chat application.
+ * Application Layer for the Ad hoc multi-client chat application.
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
@@ -22,7 +22,7 @@ import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
 
-public class FlagApplicationLayer implements Application {
+public class FlagApplicationLayer implements AdhocApplication {
 
 	private static final String ENCODING = "UTF-8";
 	private static final int BEGIN = 0;

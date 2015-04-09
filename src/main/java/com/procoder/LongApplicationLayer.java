@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class LongApplicationLayer implements Application {
+public class LongApplicationLayer implements AdhocApplication {
 
 	private static final String ENCODING = "UTF-8";
 	private HashMap<InetAddress, Queues> receivedPackets;
