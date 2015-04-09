@@ -149,6 +149,8 @@ public class TransportConnection {
 
             }
 
+            // TODO Scenario waar ack het eerste pakket is.
+
             TransportSegment ack = new TransportSegment(new Byte[0], seq);
             ack.setAck(nextAck);
             networkLayer.send(receivingHost, ack.toByteArray());
