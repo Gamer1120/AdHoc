@@ -3,7 +3,7 @@ package com.procoder.transport;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
-public interface Transport {
+public interface AdhocTransport {
 
     public void send(InetAddress dest, byte[] data);
 
@@ -12,4 +12,5 @@ public interface Transport {
     public void sendDiscovery();
 
     public HostList getKnownHostList();
+
 }

@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.procoder.AdhocApplication;
-import com.procoder.Network;
+import com.procoder.AdhocNetwork;
 import com.procoder.NetworkLayer;
 
-public class TimestampTransport implements Transport {
+public class TimestampTransport implements AdhocTransport {
 
     // ------------------ Instance variables ----------------
 
-    private Network networkLayer;
+    private AdhocNetwork networkLayer;
 
     private Map<InetAddress, TransportConnection> connections;
 

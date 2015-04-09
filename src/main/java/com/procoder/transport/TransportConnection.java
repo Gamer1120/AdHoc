@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.procoder.AdhocApplication;
-import com.procoder.Network;
+import com.procoder.AdhocNetwork;
 import com.procoder.util.ArrayUtils;
 
 public class TransportConnection {
@@ -21,7 +21,7 @@ public class TransportConnection {
     private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
     private Queue<Byte> receiveQueue;
-    private Network networkLayer;
+    private AdhocNetwork networkLayer;
     private int seq;
     private int nextAck;
     private boolean established;
@@ -29,7 +29,7 @@ public class TransportConnection {
 
     // --------------------- Constructors -------------------
 
-    public TransportConnection(InetAddress host, Network networkLayer,
+    public TransportConnection(InetAddress host, AdhocNetwork networkLayer,
             AdhocApplication app) {
         receivingHost = host;
         unAckedSegments = new LinkedList<>();

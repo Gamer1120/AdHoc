@@ -39,7 +39,7 @@ import com.procoder.LongApplicationLayer;
  */
 @SuppressWarnings("restriction")
 public class Main extends Application implements
-        EventHandler<javafx.event.ActionEvent>, Observer {
+        EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
     private static final boolean DEBUG = false;
 
@@ -205,6 +205,7 @@ public class Main extends Application implements
         selected.setSelected(true);
     }
 
+    @Override
     public void addMsg(String msg) {
         // drawPane.getChildren().add(new Label(msg));
         if (!msg.isEmpty()) {
@@ -222,6 +223,7 @@ public class Main extends Application implements
         scrollPane.setVvalue(scrollPane.getVmax());
     }
 
+    @Override
     public void processString(String user, String msg) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -243,10 +245,12 @@ public class Main extends Application implements
         toBottomScroll();
     }
 
+    @Override
     public void processFile(String user, File file) {
         // TODO
     }
 
+    @Override
     public void processImage(String user, Image img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {

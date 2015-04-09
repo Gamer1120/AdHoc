@@ -11,21 +11,21 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Enumeration;
 
-import com.procoder.transport.Transport;
+import com.procoder.transport.AdhocTransport;
 
-public class NetworkLayer implements Network {
+public class NetworkLayer implements AdhocNetwork {
     // TODO routing tables
     private final static int LENGTH = 1472;
     private final static int PORT = 7777;
     private final static int IPLENGTH = 4;
     private final static int HEADER = 2 * IPLENGTH + 1;
     private final static byte TTL = 4;
-    private Transport transportLayer;
+    private AdhocTransport transportLayer;
     private InetAddress source;
     private InetAddress multicast;
     private MulticastSocket socket;
 
-    public NetworkLayer(Transport transportLayer) {
+    public NetworkLayer(AdhocTransport transportLayer) {
         this.transportLayer = transportLayer;
         try {
             socket = new MulticastSocket(PORT);

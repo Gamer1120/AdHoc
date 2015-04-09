@@ -13,11 +13,11 @@ public class Discoverer extends TimerTask {
 
     private static final int TDI = 5; // Time Discovery Intveral
     private int counter = 0;
-    private Transport transport;
+    private AdhocTransport adhocTransport;
     private HostList hostList;
 
-    public Discoverer(Transport transport) {
-        this.transport = transport;
+    public Discoverer(AdhocTransport adhocTransport) {
+        this.adhocTransport = adhocTransport;
         hostList = new HostList();
         timer = new Timer();
         timer.schedule(this, 0, 1000);
@@ -37,7 +37,7 @@ public class Discoverer extends TimerTask {
         hostList.decrementTTL();
 
         if (counter == TDI) {
-            transport.sendDiscovery();
+            adhocTransport.sendDiscovery();
             counter = 0;
         }
     }

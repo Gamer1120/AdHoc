@@ -26,9 +26,9 @@ import java.util.Queue;
 import javafx.scene.image.Image;
 
 import com.procoder.gui.Main;
+import com.procoder.transport.AdhocTransport;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
-import com.procoder.transport.Transport;
 import com.procoder.util.ArrayUtils;
 
 @SuppressWarnings("restriction")
@@ -37,7 +37,7 @@ public class LongApplicationLayer implements AdhocApplication {
     private static final String ENCODING = "UTF-8";
     private HashMap<InetAddress, Queues> receivedPackets;
 
-    private Transport transportLayer;
+    private AdhocTransport transportLayer;
     private Main gui;
 
     private enum PacketType {
