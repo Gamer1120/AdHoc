@@ -25,7 +25,7 @@ import java.util.Queue;
 
 import javafx.scene.image.Image;
 
-import com.procoder.gui.Main;
+import com.procoder.gui.AdhocGUI;
 import com.procoder.transport.AdhocTransport;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
@@ -38,7 +38,7 @@ public class LongApplicationLayer implements AdhocApplication {
     private HashMap<InetAddress, Queues> receivedPackets;
 
     private AdhocTransport transportLayer;
-    private Main gui;
+    private AdhocGUI gui;
 
     private enum PacketType {
         UNDEFINED, TEXT, FILE
@@ -50,7 +50,7 @@ public class LongApplicationLayer implements AdhocApplication {
      * 
      * @param gui
      */
-    public LongApplicationLayer(Main gui) {
+    public LongApplicationLayer(AdhocGUI gui) {
         this.gui = gui;
         this.receivedPackets = new HashMap<InetAddress, Queues>();
         this.transportLayer = new TimestampTransport(this);

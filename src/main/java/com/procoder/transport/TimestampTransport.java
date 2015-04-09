@@ -84,7 +84,7 @@ public class TimestampTransport implements AdhocTransport {
 
     @Override
     public void sendDiscovery() {
-        networkLayer.send(null, TransportSegment.genDiscoveryPacket()
+        networkLayer.send(TransportSegment.genDiscoveryPacket()
                 .toByteArray());
     }
 

@@ -10,25 +10,32 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.procoder.transport.AdhocTransport;
 
 public class NetworkLayer implements AdhocNetwork {
-    // TODO routing tables
     private final static int LENGTH = 1472;
     private final static int PORT = 7777;
     private final static int IPLENGTH = 4;
     private final static int HEADER = 2 * IPLENGTH + 1;
-    private final static byte TTL = 4;
     private AdhocTransport transportLayer;
     private InetAddress source;
     private InetAddress multicast;
     private MulticastSocket socket;
+    private Map<InetAddress, Set<Byte>> packets;
+    private byte id;
 
     public NetworkLayer(AdhocTransport transportLayer) {
         this.transportLayer = transportLayer;
+        packets = new HashMap<InetAddress, Set<Byte>>();
+        id = -128;
         try {
             socket = new MulticastSocket(PORT);
+            socket.setLoopbackMode(false);
             source = InetAddress.getLocalHost();
             multicast = InetAddress.getByName("228.0.0.0");
             socket.joinGroup(new InetSocketAddress(multicast, PORT),
@@ -39,23 +46,25 @@ public class NetworkLayer implements AdhocNetwork {
     }
 
     @Override
-    public void send(InetAddress dest, byte[] data) {
-        send(dest, data, TTL);
+    public void send(byte[] data) {
+        send(multicast, data);
     }
 
-    private void send(InetAddress dest, byte[] data, byte ttl) {
+    @Override
+    public void send(InetAddress dest, byte[] data) {
+        send(source, dest, id++, data);
+    }
+
+    private void send(InetAddress src, InetAddress dest, byte id, byte[] data) {
         // Create a packet and send it to the destination
-        if (dest == null) {
-            dest = multicast;
-        }
+        addPacket(src, id);
         byte[] packetData = new byte[data.length + HEADER];
-        packetData[0] = ttl;
-        byte[] sourceAddress = source.getAddress();
+        byte[] sourceAddress = src.getAddress();
         byte[] destAddress = dest.getAddress();
+        packetData[0] = id;
         System.arraycopy(sourceAddress, 0, packetData, 1, IPLENGTH);
         System.arraycopy(destAddress, 0, packetData, 1 + IPLENGTH, IPLENGTH);
         System.arraycopy(data, 0, packetData, HEADER, data.length);
-
         DatagramPacket packet = new DatagramPacket(packetData,
                 packetData.length, dest, PORT);
         try {
@@ -84,6 +93,24 @@ public class NetworkLayer implements AdhocNetwork {
         return netIf;
     }
 
+    private boolean addPacket(InetAddress src, byte id) {
+        if (packets.containsKey(src)) {
+            Set<Byte> ids = packets.get(src);
+            if (ids.contains(id)) {
+                return false;
+            } else {
+                ids.add(id);
+                ids.remove(id + 1);
+                return true;
+            }
+        } else {
+            Set<Byte> ids = new HashSet<Byte>();
+            ids.add(id);
+            packets.put(src, ids);
+            return true;
+        }
+    }
+
     @Override
     public void run() {
         // Receive packets and forward them to the transport layer
@@ -94,10 +121,9 @@ public class NetworkLayer implements AdhocNetwork {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             byte[] data = Arrays.copyOfRange(packet.getData(), 0,
                     packet.getLength());
-            byte ttl = data[0];
+            byte packetId = data[0];
 
             InetAddress src = null;
             InetAddress dest = null;
@@ -110,14 +136,17 @@ public class NetworkLayer implements AdhocNetwork {
                 e.printStackTrace();
             }
             data = Arrays.copyOfRange(data, HEADER, data.length);
-
-            if (!source.equals(src)
-                    && (multicast.equals(dest) || source.equals(dest))) {
-                packet.setData(data);
-                transportLayer.processPacket(packet);
-            }
-            if (--ttl > 0 && !source.equals(dest)) {
-                send(dest, data, ttl);
+            if (addPacket(src, packetId)) {
+                if (multicast.equals(dest)) {
+                    send(src, dest, packetId, data);
+                    packet.setData(data);
+                    transportLayer.processPacket(packet);
+                } else if (source.equals(dest)) {
+                    packet.setData(data);
+                    transportLayer.processPacket(packet);
+                } else {
+                    send(src, dest, packetId, data);
+                }
             }
         }
     }
