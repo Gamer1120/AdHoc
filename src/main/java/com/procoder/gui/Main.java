@@ -77,7 +77,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         Scene mainScene = new Scene(mainPane, 1000, 900);
 
         //mainScene.getStylesheets().add("Css.css");
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -93,8 +93,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        sendString("Ikke", "Dit is een test");
-        sendString("Jije", "Dit is er ook nog een");
+        //sendString("Ikke", "Dit is een test");
+        //sendString("Jije", "Dit is er ook nog een");
 
         if(!DEBUG) {
             sender = InetAddress.getLocalHost();
@@ -182,6 +182,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         scrollPane.setContent(chatPane);
     }
+
     public void addLabel(String name){
         IdLabel newLabel = new IdLabel(name);
         side.getChildren().add(newLabel);
@@ -221,7 +222,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane.setVvalue(scrollPane.getVmax());
     }
 
-    public void sendString(String user, String msg){
+    public void processString(String user, String msg){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -241,11 +242,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    public void sendFile(File file, String user){
+    public void processFile(File file, String user){
         //TODO
     }
 
-    public void sendImage(Image img, String user){
+    public void processImage(Image img, String user){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -265,7 +266,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    private void sendImage(Image img){
+    private void sendImage(Image img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -283,6 +284,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.setDaemon(true);
         t.start();
         toBottomScroll();
+
+        if(!DEBUG){
+            applicationLayer.send(selected.getInetAdress(), img);
+        }
     }
 
     private void toBottomScroll(){
@@ -317,6 +322,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             File file = fileChooser.showOpenDialog(new Stage());
             Image image = new Image(file.toURI().toString());
             sendImage(image);
+            popover.hide();
         }
     }
 
@@ -339,7 +345,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         newAdres.removeAll(knownAdresses);
         for(InetAddress a:newAdres){
-            addLabel(a.toString());
+            addLabel(a.getHostName());
             knownAdresses.add(a);
         }
 
@@ -352,7 +358,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     private IdLabel getIdLabel(InetAddress a){
         for(IdLabel i:chatMap.keySet()){
-            if(i.getAdress().equals(a.toString())){
+            if(i.getAdress().equals(a.getHostName())){
                 return i;
             }
         }
