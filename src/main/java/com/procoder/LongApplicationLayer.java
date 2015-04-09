@@ -148,6 +148,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		InetAddress sender = packet.getAddress();
 		Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
 		savedQueues = savedQueues == null ? new Queues() : savedQueues;
+		receivedPackets.put(sender, savedQueues);
 		// Add all bytes from this message to incoming.
 		for (byte b : bytestream) {
 			savedQueues.incoming.add(b);
