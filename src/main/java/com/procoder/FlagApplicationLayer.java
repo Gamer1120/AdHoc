@@ -138,7 +138,7 @@ public class FlagApplicationLayer implements AdhocApplication {
 				if (Arrays.equals(Arrays.copyOfRange(bytestream,
 						bytestream.length - 4, bytestream.length), new byte[] {
 						END, END, END, END })) {
-					gui.sendString(getSender(bytestream), getData(bytestream));
+					gui.processString(getSender(bytestream), getData(bytestream));
 				} else {
 					receivedPackets.put(sender, bytestream);
 				}
@@ -147,7 +147,7 @@ public class FlagApplicationLayer implements AdhocApplication {
 					END, END, END, END })) {
 				byte[] fullPacket = merge(receivedPackets.get(sender),
 						bytestream);
-				gui.sendString(getSender(fullPacket), getData(fullPacket));
+				gui.processString(getSender(fullPacket), getData(fullPacket));
 			} else {
 				byte[] fullPacket = merge(receivedPackets.get(sender),
 						bytestream);

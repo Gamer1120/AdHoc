@@ -180,7 +180,7 @@ public class LongApplicationLayer implements AdhocApplication {
 				PacketType type = getType(message);
 				switch (type){
 				case TEXT:
-					gui.sendString(getSender(message), getData(message));
+					gui.processString(getSender(message), getData(message));
 					break;
 				case FILE:
 					//FIXME
