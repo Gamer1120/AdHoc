@@ -1,9 +1,9 @@
 package com.procoder;
 
-import com.procoder.transport.HostList;
-
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+
+import com.procoder.transport.HostList;
 
 public interface AdhocApplication {
 
