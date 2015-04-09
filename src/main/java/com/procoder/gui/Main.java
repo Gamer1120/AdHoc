@@ -93,6 +93,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         if(!DEBUG) {
             sender = InetAddress.getLocalHost();
             applicationLayer = new LongApplicationLayer(this);
+            applicationLayer.getKnownHostList().addObserver(this);
         }
     }
 
@@ -276,22 +277,34 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         copie.removeAll(newAdres);
         for(InetAddress a:copie){
-            setInactive(a);
+            updateStatus(a, false);
         }
 
         for(InetAddress a:knownAdresses){
             if(newAdres.contains(a)){
-                setActive(a);
+                updateStatus(a, true);
             }
         }
 
         newAdres.removeAll(knownAdresses);
         for(InetAddress a:newAdres){
-            addLabel(a.toString());
+            Platform.runLater(() -> addLabel(a.toString()));
             knownAdresses.add(a);
         }
 
     }
+
+    public void updateStatus(InetAddress address, boolean active) {
+        Platform.runLater(() -> {
+            if(active) {
+                setActive(address);
+            } else {
+                setInactive(address);
+            }
+        });
+
+    }
+
 
     public void setInactive(InetAddress inactive) {
         getIdLabel(inactive).setActive(false);
