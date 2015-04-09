@@ -104,23 +104,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             public void handle(KeyEvent event) {
                 if (event.getCode() == KeyCode.ENTER) {
                     addMsg(text.getText());
-                    Thread t = new Thread(new Task(){
-                        @Override
-                        protected Object call() throws Exception {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            Platform.runLater(() ->scrollPane.setVvalue(scrollPane.getVmax()));
-                            //System.out.println("WAITED");
-                            return null;
-                        }
-                    });
-                    t.setDaemon(true);
-                    t.start();
-
-
+                    toBottomScroll();
                 }
             }
         });
@@ -209,7 +193,26 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         if(h!=null){
             h.add(new Cloud(msg, user),true);
             scrollPane.setVvalue(scrollPane.getVmax());
+            toBottomScroll();
         }
+    }
+
+    private void toBottomScroll(){
+        Thread t = new Thread(new Task(){
+            @Override
+            protected Object call() throws Exception {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Platform.runLater(() ->scrollPane.setVvalue(scrollPane.getVmax()));
+                //System.out.println("WAITED");
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override
