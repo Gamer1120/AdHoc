@@ -5,6 +5,13 @@ package com.procoder;
  * 
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter ??? s???, René Boschma s???
  */
+
+import com.procoder.gui.Main;
+import com.procoder.transport.HostList;
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
+import com.procoder.util.ArrayUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,12 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import com.procoder.gui.Main;
-import com.procoder.transport.HostList;
-import com.procoder.transport.TimestampTransport;
-import com.procoder.transport.Transport;
-import com.procoder.util.AirKont;
 
 public class LongApplicationLayer implements Application {
 
@@ -133,12 +134,13 @@ public class LongApplicationLayer implements Application {
 	 * After determining which type of packet it is, it sends the data to the
 	 * GUI.
 	 * 
-	 * @param bytestream
+	 * @param packet
 	 *            The packet to be sent.
 	 */
 	@Override
 	public void processPacket(DatagramPacket packet) {
 		byte[] bytestream = packet.getData();
+		System.out.println("[AL] [RCD]: " + Arrays.toString(bytestream));
 		InetAddress sender = packet.getAddress();
 		Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
 		savedQueues = savedQueues == null ? new Queues() : savedQueues;
@@ -149,7 +151,7 @@ public class LongApplicationLayer implements Application {
 		if (savedQueues.remaining == 0
 				&& savedQueues.incoming.size() >= Long.BYTES) {
 			// Get the length of the message
-			ByteBuffer buf = ByteBuffer.wrap(AirKont
+			ByteBuffer buf = ByteBuffer.wrap(ArrayUtils
 					.toPrimitiveArray(savedQueues.incoming
 							.toArray(new Byte[savedQueues.incoming.size()])));
 			savedQueues.remaining = buf.getLong();
@@ -167,7 +169,7 @@ public class LongApplicationLayer implements Application {
 
 			if (savedQueues.remaining == 0) {
 				// Stuur naar GUI en maak de message empty.
-				byte[] message = AirKont.toPrimitiveArray(savedQueues.message.toArray(new Byte[0]));
+				byte[] message = ArrayUtils.toPrimitiveArray(savedQueues.message.toArray(new Byte[0]));
 				gui.sendString(getSender(message), getData(message));
 				savedQueues.message = new LinkedList<Byte>();
 			}

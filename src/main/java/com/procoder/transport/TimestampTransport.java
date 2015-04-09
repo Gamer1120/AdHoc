@@ -1,33 +1,24 @@
 package com.procoder.transport;
 
+import com.procoder.Application;
+import com.procoder.Network;
+import com.procoder.NetworkLayer;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-
-import com.procoder.Application;
-import com.procoder.Network;
-import com.procoder.NetworkLayer;
-import com.procoder.util.AirKont;
 
 
 public class TimestampTransport implements Transport {
 
-    /**
-     *
-     */
 
     // ------------------ Instance variables ----------------
 
     private Network networkLayer;
 
-    private Map<InetAddress, Queue<TransportSegment>> unAckedSegments;
-    private Map<InetAddress, Queue<Byte>> sendQueues;
+    private Map<InetAddress, TransportConnection> connections;
 
     private Application app;
 
@@ -39,8 +30,7 @@ public class TimestampTransport implements Transport {
 
         this.app = app;
         this.networkLayer = new NetworkLayer(this);
-        this.sendQueues=new HashMap<>();
-        this.unAckedSegments = new HashMap<>();
+        this.connections = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);
 
@@ -54,26 +44,36 @@ public class TimestampTransport implements Transport {
         return disco.getHostList();
     }
 
+    private TransportConnection findConnection(InetAddress host) {
+
+        // De connectie is misschien nog niet opgezet
+        TransportConnection result = connections.getOrDefault(host, new TransportConnection(host, networkLayer, app));
+        // Voeg de connectie toe aan de lijst (voor het geval het er nog niet in zat)
+        connections.put(host, result);
+        return result;
+    }
+
 
     // ----------------------- Commands ---------------------
 
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        Queue<Byte> queue = sendQueues.get(dest);
-        queue = queue == null ? new LinkedList<>() : queue;
+        // Dest wordt nu genegeerd
+        for(InetAddress host : getKnownHostList().getKnownHosts()) {
+            TransportConnection connection = findConnection(host);
 
-        for(byte b : data) {
-            queue.add(b);
+            for(byte b : data) {
+                connection.sendByte(b);
+            }
         }
-        sendQueues.put(dest, queue);
+
         processSendQueue();
 
     }
 
     @Override
     public void processPacket(DatagramPacket packet) {
-        InetAddress source = packet.getAddress();
         byte[] data = packet.getData();
 
         System.out.println("[TL] [RCD]: " + Arrays.toString(data));
@@ -82,9 +82,13 @@ public class TimestampTransport implements Transport {
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());
+            System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
-            packet.setData(AirKont.toPrimitiveArray(receivedSegment.data));
-            app.processPacket(packet);
+            TransportConnection connection = connections.get(packet.getAddress());
+
+            if (connection != null) {
+                connection.receiveData(receivedSegment);
+            }
         }
 
 
@@ -93,31 +97,12 @@ public class TimestampTransport implements Transport {
 
     @Override
     public void sendDiscovery() {
-        TransportSegment discoverSegment = new TransportSegment(new Byte[0]);
-        discoverSegment.setDiscover();
-        networkLayer.send(null, discoverSegment.toByteArray());
+        networkLayer.send(null, TransportSegment.genDiscoveryPacket().toByteArray());
     }
 
     public void processSendQueue() {
 
-        for(Map.Entry<InetAddress, Queue<Byte>> entry : sendQueues.entrySet()) {
-
-            List<Byte> data = new LinkedList<>();
-
-            Iterator<Byte> it = entry.getValue().iterator();
-
-            while (it.hasNext() && data.size() < 1400) {
-                // Add byte to data to be sent
-                data.add(it.next());
-                // This data will be sent, so it can be removed from the queue
-                it.remove();
-            }
-            byte[] packet = new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray();
-            System.out.println("[TL] [SND]: " + Arrays.toString(packet));
-            networkLayer.send(null, new TransportSegment(data.toArray(new Byte[data.size()])).toByteArray());
-
-
-        }
+        connections.values().forEach(TransportConnection::processSendQueue);
 
     }
 
