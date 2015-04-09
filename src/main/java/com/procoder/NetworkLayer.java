@@ -115,9 +115,8 @@ public class NetworkLayer implements Network {
 			}
 			data = Arrays.copyOfRange(data, HEADER, data.length);
 
-			// FIXME
-			if (/* !source.equals(src) && */
-			(multicast.equals(dest) || source.equals(dest))) {
+			if (!source.equals(src)
+					&& (multicast.equals(dest) || source.equals(dest))) {
 				packet.setData(data);
 				transportLayer.processPacket(packet);
 			}
