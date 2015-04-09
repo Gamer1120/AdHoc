@@ -1,12 +1,6 @@
 package com.procoder.gui;
 
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
-
+import com.procoder.FlagApplicationLayer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -27,9 +21,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
-import com.procoder.FlagApplicationLayer;
 import org.controlsfx.control.PopOver;
+
+import java.net.InetAddress;
+import java.util.*;
 
 
 
