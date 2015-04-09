@@ -7,8 +7,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import com.procoder.FlagApplicationLayer;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -26,6 +24,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import com.procoder.FlagApplicationLayer;
 
 
 
