@@ -239,11 +239,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    public void processFile(File file, String user){
+    public void processFile(String user, File file){
         //TODO
     }
 
-    public void processImage(Image img, String user){
+    public void processImage(String user, Image img){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
