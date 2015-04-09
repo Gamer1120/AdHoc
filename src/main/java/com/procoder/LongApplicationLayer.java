@@ -201,7 +201,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return What type this packet is.
 	 */
 	public PacketType getType(byte[] bytestream) {
-		int packetByte = bytestream[4];
+		int packetByte = bytestream[Long.BYTES + 1];
 		if (packetByte == 0) {
 			return PacketType.TEXT;
 		} else if (packetByte == 1) {
@@ -220,9 +220,9 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return The sender of the packet as String.
 	 */
 	public String getSender(byte[] bytestream) {
-		return bytestream[Long.BYTES + 5] + "." + bytestream[Long.BYTES + 6]
-				+ "." + bytestream[Long.BYTES + 7] + "."
-				+ bytestream[Long.BYTES + 8];
+		return bytestream[Long.BYTES + 2] + "." + bytestream[Long.BYTES + 3]
+				+ "." + bytestream[Long.BYTES + 4] + "."
+				+ bytestream[Long.BYTES + 5];
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	public String getData(byte[] bytestream) {
 		String data = "";
 		try {
-			data = new String(Arrays.copyOfRange(bytestream, Long.BYTES + 9,
+			data = new String(Arrays.copyOfRange(bytestream, Long.BYTES + 6,
 					bytestream.length - 4), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
