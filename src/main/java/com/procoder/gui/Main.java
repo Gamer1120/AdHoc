@@ -1,6 +1,13 @@
 package com.procoder.gui;
 
+import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+
+import com.procoder.FlagApplicationLayer;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -19,14 +26,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import java.net.InetAddress;
-import java.util.*;
 
 
 
 /**
  * Created by reneb_000 on 7-4-2015.
  */
+@SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
     private VBox side;
@@ -41,6 +47,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private TextField text;
     private Insets padding;
     private IdLabel selected;
+ 
+    private InetAddress sender;
+    private FlagApplicationLayer applicationLayer;
 
 
 
@@ -75,6 +84,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         sendString("Ikke", "Dit is een test");
         sendString("Jije", "Dit is er ook nog een");
 
+        sender = InetAddress.getLocalHost();
+        applicationLayer = new FlagApplicationLayer(this);
     }
 
     private void setupCenter() {
@@ -177,11 +188,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 Cloud newCloud = new Cloud(msg, true);
                 h.add(newCloud, false);
                 text.setText("");
-                //scrollPane.setVvalue(1.0);
-                //System.out.println(scrollPane.getViewportBounds() + " Heigt of content " + h.getHeight());
-
-
-                //System.out.println(scrollPane.getHeight());
+                applicationLayer.send(sender, msg);
             }
         }
 

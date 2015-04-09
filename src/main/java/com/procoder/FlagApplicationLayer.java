@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import com.procoder.gui.Main;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
@@ -29,7 +30,7 @@ public class FlagApplicationLayer implements Application {
 	private HashMap<InetAddress, byte[]> receivedPackets;
 
 	private Transport transportLayer;
-	private GUI gui;
+	private Main gui;
 
 	private enum PacketType {
 		UNDEFINED, TEXT, FILE
@@ -41,7 +42,8 @@ public class FlagApplicationLayer implements Application {
 	 * 
 	 * @param gui
 	 */
-	public FlagApplicationLayer(GUI gui) {
+
+	public FlagApplicationLayer(Main gui) {
 		this.gui = gui;
 		this.receivedPackets = new HashMap<InetAddress, byte[]>();
 		this.transportLayer = new TimestampTransport(this);
