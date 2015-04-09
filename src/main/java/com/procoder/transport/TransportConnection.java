@@ -84,7 +84,7 @@ public class TransportConnection {
 
     public void receiveData(TransportSegment segment) {
 
-        System.out.println("[TL] [RCV] Processing segment seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
+        System.out.println("[TL] [RCV] Processing segment from: " + receivingHost + " seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
 
         if(!synReceived) {
             synReceived = segment.isSyn();

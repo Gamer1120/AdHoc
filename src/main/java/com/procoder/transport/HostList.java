@@ -1,18 +1,18 @@
 package com.procoder.transport;
 
 import java.net.InetAddress;
-import java.util.HashMap;
 import java.util.Observable;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HostList extends Observable {
 
     private static final int TTL = 10;
 
-    private HashMap<InetAddress, Integer> hostMap;
+    private ConcurrentHashMap<InetAddress, Integer> hostMap;
 
     public HostList() {
-        hostMap = new HashMap<>();
+        hostMap = new ConcurrentHashMap<>();
     }
 
     public void pingReceived(InetAddress address) {
