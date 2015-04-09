@@ -65,7 +65,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	 *            file.
 	 */
 	@Override
-	public void send(InetAddress dest, Object input) {
+	public void send(InetAddress dest, String input) {
 		byte[] sender = null;
 		try {
 			if (dest != null) {
@@ -84,21 +84,35 @@ public class LongApplicationLayer implements AdhocApplication {
 			e1.printStackTrace();
 		}
 		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
-		if (input instanceof String) {
-			transportLayer.send(dest, packet);
+		transportLayer.send(dest, packet);
 
-		} else if (input instanceof File) {
-			Path path = Paths.get(((File) input).getAbsolutePath());
-			try {
-				transportLayer.send(
-						dest,
-						generatePacket(new byte[] { 1 }, sender,
-								Files.readAllBytes(path)));
-			} catch (IOException e) {
-				System.out.println("Couldn't read file.");
+	}
+	
+	
+
+	@Override
+	public void send(InetAddress dest, File input) {
+		byte[] sender = null;
+		try {
+			if (dest != null) {
+				sender = dest.getAddress();
+			} else {
+				sender = InetAddress.getLocalHost().getAddress();
 			}
+		} catch (UnknownHostException e) {
+			System.out.println("Could not get localhost somehow.");
 		}
-
+		Path path = Paths.get(((File) input).getAbsolutePath());
+		byte[] packet = null;
+		try {
+			packet = generatePacket(new byte[] { 1 }, sender,
+					Files.readAllBytes(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
+		transportLayer.send(dest, packet);
 	}
 
 	/**
@@ -178,18 +192,20 @@ public class LongApplicationLayer implements AdhocApplication {
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
 				PacketType type = getType(message);
-				switch (type){
+				switch (type) {
 				case TEXT:
 					gui.processString(getSender(message), getData(message));
 					break;
 				case FILE:
-					//FIXME
+					// FIXME
 					break;
 				case UNDEFINED:
-					System.out.println("Just received a packet with an undefined type, namely " + message[0]);
+					System.out
+							.println("Just received a packet with an undefined type, namely "
+									+ message[0]);
 					break;
 				}
-				
+
 				savedQueues.message = new LinkedList<Byte>();
 			}
 		}
