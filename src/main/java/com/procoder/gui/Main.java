@@ -269,7 +269,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    private void sendImage(Image img) {
+    private void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -277,7 +277,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 Platform.runLater(new Runnable() {
                     @Override public void run() {
                         if(h!=null){
-                            h.add(new Cloud(img), false);
+                            h.add(new Cloud(new Image(img.toURI().toString())), false);
                         }
                     }
                 });
