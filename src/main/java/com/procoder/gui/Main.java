@@ -70,7 +70,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-
+        sendString("Ikke", "Dit is een test");
+        sendString("Jije", "Dit is er ook nog een");
     }
 
     private void setupCenter() {
@@ -169,7 +170,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     public void sendString(String user, String msg){
         ChatPane h = (ChatPane) scrollPane.getContent();
         if(h!=null){
-            h.add(new Cloud(msg, false),true);
+            h.add(new Cloud(msg, user),true);
             scrollPane.setVvalue(scrollPane.getVmax());
         }
     }
