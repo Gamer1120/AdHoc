@@ -7,21 +7,25 @@ import com.procoder.util.ArrayUtils;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class TransportConnection {
+
+    private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
+    private static final long ACK_TIMEOUT = 1000;
 
 // ------------------ Instance variables ----------------
 
 
     private InetAddress receivingHost;
-    private Queue<TransportSegment> unAckedSegments;
+    private HashMap<Long, ScheduledFuture> unAckedSegmentTasks;
     private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
     private List<Byte> receiveQueue;
     private int receiveQueueOffset;
     private Network networkLayer;
-    private int seq;
-    private int nextAck;
+    private int seq; // Huidige sequence nummer verzendende kant
+    private int nextAck; // Huidige sequence van de ontvangende kant
     private boolean established;
     private boolean synReceived;
 
@@ -33,7 +37,7 @@ public class TransportConnection {
 
     public TransportConnection (InetAddress host, Network networkLayer, AdhocApplication app) {
         receivingHost = host;
-        unAckedSegments = new LinkedList<>();
+        unAckedSegmentTasks = new HashMap<>();
         sendQueue = new LinkedList<>();
         receiveQueue = new LinkedList<>();
         this.networkLayer = networkLayer;
@@ -77,11 +81,15 @@ public class TransportConnection {
             }
             seq += data.size();
             System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
-            networkLayer.send(receivingHost, segment.toByteArray());
 
+            // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
 
-            // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
-            unAckedSegments.add(segment);
+            ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+                networkLayer.send(receivingHost, segment.toByteArray());
+
+            }, 0, 1000, TimeUnit.MILLISECONDS);
+
+            unAckedSegmentTasks.put((long) (segment.seq + segment.data.length), retransmitTask);
             data.clear();
 
         }
@@ -95,8 +103,6 @@ public class TransportConnection {
             synReceived = segment.isSyn();
             nextAck = segment.seq;
         }
-
-        // Dit werkt nog niet voor out of order data
 
         if(synReceived) {
             if(segment.validSeq()) {
@@ -116,8 +122,21 @@ public class TransportConnection {
                     receiveQueue.clear();
                     receiveQueueOffset = nextAck;
 
-                    // Verwijder alle segments met een sequence nummer + size < segment.ack
-                    unAckedSegments.removeIf((TransportSegment seg) -> seg.seq + seg.data.length < segment.ack);
+
+                    // Verwijder alle segments met een seq + length
+
+
+                    Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
+                    while(it.hasNext()) {
+                        Map.Entry<Long, ScheduledFuture> entry = it.next();
+                        if(entry.getKey() < segment.ack) {
+                            entry.getValue().cancel(false);
+                            it.remove();
+                        }
+                    }
+
+
+                    System.out.println("[TL] [RCV] Unacked segment tasks: " + unAckedSegmentTasks);
 
                 } else if (segment.seq > nextAck) {
                     System.out.println("[TL] [RCV] Out-of-order data received");
@@ -129,6 +148,10 @@ public class TransportConnection {
 
 
             }
+
+            TransportSegment ack = new TransportSegment(new Byte[0], seq);
+            ack.setAck(nextAck);
+            networkLayer.send(receivingHost, ack.toByteArray());
 
         }
 
