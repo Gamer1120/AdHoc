@@ -323,8 +323,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
             File file = fileChooser.showOpenDialog(new Stage());
-            Image image = new Image(file.toURI().toString());
-            sendImage(image);
+            //Image image = new Image(file.toURI().toString());
+            sendImage(file);
             popover.hide();
         }
     }
