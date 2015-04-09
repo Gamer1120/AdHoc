@@ -21,7 +21,7 @@ import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.transport.Transport;
 
-public class ApplicationLayer implements Application {
+public class FlagApplicationLayer implements Application {
 
 	private static final String ENCODING = "UTF-8";
 	private static final int BEGIN = 0;
@@ -41,7 +41,7 @@ public class ApplicationLayer implements Application {
 	 * 
 	 * @param gui
 	 */
-	public ApplicationLayer(GUI gui) {
+	public FlagApplicationLayer(GUI gui) {
 		this.gui = gui;
 		this.receivedPackets = new HashMap<InetAddress, byte[]>();
 		this.transportLayer = new TimestampTransport(this);
