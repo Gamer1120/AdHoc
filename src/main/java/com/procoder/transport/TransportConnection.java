@@ -17,12 +17,14 @@ public class TransportConnection {
     private Queue<TransportSegment> unAckedSegments;
     private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
-    private Queue<Byte> receiveQueue;
+    private List<Byte> receiveQueue;
+    private int receiveQueueOffset;
     private Network networkLayer;
     private int seq;
     private int nextAck;
     private boolean established;
     private boolean synReceived;
+
 
 
 
@@ -98,27 +100,41 @@ public class TransportConnection {
 
         if(synReceived) {
             if(segment.validSeq()) {
-                for(byte b : segment.data) {
-                    receiveQueue.add(b);
-                }
                 if(nextAck == segment.seq) {
+
+                    System.out.println("[TL] [RCV] In-order data received");
+
+                    for(byte b : segment.data) {
+                        receiveQueue.add(b);
+                    }
+
                     nextAck += segment.data.length;
                     // We hebben een aaneengesloten serie gegevens.
                     byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
                     DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
                     adhocApplication.processPacket(packet);
                     receiveQueue.clear();
-                    nextAck = segment.seq + segment.data.length;
+                    receiveQueueOffset = nextAck;
 
+                    // Verwijder alle segments met een sequence nummer + size < segment.ack
+                    unAckedSegments.removeIf((TransportSegment seg) -> seg.seq + seg.data.length < segment.ack);
+
+                } else if (segment.seq > nextAck) {
+                    System.out.println("[TL] [RCV] Out-of-order data received");
+                    Iterator<Byte> receivedBytes = Arrays.asList(segment.data).iterator();
+                    for(int i = segment.seq - receiveQueueOffset; receivedBytes.hasNext(); i++) {
+                        receiveQueue.add(i, receivedBytes.next());
+                    }
                 }
+
+
             }
+
+        }
+
         }
 
 
-
-
-
-
-    }
-
 }
+
+
