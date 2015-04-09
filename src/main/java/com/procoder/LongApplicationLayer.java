@@ -6,12 +6,7 @@ package com.procoder;
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter Timmermans s1004751, René Boschma s???
  */
 
-import com.procoder.gui.Main;
-import com.procoder.transport.HostList;
-import com.procoder.transport.TimestampTransport;
-import com.procoder.transport.Transport;
-import com.procoder.util.ArrayUtils;
-
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,6 +21,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javafx.scene.image.Image;
+
+import com.procoder.gui.Main;
+import com.procoder.transport.HostList;
+import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.Transport;
+import com.procoder.util.ArrayUtils;
 
 public class LongApplicationLayer implements AdhocApplication {
 
@@ -65,7 +68,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	 *            file.
 	 */
 	@Override
-	public void send(InetAddress dest, Object input) {
+	public void send(InetAddress dest, String input) {
 		byte[] sender = null;
 		try {
 			if (dest != null) {
@@ -79,26 +82,38 @@ public class LongApplicationLayer implements AdhocApplication {
 		byte[] packet = null;
 		try {
 			packet = generatePacket(new byte[] { 0 }, sender,
-					((String) input).getBytes(ENCODING));
+					input.getBytes(ENCODING));
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
 		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
-		if (input instanceof String) {
-			transportLayer.send(dest, packet);
+		transportLayer.send(dest, packet);
 
-		} else if (input instanceof File) {
-			Path path = Paths.get(((File) input).getAbsolutePath());
-			try {
-				transportLayer.send(
-						dest,
-						generatePacket(new byte[] { 1 }, sender,
-								Files.readAllBytes(path)));
-			} catch (IOException e) {
-				System.out.println("Couldn't read file.");
+	}
+
+	@Override
+	public void send(InetAddress dest, File input) {
+		byte[] sender = null;
+		try {
+			if (dest != null) {
+				sender = dest.getAddress();
+			} else {
+				sender = InetAddress.getLocalHost().getAddress();
 			}
+		} catch (UnknownHostException e) {
+			System.out.println("Could not get localhost somehow.");
 		}
-
+		Path path = Paths.get(input.getAbsolutePath());
+		byte[] packet = null;
+		try {
+			packet = generatePacket(new byte[] { 1 }, sender,
+					Files.readAllBytes(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("[AL] [SND]: " + Arrays.toString(packet));
+		transportLayer.send(dest, packet);
 	}
 
 	/**
@@ -178,18 +193,22 @@ public class LongApplicationLayer implements AdhocApplication {
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
 				PacketType type = getType(message);
-				switch (type){
+				switch (type) {
 				case TEXT:
-					gui.sendString(getSender(message), getData(message));
+					gui.processString(getSender(message), getData(message));
 					break;
 				case FILE:
-					//FIXME
+					ByteArrayInputStream in = new ByteArrayInputStream(
+							Arrays.copyOfRange(message, 5, message.length));
+					gui.processImage(getSender(message), new Image(in));
 					break;
 				case UNDEFINED:
-					System.out.println("Just received a packet with an undefined type, namely " + message[0]);
+					System.out
+							.println("Just received a packet with an undefined type, namely "
+									+ message[0]);
 					break;
 				}
-				
+
 				savedQueues.message = new LinkedList<Byte>();
 			}
 		}
@@ -277,6 +296,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		return retByte;
 	}
 
+	@Override
 	public HostList getKnownHostList() {
 		return transportLayer.getKnownHostList();
 	}
