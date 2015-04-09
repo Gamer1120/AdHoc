@@ -111,7 +111,11 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return A packet with all these combined.
 	 */
 	public byte[] generatePacket(byte[] type, byte[] sender, byte[] data) {
-		return merge(type, merge(sender, data));
+		byte[] message = merge(type, merge(sender, data));
+		ByteBuffer buf = ByteBuffer.allocate(message.length + Long.BYTES);
+		buf.putLong(message.length);
+		buf.put(message);
+		return buf.array();
 	}
 
 	// ---------------//
@@ -122,8 +126,8 @@ public class LongApplicationLayer implements AdhocApplication {
 		Queue<Byte> incoming;
 		Queue<Byte> message;
 		long remaining;
-		
-		public Queues(){
+
+		public Queues() {
 			this.incoming = new LinkedList<Byte>();
 			this.message = new LinkedList<Byte>();
 			this.remaining = 0;
@@ -169,7 +173,9 @@ public class LongApplicationLayer implements AdhocApplication {
 
 			if (savedQueues.remaining == 0) {
 				// Stuur naar GUI en maak de message empty.
-				byte[] message = ArrayUtils.toPrimitiveArray(savedQueues.message.toArray(new Byte[0]));
+				byte[] message = ArrayUtils
+						.toPrimitiveArray(savedQueues.message
+								.toArray(new Byte[0]));
 				gui.sendString(getSender(message), getData(message));
 				savedQueues.message = new LinkedList<Byte>();
 			}
@@ -214,8 +220,9 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return The sender of the packet as String.
 	 */
 	public String getSender(byte[] bytestream) {
-		return bytestream[5] + "." + bytestream[6] + "." + bytestream[7] + "."
-				+ bytestream[8];
+		return bytestream[Long.BYTES + 5] + "." + bytestream[Long.BYTES + 6]
+				+ "." + bytestream[Long.BYTES + 7] + "."
+				+ bytestream[Long.BYTES + 8];
 	}
 
 	/**
@@ -228,16 +235,16 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @throws UnsupportedEncodingException
 	 */
 	public String getData(byte[] bytestream) {
-		String dinges = "";
+		String data = "";
 		try {
-			dinges = new String(Arrays.copyOfRange(bytestream, 9,
+			data = new String(Arrays.copyOfRange(bytestream, Long.BYTES + 9,
 					bytestream.length - 4), ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			System.out.println(ENCODING
 					+ " is not supported on this system. CRASHING...");
 			e.printStackTrace();
 		}
-		return dinges;
+		return data;
 	}
 
 	// --------------- //
