@@ -199,12 +199,12 @@ public class LongApplicationLayer implements AdhocApplication {
                 PacketType type = getType(message);
                 switch (type) {
                 case TEXT:
-                    gui.processString(getSender(message), getData(message));
+                    gui.processString(getSender(message), getDestination(message), getData(message));
                     break;
                 case FILE:
                     ByteArrayInputStream in = new ByteArrayInputStream(
                             Arrays.copyOfRange(message, 5, message.length));
-                    gui.processImage(getSender(message), new Image(in));
+                    gui.processImage(getSender(message), getDestination(message), new Image(in));
                     break;
                 case UNDEFINED:
                     System.out
@@ -216,6 +216,11 @@ public class LongApplicationLayer implements AdhocApplication {
                 savedQueues.message = new LinkedList<Byte>();
             }
         }
+    }
+
+    private String getDestination(byte[] message) {
+        //TODO
+        return null;
     }
 
     public long getLength(byte[] bytestream) {

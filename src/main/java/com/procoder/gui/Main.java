@@ -75,13 +75,8 @@ public class Main extends Application implements
         setupSideBar();
 
         Scene mainScene = new Scene(mainPane, 1000, 900);
-        //System.out.println(this.getClass().getClassLoader().getResource("myStyle.css"));
-        //System.out.println(this.getClass().getClassLoader().getResource("Css.css").getPath());
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
-        //mainScene.getStylesheets().add("Css.css");
-        //addLabel("192.168.2.2");
 
-        // mainScene.getStylesheets().add("Css.css");
         // addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane) scrollPane.getContent();
@@ -218,7 +213,7 @@ public class Main extends Application implements
         selected.setSelected(true);
     }
 
-    @Override
+
     public void addMsg(String msg) {
         // drawPane.getChildren().add(new Label(msg));
         if (!msg.isEmpty()) {
@@ -237,7 +232,7 @@ public class Main extends Application implements
     }
 
     @Override
-    public void processString(String user, String msg) {
+    public void processString(String source, String destination, String msg) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
             @Override
@@ -246,7 +241,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(msg, user), true);
+                            h.add(new Cloud(msg, source), true);
                         }
                     }
                 });
@@ -259,12 +254,12 @@ public class Main extends Application implements
     }
 
     @Override
-    public void processFile(String user, File file) {
+    public void processFile(String source, String destination, File file) {
         // TODO
     }
 
     @Override
-    public void processImage(String user, Image img) {
+    public void processImage(String source, String destination, Image img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
             @Override
@@ -273,7 +268,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(img, user), true);
+                            h.add(new Cloud(img, source), true);
                         }
                     }
                 });
@@ -345,16 +340,7 @@ public class Main extends Application implements
                 popover.show(optionButton);
             }
 
-        } /*else if (event.getSource().equals(popoverMenu.getUploadButton())) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open Resource File");
-            File file = fileChooser.showOpenDialog(new Stage());
-            // Image image = new Image(file.toURI().toString());
-            if (file != null) {
-                sendImage(file);
-            }
-            popover.hide();
-        }*/
+        }
     }
 
     @Override
