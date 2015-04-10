@@ -1,5 +1,8 @@
 0 - Text
-1 - File
+1 - Image
+2 - Music
+3 - File
+
 
 
 1 byte : Wat is het?
