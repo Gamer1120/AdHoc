@@ -215,7 +215,7 @@ public class Main extends Application implements
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
-                    applicationLayer.sendText(sender, msg);
+                    applicationLayer.send(sender, msg);
                 }
             }
         }
@@ -294,7 +294,7 @@ public class Main extends Application implements
         toBottomScroll();
 
         if (!DEBUG) {
-            applicationLayer.sendImage(selected.getInetAdress(), img);
+            applicationLayer.send(selected.getInetAdress(), img);
         }
     }
 
