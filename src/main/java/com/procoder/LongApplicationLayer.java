@@ -156,9 +156,9 @@ public class LongApplicationLayer implements AdhocApplication {
 		int messageSize = sendBytes.length + destBytes.length + 1 + data.length;
 		ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
 		buf.putLong(messageSize);
+		buf.put(typeBytes);
 		buf.put(sendBytes);
 		buf.put(destBytes);
-		buf.put(typeBytes);
 		buf.put(data);
 
 		return buf.array();
@@ -210,7 +210,7 @@ public class LongApplicationLayer implements AdhocApplication {
 							.toArray(new Byte[savedQueues.incoming.size()])));
 			savedQueues.remaining = buf.getLong();
 
-			// Remove the length from the message
+			// Remove the length of one long from the message
 			for (int i = 0; i < Long.BYTES; i++) {
 				savedQueues.incoming.remove();
 			}
