@@ -169,6 +169,13 @@ public class TransportConnection {
                 sendSyn();
             }
             removeAckedSegment(segment);
+        } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
+            established = true;
+            try {
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost() , receivingHost);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         if (established) {
