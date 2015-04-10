@@ -13,3 +13,6 @@ target/
 
 *.iml
 *Thumbs.db
+
+/src/main/resources/adhoc_setup
+/src/main/resources/adhoc_desetup
