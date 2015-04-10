@@ -81,6 +81,8 @@ class TransportSegment {
         buf.put(primBytes);
         buf.flip();
 
+        System.out.println("[TL] [SNC] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
+
 
         return buf.array();
 

@@ -150,6 +150,7 @@ public class TransportConnection {
         System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
         if (!synReceived && segment.isSyn()) {
+            System.out.println("[TL] [RCV] Ik ontvang voor het eerst een SYN");
             synReceived = true;
             nextAck = segment.seq + 1;
             if(synSent) {
