@@ -292,7 +292,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	 */
 	public String parseIP(byte[] byteAddress) {
 		try {
-			return InetAddress.getByAddress(byteAddress).toString();
+			return InetAddress.getByAddress(byteAddress).getHostAddress();
 		} catch (UnknownHostException e) {
 			System.out.println("[AL] [RCD] Kan de bytearray " + byteAddress + " niet omzetten naar een IP adres");
 			return "";
