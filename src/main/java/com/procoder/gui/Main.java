@@ -41,7 +41,7 @@ import com.procoder.LongApplicationLayer;
 @SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
@@ -78,7 +78,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         //System.out.println(this.getClass().getClassLoader().getResource("Css.css").getPath());
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
         //mainScene.getStylesheets().add("Css.css");
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);

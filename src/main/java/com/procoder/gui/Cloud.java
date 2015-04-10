@@ -145,6 +145,7 @@ public class Cloud extends BorderPane {
         triangle.getPoints().addAll(cords);
         Color c = Color.web("#93F58E");
         triangle.setFill(c);
+        //triangle.setStyle("-fx-stroke:#93F58E;");
         return triangle;
     }
 
