@@ -1,18 +1,18 @@
 package com.procoder.transport;
 
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
-
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
 import com.procoder.util.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.util.*;
 
 public class TransportConnection {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
 
     // ------------------ Instance variables ----------------
 
