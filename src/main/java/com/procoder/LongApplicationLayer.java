@@ -17,7 +17,6 @@ import javafx.scene.image.Image;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -153,7 +152,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		byte [] sendBytes = new byte[4];
 		try {
 			sendBytes = NetworkLayer.getLocalHost().getAddress();
-		} catch (SocketException e) {
+		} catch (IOException e) {
 			System.out.println("Oepsie volgens mij ben je niet verbonden met ons supergave ad-hoc netwerk");
 		}
 		byte [] destBytes = destination.getAddress();
