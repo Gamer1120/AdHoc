@@ -65,6 +65,7 @@ public class TransportConnection {
         if (synReceived) {
             syn.setAck(nextAck);
             debug = "[TL] [SND]: Ik stuur nu een SYN ACK";
+            System.out.println(debug + "voor de eerste keer");
         }
 
         final String finalDebug = debug;
@@ -128,6 +129,22 @@ public class TransportConnection {
 
     }
 
+    public void removeAckedSegment(TransportSegment segment) {
+
+        // Verwijder alle niet geackte segments met een seq + length
+
+
+        Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Long, ScheduledFuture> entry = it.next();
+            if (entry.getKey() < segment.ack) {
+                entry.getValue().cancel(false);
+                it.remove();
+            }
+        }
+
+    }
+
     public void receiveData(TransportSegment segment) {
 
         System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
@@ -137,7 +154,10 @@ public class TransportConnection {
             nextAck = segment.seq + 1;
             if(synSent) {
                 established = true;
+            } else {
+                sendSyn();
             }
+            removeAckedSegment(segment);
         }
 
         if (established) {
@@ -158,18 +178,7 @@ public class TransportConnection {
                     receiveQueue.clear();
                     receiveQueueOffset = nextAck;
 
-
-                    // Verwijder alle niet geackte segments met een seq + length
-
-
-                    Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<Long, ScheduledFuture> entry = it.next();
-                        if (entry.getKey() < segment.ack) {
-                            entry.getValue().cancel(false);
-                            it.remove();
-                        }
-                    }
+                    removeAckedSegment(segment);
 
 
                     System.out.println("[TL] [RCV] Unacked segment tasks: " + unAckedSegmentTasks);
