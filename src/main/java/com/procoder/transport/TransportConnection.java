@@ -198,6 +198,8 @@ public class TransportConnection {
             ack.setAck(nextAck);
             networkLayer.send(receivingHost, ack.toByteArray());
 
+        } else if(segment.validAck()) {
+            removeAckedSegment(segment);
         }
 
         processSendQueue();

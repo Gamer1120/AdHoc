@@ -1,14 +1,13 @@
 package com.procoder.transport;
 
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.procoder.AdhocApplication;
 import com.procoder.Network;
 import com.procoder.NetworkLayer;
+
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class TimestampTransport implements Transport {
@@ -76,13 +75,11 @@ public class TimestampTransport implements Transport {
     public void processPacket(DatagramPacket packet) {
         byte[] data = packet.getData();
 
-        System.out.println("[TL] [RCD]: " + Arrays.toString(data));
 
         TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());
-            System.out.println("[TL] Received discovery packet for address" + packet.getAddress());
         } else {
             TransportConnection connection = findConnection(packet.getAddress());
 

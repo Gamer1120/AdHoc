@@ -29,7 +29,6 @@ public class HostList extends Observable {
 
     public void decrementTTL() {
         for(InetAddress a: hostMap.keySet()){
-            System.out.println("[TL] [DISCO]: Host: " + a + " TTL: " + hostMap.get(a));
             int i = hostMap.get(a) -1;
             if(i!=0){
                 hostMap.put(a, i);
@@ -41,7 +40,6 @@ public class HostList extends Observable {
 
 
         }
-        System.out.println("[TL] [Debug]: All hosts in hostlist: " + hostMap.keySet());
     }
 
 
