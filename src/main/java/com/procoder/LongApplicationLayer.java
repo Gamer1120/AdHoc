@@ -7,13 +7,17 @@ package com.procoder;
  *         s1004751, René Boschma s???
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import com.procoder.gui.AdhocGUI;
+import com.procoder.transport.AdhocTransport;
+import com.procoder.transport.HostList;
+import com.procoder.transport.TimestampTransport;
+import com.procoder.util.ArrayUtils;
+import javafx.scene.image.Image;
+
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -23,14 +27,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import javafx.scene.image.Image;
-
-import com.procoder.gui.AdhocGUI;
-import com.procoder.transport.AdhocTransport;
-import com.procoder.transport.HostList;
-import com.procoder.transport.TimestampTransport;
-import com.procoder.util.ArrayUtils;
 
 // TODO Gaat stuk bij IPv6 adressen
 
@@ -100,7 +96,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	public void sendString(InetAddress dest, String input) {
 		byte[] packet = null;
 		try {
-			packet = generatePacket(InetAddress.getLocalHost(), dest, PacketType.TEXT, input.getBytes(ENCODING));
+			packet = generatePacket(dest, PacketType.TEXT, input.getBytes(ENCODING));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -112,7 +108,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
-			packet = generatePacket(InetAddress.getLocalHost(), dest, PacketType.FILE, Files.readAllBytes(path));
+			packet = generatePacket(dest, PacketType.FILE, Files.readAllBytes(path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -124,7 +120,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
-			packet = generatePacket(InetAddress.getLocalHost(), dest, PacketType.IMAGE, Files.readAllBytes(path));
+			packet = generatePacket(dest, PacketType.IMAGE, Files.readAllBytes(path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -137,7 +133,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
-			packet = generatePacket(InetAddress.getLocalHost(), dest, PacketType.FILE, Files.readAllBytes(path));
+			packet = generatePacket(dest, PacketType.FILE, Files.readAllBytes(path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -147,15 +143,19 @@ public class LongApplicationLayer implements AdhocApplication {
 
 	/**
 	 *
-	 * @param sender Afzender van dit bericht
 	 * @param destination Geaddresseerde van dit bericht
 	 * @param type Het type van de data
 	 * @param data De uiteindelijke
 	 * @return
 	 */
-	public byte[] generatePacket(InetAddress sender, InetAddress destination, PacketType type, byte[] data) {
+	public byte[] generatePacket(InetAddress destination, PacketType type, byte[] data) {
 		// TODO Hier localhost gebruiken / de methode van Sven
-		byte [] sendBytes = sender.getAddress();
+		byte [] sendBytes = new byte[4];
+		try {
+			sendBytes = NetworkLayer.getLocalHost().getAddress();
+		} catch (SocketException e) {
+			System.out.println("Oepsie volgens mij ben je niet verbonden met ons supergave ad-hoc netwerk");
+		}
 		byte [] destBytes = destination.getAddress();
 		byte typeBytes = type.toByte();
 		int messageSize = sendBytes.length + destBytes.length + 1 + data.length;
