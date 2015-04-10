@@ -93,6 +93,22 @@ public class NetworkLayer implements AdhocNetwork {
         return netIf;
     }
 
+    public final static InetAddress getLocalHost() throws SocketException {
+        InetAddress localHost = null;
+        loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+                .getNetworkInterfaces(); ifaces.hasMoreElements();) {
+            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
+                    .getInetAddresses(); addresses.hasMoreElements();) {
+                InetAddress address = addresses.nextElement();
+                if (address.getHostName().startsWith("192.168.5.")) {
+                    localHost = address;
+                    break loop;
+                }
+            }
+        }
+        return localHost;
+    }
+
     private boolean addPacket(InetAddress src, byte id) {
         synchronized (packets) {
             if (packets.containsKey(src)) {
