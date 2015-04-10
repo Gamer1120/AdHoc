@@ -83,7 +83,7 @@ class TransportSegment {
 
 
 
-        LOGGER.debug("[TL] [SNC] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
+        LOGGER.debug("[TL] [SND] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
 
         return buf.array();
     }

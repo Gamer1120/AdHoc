@@ -160,7 +160,7 @@ public class TransportConnection {
             nextAck = segment.seq + 1;
             if(synSent) {
                 try {
-                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost() , receivingHost);
+                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getAddress() , receivingHost);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -172,7 +172,7 @@ public class TransportConnection {
         } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
             established = true;
             try {
-                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost() , receivingHost);
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getAddress() , receivingHost);
             } catch (IOException e) {
                 e.printStackTrace();
             }
