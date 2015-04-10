@@ -14,9 +14,10 @@ public class ChatPane extends GridPane {
 
     private int counter;
     private Insets margin = new Insets(10);
+    private IdLabel idLabel;
 
-    public ChatPane() {
-
+    public ChatPane(IdLabel idLabel) {
+        this.idLabel = idLabel;
         counter = 0;
         ColumnConstraints column1 = new ColumnConstraints();
         ColumnConstraints column2 = new ColumnConstraints();
@@ -36,7 +37,9 @@ public class ChatPane extends GridPane {
             this.add(cloud, 0, counter);
         } else {
             this.add(cloud, 1, counter);
+            idLabel.setTextBall();
         }
+
         counter++;
         GridPane.setMargin(cloud, margin);
 
