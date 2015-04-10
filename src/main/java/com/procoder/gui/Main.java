@@ -105,7 +105,7 @@ public class Main extends Application implements
     //Setup
     private void setOwnIp() {
         try {
-            ownIp = InetAddress.getLocalHost().getHostName();
+            ownIp = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -342,7 +342,7 @@ public class Main extends Application implements
 
         newAdress.removeAll(knownAdresses);
         for (InetAddress a : newAdress) {
-            Platform.runLater(() -> addLabel(a.toString()));
+            Platform.runLater(() -> addLabel(a.getHostAddress()));
 
             knownAdresses.add(a);
         }
@@ -360,7 +360,7 @@ public class Main extends Application implements
     }
     private IdLabel getIdLabel(InetAddress a) {
         for (IdLabel i : chatMap.keySet()) {
-            if (i.getAdress().equals(a.getHostName())) {
+            if (i.getAdress().equals(a.getHostAddress())) {
                 return i;
             }
         }

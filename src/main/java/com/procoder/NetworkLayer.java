@@ -93,8 +93,8 @@ public class NetworkLayer implements AdhocNetwork {
         return netIf;
     }
 
-    public final static InetAddress getLocalHost() throws SocketException {
-        InetAddress localHost = null;
+    public final static InetAddress getLocalHost() throws IOException {
+        InetAddress localHost = InetAddress.getLocalHost();
         loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
                 .getNetworkInterfaces(); ifaces.hasMoreElements();) {
             for (Enumeration<InetAddress> addresses = ifaces.nextElement()
