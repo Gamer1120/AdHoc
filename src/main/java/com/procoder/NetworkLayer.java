@@ -114,7 +114,7 @@ public class NetworkLayer implements AdhocNetwork {
     }
 
     private void clearPackets(Set<Byte> ids, byte id) {
-        for (byte i = 63; i < 128; i++) {
+        for (byte i = -64; i > -128; i--) {
             ids.remove(id + i);
         }
     }
