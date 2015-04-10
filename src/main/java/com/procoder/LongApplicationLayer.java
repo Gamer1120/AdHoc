@@ -27,6 +27,7 @@ import javafx.scene.image.Image;
 
 import com.procoder.gui.AdhocGUI;
 import com.procoder.transport.AdhocTransport;
+import com.procoder.transport.DummyTransport;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TimestampTransport;
 import com.procoder.util.ArrayUtils;
@@ -53,7 +54,7 @@ public class LongApplicationLayer implements AdhocApplication {
     public LongApplicationLayer(AdhocGUI gui) {
         this.gui = gui;
         this.receivedPackets = new HashMap<InetAddress, Queues>();
-        this.transportLayer = new TimestampTransport(this);
+        this.transportLayer = new DummyTransport(this);
     }
 
     // ---------------------------//
