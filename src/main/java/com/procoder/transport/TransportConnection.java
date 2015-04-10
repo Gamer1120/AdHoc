@@ -2,10 +2,12 @@ package com.procoder.transport;
 
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
+import com.procoder.NetworkLayer;
 import com.procoder.util.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.*;
@@ -157,6 +159,11 @@ public class TransportConnection {
             synReceived = true;
             nextAck = segment.seq + 1;
             if(synSent) {
+                try {
+                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost() , receivingHost);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 established = true;
             } else {
                 sendSyn();
