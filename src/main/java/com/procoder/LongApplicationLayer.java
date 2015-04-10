@@ -9,7 +9,6 @@ package com.procoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
@@ -42,7 +41,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	private AdhocGUI gui;
 
 	private enum PacketType {
-		TEXT, IMAGE, AUDIO, FILE, UNDEFINED;
+		TEXT, IMAGE, MUSIC, FILE, UNDEFINED;
 
 		public byte toByte() {
 			switch (this) {
@@ -50,7 +49,7 @@ public class LongApplicationLayer implements AdhocApplication {
 				return 0;
 			case IMAGE:
 				return 1;
-			case AUDIO:
+			case MUSIC:
 				return 2;
 			case FILE:
 				return 3;
@@ -132,7 +131,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	}
 
 	@Override
-	public void sendAudio(InetAddress dest, File input) {
+	public void sendMusic(InetAddress dest, File input) {
 		byte[] sender = null;
 		try {
 			if (dest != null) {
@@ -146,7 +145,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
-			packet = generatePacket(new byte[] { PacketType.AUDIO.toByte() },
+			packet = generatePacket(new byte[] { PacketType.MUSIC.toByte() },
 					sender, Files.readAllBytes(path));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -175,7 +174,7 @@ public class LongApplicationLayer implements AdhocApplication {
 			e.printStackTrace();
 		}
 		transportLayer.send(dest, packet);
-
+		
 	}
 
 	/**
@@ -269,29 +268,11 @@ public class LongApplicationLayer implements AdhocApplication {
 							Arrays.copyOfRange(message, 5, message.length));
 					gui.processImage(getSender(message), new Image(in));
 					break;
-				case AUDIO:
-					String audioname = System.currentTimeMillis()+".audiofile";
-					try{
-					FileOutputStream aos = 
-	                  new FileOutputStream("receivedFile.file");
-					aos.write(Arrays.copyOfRange(message, 5, message.length));
-					aos.close();}
-					catch (IOException e){
-						e.printStackTrace();
-					}
-					gui.processFile(getSender(message), new File(audioname));
+				case MUSIC:
+					//FIXME
 					break;
 				case FILE:
-					String filename = System.currentTimeMillis()+".file";
-					try{
-					FileOutputStream aos = 
-	                  new FileOutputStream("receivedFile.file");
-					aos.write(Arrays.copyOfRange(message, 5, message.length));
-					aos.close();}
-					catch (IOException e){
-						e.printStackTrace();
-					}
-					gui.processFile(getSender(message), new File(filename));
+					//FIXME
 					break;
 				case UNDEFINED:
 					System.out
