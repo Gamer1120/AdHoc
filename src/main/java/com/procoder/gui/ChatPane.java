@@ -1,6 +1,8 @@
 package com.procoder.gui;
 
 import javafx.geometry.Insets;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
@@ -23,6 +25,7 @@ public class ChatPane extends GridPane {
         column2.setPercentWidth(50);
 
         this.getColumnConstraints().addAll(column1, column2);
+        this.setStyle("-fx-control-inner-background:transparent;-fx-background-color:transparent;");
         //this.setMar(new Insets(10));
     }
 
@@ -37,6 +40,10 @@ public class ChatPane extends GridPane {
         counter++;
         GridPane.setMargin(cloud, margin);
 
+    }
+
+    public void setBg(Background img){
+        this.setBackground(img);
     }
 
 

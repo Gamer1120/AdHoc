@@ -1,14 +1,13 @@
 package com.procoder.gui;
 
 
-import java.io.File;
+import java.io.*;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -26,7 +25,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -43,7 +41,7 @@ import com.procoder.LongApplicationLayer;
 @SuppressWarnings("restriction")
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private VBox side;
     private BorderPane mainPane;
@@ -76,9 +74,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         setupSideBar();
 
         Scene mainScene = new Scene(mainPane, 1000, 900);
-
+        //System.out.println(this.getClass().getClassLoader().getResource("myStyle.css"));
+        //System.out.println(this.getClass().getClassLoader().getResource("Css.css").getPath());
+        mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
         //mainScene.getStylesheets().add("Css.css");
-        //addLabel("192.168.2.2");
+        addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane)scrollPane.getContent();
         //h.add(new Cloud("test", false), true);
@@ -110,12 +110,14 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         scrollPane = new ScrollPane();
         scrollPane.setPrefHeight(Double.MAX_VALUE);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;");
+        //scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;-fx-background-size:contain;");
+        scrollPane.setId("scroll");
+        setBgScrollpane();
         //scrollPane.setPrefViewportHeight(500);
         scrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if(event.getCode()==KeyCode.SPACE){
+                if (event.getCode() == KeyCode.SPACE) {
                     scrollPane.setVvalue(scrollPane.getVmax());
                     System.out.println("SCROLLED");
                 }
@@ -156,6 +158,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         center.setBottom(commandPanel);
         center.setCenter(scrollPane);
         mainPane.setCenter(center);
+    }
+
+    private void setBgScrollpane() {
+        File file = new File("background.png");
+        scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
     }
 
     private void setupSideBar() {
@@ -269,7 +276,11 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-    private void sendImage(File img) {
+    public void processAudio(String user, File sound){
+        //TODO
+    }
+
+    public void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task(){
             @Override
@@ -323,15 +334,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 popover.show(optionButton);
             }
 
-        }else if(event.getSource().equals(popoverMenu.getUploadButton())){
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open Resource File");
-            File file = fileChooser.showOpenDialog(new Stage());
-            //Image image = new Image(file.toURI().toString());
-            if(file!=null) {
-                sendImage(file);
-            }
-            popover.hide();
         }
     }
 
@@ -363,7 +365,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public void updateStatus(InetAddress address, boolean active) {
         Platform.runLater(() -> {
-            if(active) {
+            if (active) {
                 setActive(address);
             } else {
                 setInactive(address);
@@ -400,5 +402,20 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     public static void main(String[] args){
         launch();
+    }
+
+    public PopOver getPopover() {
+        return popover;
+    }
+
+    public HashMap<IdLabel, ChatPane> getChatMap(){
+        return chatMap;
+    }
+    public IdLabel getSelected(){
+        return selected;
+    }
+
+    public ScrollPane getScrollPane() {
+        return scrollPane;
     }
 }
