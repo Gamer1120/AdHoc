@@ -211,7 +211,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(msg, source), true);
+                            h.add(new StringCloud(msg, source), true);
                         }
                     }
                 });
@@ -236,7 +236,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(img, source), true);
+                            h.add(new ImageCloud(img, source), true);
                         }
                     }
                 });
@@ -261,7 +261,7 @@ public class Main extends Application implements
         if (!msg.isEmpty()) {
             ChatPane h = (ChatPane) scrollPane.getContent();
             if (h != null) {
-                Cloud newCloud = new Cloud(msg, true);
+                Cloud newCloud = new StringCloud(msg);
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
@@ -281,7 +281,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(new Image(img.toURI().toString())),
+                            h.add(new ImageCloud(new Image(img.toURI().toString())),
                                     false);
                         }
                     }

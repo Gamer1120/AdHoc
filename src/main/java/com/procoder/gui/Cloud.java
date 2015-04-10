@@ -18,61 +18,61 @@ public class Cloud extends BorderPane {
 
     private double widht = 300;
     private double height = 100;
-    private double maxWidth = 300;
+    protected double maxWidth = 300;
     private Label message;
     private Label userLabel;
     private ImageView imageView;
 
-    // true voor bollonnetje voor rechts, false voor ballontje voor links
-    public Cloud(String msg, boolean right) {
-        messageSetup(msg, right);
-        this.setCenter(message);
-    }
 
-    private void messageSetup(String msg, boolean right) {
-        message = new Label(msg);
-        message.setPrefWidth(maxWidth);
-        message.setMinHeight(25);
-        message.setPadding(new Insets(5, 10, 5, 10));
-        message.setWrapText(true);
+    protected VBox vbox;
+    protected String messageStyle = "-fx-font-size:18px;";
+
+
+    // true voor bollonnetje voor rechts, false voor ballontje voor links
+    public Cloud(boolean right){
+        vbox = new VBox();
         Polygon p;
-        if (right) {
-            message.setStyle("-fx-background-color: #93F58E; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;-fx-font-size:18px;");
-            // box.getChildren().addAll(getLeftTriangle(), message);
+        if(right){
             p = getLeftTriangle();
             this.setLeft(p);
             BorderPane.setAlignment(p, Pos.CENTER_RIGHT);
-            BorderPane.setAlignment(message, Pos.CENTER_LEFT);
+            BorderPane.setAlignment(vbox, Pos.CENTER_LEFT);
+            vbox.setStyle("-fx-background-color: #93F58E; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
         } else {
-            message.setStyle("-fx-background-color: #E8E8E8; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;-fx-font-size:18px;");
-            // box.getChildren().addAll(message, getRightTriangle());
             p = getRightTriangle();
             this.setRight(p);
             BorderPane.setAlignment(p, Pos.CENTER_LEFT);
-            BorderPane.setAlignment(message, Pos.CENTER_RIGHT);
+            BorderPane.setAlignment(vbox, Pos.CENTER_RIGHT);
+            vbox.setStyle("-fx-background-color: #E8E8E8; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
         }
-
-        // this.setCenter(message);
-
-    }
-
-    public Cloud(String msg, String user) {
-        VBox vbox = new VBox();
-        messageSetup(msg, false);
-
-        Label userLabel = new Label(user);
-        userLabel.setMinHeight(25);
-        userLabel.setPadding(new Insets(0, 10, 0, 10));
-        userLabel.setWrapText(true);
-        vbox.getChildren().addAll(userLabel, message);
-        userLabel
-                .setStyle("-fx-font-size:12px;-fx-font-style:italic;-fx-font-fill:#FFFFFF;"); // TODO
-                                                                                              // change
-                                                                                              // color
-        vbox.setStyle("-fx-background-color: #E8E8E8; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
+        vbox.paddingProperty().setValue(new Insets(0,0,0,10));
+        //vbox.setAlignment(Pos.CENTER_LEFT);
+        this.setMinHeight(25);
+        this.setMinWidth(maxWidth);
         this.setCenter(vbox);
+
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     private void imageSetup(Image img, boolean right) {
         imageView = new ImageView(img);
         if (img.getWidth() > maxWidth - 20) {
@@ -140,7 +140,7 @@ public class Cloud extends BorderPane {
         BorderPane.setAlignment(imageView, Pos.CENTER);
         this.setCenter(vbox);
         // this.setCenter(message);
-    }
+    }*/
 
     private Polygon getLeftTriangle() {
         Polygon triangle = new Polygon();

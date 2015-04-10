@@ -30,7 +30,6 @@ public class IdLabel extends BorderPane {
     private boolean selected;
 
     public IdLabel(String name) {
-
         adress = name;
         counter = 0;
         selected = false;
@@ -42,7 +41,6 @@ public class IdLabel extends BorderPane {
         if (name.equals("AllChat")) {
             image = new Image(this.getClass().getClassLoader().getResourceAsStream("group.png"));
             img = new ImageView();
-
         } else {
             image = new Image(this.getClass().getClassLoader().getResourceAsStream("alone.png"));
             img = new ImageView();
@@ -55,8 +53,6 @@ public class IdLabel extends BorderPane {
         //statusView = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
         statusView = new Label("0");
         statusView.setPrefSize(25, 25);
-        //Image green = new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png"));
-        //statusView.setBackground(new Background(new BackgroundImage(green, )));
         statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background-image:url(greenBall.png);");
         statusView.setAlignment(Pos.CENTER);
         BorderPane.setAlignment(img, Pos.CENTER_LEFT);
@@ -69,9 +65,6 @@ public class IdLabel extends BorderPane {
         BorderPane.setMargin(img, new Insets(10));
         BorderPane.setMargin(statusView, new Insets(10));
 
-        // this.getChildren().addAll(img, label, statusView);
-        // this.setAlignment(Pos.CENTER);
-        // this.setSpacing(20);
 
     }
 
@@ -98,7 +91,6 @@ public class IdLabel extends BorderPane {
         if(!selected) {
             counter++;
             statusView.setText("" + (counter));
-            System.out.println("counter set " + counter);
         }
     }
 
