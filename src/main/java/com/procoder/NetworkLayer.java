@@ -93,61 +93,129 @@ public class NetworkLayer implements AdhocNetwork {
         return netIf;
     }
 
+    public final static InetAddress getLocalHost() throws SocketException {
+        InetAddress localHost = null;
+        loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+                .getNetworkInterfaces(); ifaces.hasMoreElements();) {
+            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
+                    .getInetAddresses(); addresses.hasMoreElements();) {
+                InetAddress address = addresses.nextElement();
+                if (address.getHostName().startsWith("192.168.5.")) {
+                    localHost = address;
+                    break loop;
+                }
+            }
+        }
+        return localHost;
+    }
+
     private boolean addPacket(InetAddress src, byte id) {
-        if (packets.containsKey(src)) {
-            Set<Byte> ids = packets.get(src);
-            if (ids.contains(id)) {
-                return false;
+        synchronized (packets) {
+            if (packets.containsKey(src)) {
+                Set<Byte> ids = packets.get(src);
+                if (ids.contains(id)) {
+                    return false;
+                } else {
+                    ids.add(id);
+                    clearPackets(ids, id);
+                    return true;
+                }
             } else {
+                Set<Byte> ids = new HashSet<Byte>();
                 ids.add(id);
-                ids.remove(id + 1);
+                packets.put(src, ids);
                 return true;
             }
+        }
+    }
+
+    private void clearPackets(Set<Byte> ids, byte id) {
+        for (byte i = -64; i > -128; i--) {
+            ids.remove(id + i);
+        }
+    }
+
+    private void removePacket(InetAddress src) {
+        synchronized (packets) {
+            if (packets.containsKey(src)) {
+                packets.remove(src);
+                initialPacket(src);
+            }
+        }
+    }
+
+    private void initialPacket(InetAddress src) {
+        DatagramPacket packet = new DatagramPacket(src.getAddress(), IPLENGTH,
+                multicast, PORT);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void receivePacket() {
+        // Receive packets and forward them to the transport layer
+        DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (packet.getLength() < HEADER) {
+            byte[] data = Arrays.copyOfRange(packet.getData(), 0, IPLENGTH);
+            processInitial(data);
         } else {
-            Set<Byte> ids = new HashSet<Byte>();
-            ids.add(id);
-            packets.put(src, ids);
-            return true;
+            byte[] data = Arrays.copyOfRange(packet.getData(), 0,
+                    packet.getLength());
+            processPacket(packet, data);
+        }
+    }
+
+    private void processInitial(byte[] data) {
+        InetAddress src = null;
+        try {
+            src = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
+                    IPLENGTH + 1));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        removePacket(src);
+    }
+
+    private void processPacket(DatagramPacket packet, byte[] data) {
+        byte packetId = data[0];
+
+        InetAddress src = null;
+        InetAddress dest = null;
+        try {
+            src = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
+                    IPLENGTH + 1));
+            dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
+                    IPLENGTH + 1, HEADER));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        data = Arrays.copyOfRange(data, HEADER, data.length);
+        if (addPacket(src, packetId)) {
+            if (multicast.equals(dest)) {
+                send(src, dest, packetId, data);
+                packet.setData(data);
+                transportLayer.processPacket(packet);
+            } else if (source.equals(dest)) {
+                packet.setData(data);
+                transportLayer.processPacket(packet);
+            } else {
+                send(src, dest, packetId, data);
+            }
         }
     }
 
     @Override
     public void run() {
-        // Receive packets and forward them to the transport layer
+        initialPacket(source);
         while (true) {
-            DatagramPacket packet = new DatagramPacket(new byte[LENGTH], LENGTH);
-            try {
-                socket.receive(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            byte[] data = Arrays.copyOfRange(packet.getData(), 0,
-                    packet.getLength());
-            byte packetId = data[0];
-
-            InetAddress src = null;
-            InetAddress dest = null;
-            try {
-                src = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
-                        IPLENGTH + 1));
-                dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
-                        IPLENGTH + 1, HEADER));
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
-            data = Arrays.copyOfRange(data, HEADER, data.length);
-            if (addPacket(src, packetId)) {
-                if (multicast.equals(dest)) {
-                    send(src, dest, packetId, data);
-                    packet.setData(data);
-                    transportLayer.processPacket(packet);
-                } else if (source.equals(dest)) {
-                    packet.setData(data);
-                    transportLayer.processPacket(packet);
-                } else {
-                    send(src, dest, packetId, data);
-                }
-            }
+            receivePacket();
         }
     }
 }
