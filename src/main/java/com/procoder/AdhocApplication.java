@@ -15,7 +15,7 @@ public interface AdhocApplication {
 
 	public void sendImage(InetAddress dest, File input);
 
-	public void sendMusic(InetAddress dest, File input);
+	public void sendAudio(InetAddress dest, File input);
 
 	public void sendFile(InetAddress dest, File input);
 
