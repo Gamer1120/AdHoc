@@ -1,14 +1,8 @@
 package com.procoder.gui;
 
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
+import com.procoder.AdhocApplication;
+import com.procoder.LongApplicationLayer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -26,14 +20,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
 import org.controlsfx.control.PopOver;
 
-import com.procoder.AdhocApplication;
-import com.procoder.LongApplicationLayer;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Created by reneb_000 on 7-4-2015.
@@ -272,7 +266,7 @@ public class Main extends Application implements
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
-                    applicationLayer.send(sender, msg);
+                    applicationLayer.sendString(sender, msg);
                 }
             }
         }
@@ -301,7 +295,7 @@ public class Main extends Application implements
         toBottomScroll();
 
         if (!DEBUG) {
-            applicationLayer.send(selected.getInetAdress(), img);
+            applicationLayer.sendImage(selected.getInetAdress(), img);
         }
     }
     public void sendFile(File file){
