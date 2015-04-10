@@ -115,7 +115,7 @@ public class TransportConnection {
                     segment.setAck(nextAck);
                 }
                 seq += data.size();
-                LOGGER.debug("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
+                LOGGER.debug("[TL] [SND]: {}", segment.data.length);
 
                 // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
 
