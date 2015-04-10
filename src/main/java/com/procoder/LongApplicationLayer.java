@@ -7,14 +7,11 @@ package com.procoder;
  *         s1004751, René Boschma s???
  */
 
-import com.procoder.gui.AdhocGUI;
-import com.procoder.transport.AdhocTransport;
-import com.procoder.transport.DummyTransport;
-import com.procoder.transport.HostList;
-import com.procoder.util.ArrayUtils;
-import javafx.scene.image.Image;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -26,6 +23,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javafx.scene.image.Image;
+
+import com.procoder.gui.AdhocGUI;
+import com.procoder.transport.AdhocTransport;
+import com.procoder.transport.HostList;
+import com.procoder.transport.TimestampTransport;
+import com.procoder.util.ArrayUtils;
 
 // TODO Gaat stuk bij IPv6 adressen
 
@@ -75,7 +80,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	public LongApplicationLayer(AdhocGUI gui) {
 		this.gui = gui;
 		this.receivedPackets = new HashMap<InetAddress, Queues>();
-		this.transportLayer = new DummyTransport(this);
+		this.transportLayer = new TimestampTransport(this);
 	}
 
 	// ---------------------------//
