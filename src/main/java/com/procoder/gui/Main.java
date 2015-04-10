@@ -36,6 +36,9 @@ import java.util.*;
 public class Main extends Application implements
         EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
+    public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
+
+
     private static final boolean DEBUG = true;
 
     private VBox side;
@@ -71,7 +74,6 @@ public class Main extends Application implements
         setOwnIp();
         setupCenter();
         setupSideBar();
-
         Scene mainScene = new Scene(mainPane, 1000, 900);
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
@@ -224,7 +226,24 @@ public class Main extends Application implements
     }
     @Override
     public void processFile(String source, String destination, File file) {
-        // TODO
+        ChatPane h = getChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new FileCloud(file, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
     }
     @Override
     public void processImage(String source, String destination, Image img) {
@@ -298,7 +317,28 @@ public class Main extends Application implements
         }
     }
     public void sendFile(File file){
-        //TODO
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new FileCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+
+        if (!DEBUG) {
+            applicationLayer.sendFile(selected.getInetAdress(), file);
+        }
     }
     public void sendAudio(File file){
         //todo

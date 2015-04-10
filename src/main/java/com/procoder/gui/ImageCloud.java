@@ -21,6 +21,8 @@ public class ImageCloud extends Cloud {
             imageView.setFitHeight(img.getHeight() / scale);
         }
         imageView.minHeight(25);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(10));
         vbox.getChildren().add(imageView);
     }
 
@@ -39,6 +41,8 @@ public class ImageCloud extends Cloud {
         userLabel.setPadding(new Insets(0, 0, 0, 10));
         userLabel.setStyle("-fx-font-size:12px;-fx-font-style:italic;");
         userLabel.setAlignment(Pos.CENTER_LEFT);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(10));
         vbox.getChildren().addAll(userLabel, imageView);
     }
 }

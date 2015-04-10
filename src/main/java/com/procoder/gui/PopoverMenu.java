@@ -66,9 +66,17 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             File file = fileChooser.showOpenDialog(new Stage());
             //Image image = new Image(file.toURI().toString());
             if(file!=null) {
-                main.sendImage(file);
+                String[] s = file.getName().split("\\.");
+                if(Main.images.contains(s[s.length-1])){
+                    main.sendImage(file);
+                }else{
+                    main.sendFile(file);
+                }
             }
             main.getPopover().hide();
+
+
+
         }else if(event.getSource().equals(backgroundButton)){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open background file");
