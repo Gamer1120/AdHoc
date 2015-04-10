@@ -101,7 +101,7 @@ public class NetworkLayer implements AdhocNetwork {
                     return false;
                 } else {
                     ids.add(id);
-                    ids.remove(id + 1);
+                    clearPackets(ids, id);
                     return true;
                 }
             } else {
@@ -110,6 +110,12 @@ public class NetworkLayer implements AdhocNetwork {
                 packets.put(src, ids);
                 return true;
             }
+        }
+    }
+
+    private void clearPackets(Set<Byte> ids, byte id) {
+        for (byte i = 63; i < 128; i++) {
+            ids.remove(id + i);
         }
     }
 
