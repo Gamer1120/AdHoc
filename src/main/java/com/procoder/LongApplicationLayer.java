@@ -53,7 +53,7 @@ public class LongApplicationLayer implements AdhocApplication {
 			}
 
 		public static PacketType parseByte(byte b) {
-			PacketType result = null;
+			PacketType result = UNDEFINED;
 			for(PacketType type : PacketType.values()) {
 				if(type.number == b) {
 					result = type;
@@ -235,10 +235,10 @@ public class LongApplicationLayer implements AdhocApplication {
 				byte[] dataBytes = Arrays.copyOfRange(message, 9, message.length);
 				switch (type) {
 					case TEXT:
-						gui.processString(parseIP(senderBytes), parseIP(destenBytes), getData(message));
+						gui.processString(parseIP(senderBytes), parseIP(destenBytes), getData(dataBytes));
 						break;
 					case IMAGE:
-						ByteArrayInputStream in = new ByteArrayInputStream(message);
+						ByteArrayInputStream in = new ByteArrayInputStream(dataBytes);
 						gui.processImage(parseIP(senderBytes), parseIP(destenBytes), new Image(in));
 						break;
 					case AUDIO:
@@ -246,7 +246,7 @@ public class LongApplicationLayer implements AdhocApplication {
 						try{
 							FileOutputStream aos =
 									new FileOutputStream("receivedFile.file");
-							aos.write(message);
+							aos.write(dataBytes);
 							aos.close();}
 						catch (IOException e){
 							e.printStackTrace();
@@ -258,7 +258,7 @@ public class LongApplicationLayer implements AdhocApplication {
 						try{
 							FileOutputStream aos =
 									new FileOutputStream("receivedFile.file");
-							aos.write(message);
+							aos.write(dataBytes);
 							aos.close();}
 						catch (IOException e){
 							e.printStackTrace();
