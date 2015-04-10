@@ -9,8 +9,8 @@ package com.procoder;
 
 import com.procoder.gui.AdhocGUI;
 import com.procoder.transport.AdhocTransport;
+import com.procoder.transport.DummyTransport;
 import com.procoder.transport.HostList;
-import com.procoder.transport.TimestampTransport;
 import com.procoder.util.ArrayUtils;
 import javafx.scene.image.Image;
 
@@ -75,7 +75,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	public LongApplicationLayer(AdhocGUI gui) {
 		this.gui = gui;
 		this.receivedPackets = new HashMap<InetAddress, Queues>();
-		this.transportLayer = new TimestampTransport(this);
+		this.transportLayer = new DummyTransport(this);
 	}
 
 	// ---------------------------//
@@ -116,6 +116,14 @@ public class LongApplicationLayer implements AdhocApplication {
 
 	@Override
 	public void sendImage(InetAddress dest, File input) {
+		Path path = Paths.get(input.getAbsolutePath());
+		byte[] packet = null;
+		try {
+			packet = generatePacket(InetAddress.getLocalHost(), dest, PacketType.IMAGE, Files.readAllBytes(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		transportLayer.send(dest, packet);
 
 	}
 
@@ -145,7 +153,9 @@ public class LongApplicationLayer implements AdhocApplication {
 		byte [] sendBytes = sender.getAddress();
 		byte [] destBytes = destination.getAddress();
 		byte typeBytes = type.toByte();
-		ByteBuffer buf = ByteBuffer.allocate(sendBytes.length + destBytes.length + 1 + data.length);
+		int messageSize = sendBytes.length + destBytes.length + 1 + data.length;
+		ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
+		buf.putLong(messageSize);
 		buf.put(sendBytes);
 		buf.put(destBytes);
 		buf.put(typeBytes);

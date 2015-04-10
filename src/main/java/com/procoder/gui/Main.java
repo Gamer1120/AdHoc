@@ -36,7 +36,7 @@ import java.util.*;
 public class Main extends Application implements
         EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
