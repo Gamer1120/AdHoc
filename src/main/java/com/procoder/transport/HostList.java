@@ -16,7 +16,7 @@ public class HostList extends Observable {
     }
 
     public void pingReceived(InetAddress address) {
-        if(!hostMap.containsKey(address)) {
+        if (!hostMap.containsKey(address)) {
             setChanged();
         }
         hostMap.put(address, TTL);
@@ -28,21 +28,15 @@ public class HostList extends Observable {
     }
 
     public void decrementTTL() {
-        for(InetAddress a: hostMap.keySet()){
-            System.out.println("[TL] [DISCO]: Host: " + a + " TTL: " + hostMap.get(a));
-            int i = hostMap.get(a) -1;
-            if(i!=0){
+        for (InetAddress a : hostMap.keySet()) {
+            int i = hostMap.get(a) - 1;
+            if (i != 0) {
                 hostMap.put(a, i);
-            }else{
+            } else {
                 hostMap.remove(a);
                 setChanged();
                 notifyObservers(hostMap.keySet());
             }
-
-
         }
-        System.out.println("[TL] [Debug]: All hosts in hostlist: " + hostMap.keySet());
     }
-
-
 }

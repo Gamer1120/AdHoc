@@ -2,7 +2,6 @@ package com.procoder.transport;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,31 +9,28 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.procoder.AdhocApplication;
-import com.procoder.Network;
+import com.procoder.AdhocNetwork;
 import com.procoder.util.ArrayUtils;
 
 public class TransportConnection {
 
-// ------------------ Instance variables ----------------
-
+    // ------------------ Instance variables ----------------
 
     private InetAddress receivingHost;
     private Queue<TransportSegment> unAckedSegments;
     private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
     private Queue<Byte> receiveQueue;
-    private Network networkLayer;
+    private AdhocNetwork networkLayer;
     private int seq;
     private int nextAck;
     private boolean established;
     private boolean synReceived;
 
+    // --------------------- Constructors -------------------
 
-
-
-// --------------------- Constructors -------------------
-
-    public TransportConnection (InetAddress host, Network networkLayer, AdhocApplication app) {
+    public TransportConnection(InetAddress host, AdhocNetwork networkLayer,
+            AdhocApplication app) {
         receivingHost = host;
         unAckedSegments = new LinkedList<>();
         sendQueue = new LinkedList<>();
@@ -46,17 +42,15 @@ public class TransportConnection {
         adhocApplication = app;
     }
 
-// ----------------------- Queries ----------------------
+    // ----------------------- Queries ----------------------
 
-// ----------------------- Commands ---------------------
+    // ----------------------- Commands ---------------------
 
     public void sendByte(byte b) {
         sendQueue.add(b);
     }
 
     public void processSendQueue() {
-
-
 
         List<Byte> data = new LinkedList<>();
 
@@ -70,7 +64,8 @@ public class TransportConnection {
                 // This data will be sent, so it can be removed from the queue
                 it.remove();
             }
-            TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]), seq);
+            TransportSegment segment = new TransportSegment(
+                    data.toArray(new Byte[data.size()]), seq);
             if (!established) {
                 segment.setSyn();
                 established = true;
@@ -79,38 +74,35 @@ public class TransportConnection {
                 segment.setAck(nextAck);
             }
             seq += data.size();
-            System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
+
             networkLayer.send(receivingHost, segment.toByteArray());
 
-
-            // Segment is nog niet geacked dus toevoegen aan de ongeackte segments.
+            // Segment is nog niet geacked dus toevoegen aan de ongeackte
+            // segments.
             unAckedSegments.add(segment);
             data.clear();
-
         }
     }
 
     public void receiveData(TransportSegment segment) {
-
-        System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
-
-        if(!synReceived) {
+        if (!synReceived) {
             synReceived = segment.isSyn();
             nextAck = segment.seq;
         }
 
         // Dit werkt nog niet voor out of order data
-
-        if(synReceived) {
-            if(segment.validSeq()) {
-                for(byte b : segment.data) {
+        if (synReceived) {
+            if (segment.validSeq()) {
+                for (byte b : segment.data) {
                     receiveQueue.add(b);
                 }
-                if(nextAck == segment.seq) {
+                if (nextAck == segment.seq) {
                     nextAck += segment.data.length;
                     // We hebben een aaneengesloten serie gegevens.
-                    byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
-                    DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
+                    byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue
+                            .toArray(new Byte[0]));
+                    DatagramPacket packet = new DatagramPacket(data,
+                            data.length, receivingHost, 0);
                     adhocApplication.processPacket(packet);
                     receiveQueue.clear();
                     nextAck = segment.seq + segment.data.length;
@@ -118,12 +110,5 @@ public class TransportConnection {
                 }
             }
         }
-
-
-
-
-
-
     }
-
 }

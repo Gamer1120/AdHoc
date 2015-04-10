@@ -18,6 +18,7 @@ import java.util.HashMap;
 /**
  * Created by reneb_000 on 9-4-2015.
  */
+
 public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
     private Button uploadButton;
@@ -26,6 +27,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
     private Main main;
 
     private double minWidth = 100;
+
     public PopoverMenu(Main main){
         //this.getChildren().add(new Label("TEST"));
         this.main = main;
@@ -42,11 +44,13 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         this.getChildren().addAll(uploadButton, smileyButton, backgroundButton);
 
 
+
         uploadButton.setOnAction(this);
         backgroundButton.setOnAction(this);
+
     }
 
-    public Button getUploadButton(){
+    public Button getUploadButton() {
         return uploadButton;
     }
 
