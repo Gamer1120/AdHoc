@@ -3,6 +3,7 @@ package com.procoder.gui;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Observable;
@@ -41,7 +42,7 @@ import com.procoder.LongApplicationLayer;
 public class Main extends Application implements
         EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private VBox side;
     private BorderPane mainPane;
@@ -57,12 +58,14 @@ public class Main extends Application implements
     private TextField text;
     private Insets padding;
     private IdLabel selected;
+    private IdLabel allChat;
 
     private InetAddress sender;
     private AdhocApplication applicationLayer;
 
     private PopOver popover;
     private PopoverMenu popoverMenu;
+    private String ownIp;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -71,13 +74,14 @@ public class Main extends Application implements
         chatMap = new HashMap<IdLabel, ChatPane>();
         padding = new Insets(10);
         selected = null;
+        setOwnIp();
         setupCenter();
         setupSideBar();
 
         Scene mainScene = new Scene(mainPane, 1000, 900);
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
-        // addLabel("192.168.2.2");
+        addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane) scrollPane.getContent();
         // h.add(new Cloud("test", false), true);
@@ -92,8 +96,9 @@ public class Main extends Application implements
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        // sendString("Ikke", "Dit is een test");
-        // sendString("Jije", "Dit is er ook nog een");
+        processString("Ikke", "", "Dit is een test");
+        processString("Jije","", "Dit is er ook nog een");
+        processString("192.168.2.2",ownIp, "TEST");
 
         if (!DEBUG) {
             sender = InetAddress.getLocalHost();
@@ -101,7 +106,16 @@ public class Main extends Application implements
             applicationLayer.getKnownHostList().addObserver(this);
         }
     }
-
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Setup
+    private void setOwnIp() {
+        try {
+            ownIp = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
     private void setupCenter() {
         center = new BorderPane();
 
@@ -131,7 +145,7 @@ public class Main extends Application implements
             @Override
             public void handle(KeyEvent event) {
                 if (event.getCode() == KeyCode.ENTER) {
-                    addMsg(text.getText());
+                    sendString(text.getText());
                     toBottomScroll();
                 }
             }
@@ -158,12 +172,10 @@ public class Main extends Application implements
         center.setCenter(scrollPane);
         mainPane.setCenter(center);
     }
-
     private void setBgScrollpane() {
         File file = new File("background.png");
         scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
     }
-
     private void setupSideBar() {
         side = new VBox();
         side.setPrefSize(300, 900);
@@ -173,16 +185,15 @@ public class Main extends Application implements
         mainPane.setLeft(side);
 
     }
-
     public void addAllChat() {
-        IdLabel newLabel = new IdLabel("AllChat");
-        newLabel.setSelected(true);
-        selected = newLabel;
-        side.getChildren().add(newLabel);
-        ChatPane chatPane = new ChatPane();
+        allChat = new IdLabel("AllChat");
+        allChat.setSelected(true);
+        selected = allChat;
+        side.getChildren().add(allChat);
+        ChatPane chatPane = new ChatPane(allChat);
 
-        chatMap.put(newLabel, chatPane);
-        newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        chatMap.put(allChat, chatPane);
+        allChat.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 idLabelClick(event);
@@ -190,50 +201,16 @@ public class Main extends Application implements
         });
         scrollPane.setContent(chatPane);
     }
-
-    public void addLabel(String name) {
-        IdLabel newLabel = new IdLabel(name);
-        side.getChildren().add(newLabel);
-        ChatPane chatPane = new ChatPane();
-        chatMap.put(newLabel, chatPane);
-        newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                idLabelClick(event);
-            }
-        });
-    }
-
-    private void idLabelClick(MouseEvent event) {
-        if (selected != null) {
-            selected.setSelected(false);
-        }
-        selected = (IdLabel) event.getSource();
-        scrollPane.setContent(chatMap.get(selected));
-        selected.setSelected(true);
-    }
+ 
 
 
-    public void addMsg(String msg) {
-        // drawPane.getChildren().add(new Label(msg));
-        if (!msg.isEmpty()) {
-            ChatPane h = (ChatPane) scrollPane.getContent();
-            if (h != null) {
-                Cloud newCloud = new Cloud(msg, true);
-                h.add(newCloud, false);
-                text.setText("");
-                if (!DEBUG) {
-                    applicationLayer.send(sender, msg);
-                }
-            }
-        }
-
-        scrollPane.setVvalue(scrollPane.getVmax());
-    }
-
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Proces
     @Override
     public void processString(String source, String destination, String msg) {
-        ChatPane h = (ChatPane) scrollPane.getContent();
+        //ChatPane h = (ChatPane) scrollPane.getContent();
+        ChatPane h = getChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -252,12 +229,10 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-
     @Override
     public void processFile(String source, String destination, File file) {
         // TODO
     }
-
     @Override
     public void processImage(String source, String destination, Image img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
@@ -279,11 +254,31 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-
     public void processAudio(String user, File sound){
         //TODO
     }
 
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Send
+    public void sendString(String msg) {
+        // drawPane.getChildren().add(new Label(msg));
+        if (!msg.isEmpty()) {
+            ChatPane h = (ChatPane) scrollPane.getContent();
+            if (h != null) {
+                Cloud newCloud = new Cloud(msg, true);
+                h.add(newCloud, false);
+                text.setText("");
+                if (!DEBUG) {
+                    applicationLayer.send(sender, msg);
+                }
+            }
+        }
+
+        scrollPane.setVvalue(scrollPane.getVmax());
+    }
     public void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -309,29 +304,21 @@ public class Main extends Application implements
             applicationLayer.send(selected.getInetAdress(), img);
         }
     }
-
-    private void toBottomScroll() {
-        Thread t = new Thread(new Task() {
-            @Override
-            protected Object call() throws Exception {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Platform.runLater(() -> scrollPane.setVvalue(scrollPane
-                        .getVmax()));
-                return null;
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+    public void sendFile(File file){
+        //TODO
     }
 
+
+
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Events
     @Override
     public void handle(javafx.event.ActionEvent event) {
         if (event.getSource().equals(sendButton)) {
-            addMsg(text.getText());
+            sendString(text.getText());
         } else if (event.getSource().equals(optionButton)) {
             // TODO
             if (popover.isShowing()) {
@@ -342,7 +329,6 @@ public class Main extends Application implements
 
         }
     }
-
     @Override
     public void update(Observable o, Object arg) {
         Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
@@ -369,6 +355,70 @@ public class Main extends Application implements
 
     }
 
+
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Getters
+    public PopOver getPopover() {
+        return popover;
+    }
+    private IdLabel getIdLabel(InetAddress a) {
+        for (IdLabel i : chatMap.keySet()) {
+            if (i.getAdress().equals(a.getHostName())) {
+                return i;
+            }
+        }
+        return null;
+    }
+    public HashMap<IdLabel, ChatPane> getChatMap(){
+        return chatMap;
+    }
+    public IdLabel getSelected(){
+        return selected;
+    }
+    public ScrollPane getScrollPane() {
+        return scrollPane;
+    }
+    private ChatPane getChatPane(String source, String destination) {
+        for(IdLabel i: chatMap.keySet()){
+            if(i.getAdress().equals(source)){
+                return chatMap.get(i);
+            }
+        }
+        return chatMap.get(allChat);
+
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Overige shit
+    public void addLabel(String name) {
+        IdLabel newLabel = new IdLabel(name);
+        side.getChildren().add(newLabel);
+        ChatPane chatPane = new ChatPane(newLabel);
+        chatMap.put(newLabel, chatPane);
+        newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                idLabelClick(event);
+            }
+        });
+    }
+
+    private void idLabelClick(MouseEvent event) {
+        if (selected != null) {
+            selected.setSelected(false);
+        }
+        selected = (IdLabel) event.getSource();
+        scrollPane.setContent(chatMap.get(selected));
+        selected.setSelected(true);
+    }
+
     public void updateStatus(InetAddress address, boolean active) {
         Platform.runLater(() -> {
             if (active) {
@@ -387,15 +437,6 @@ public class Main extends Application implements
         }
     }
 
-    private IdLabel getIdLabel(InetAddress a) {
-        for (IdLabel i : chatMap.keySet()) {
-            if (i.getAdress().equals(a.getHostName())) {
-                return i;
-            }
-        }
-        return null;
-    }
-
     public void setActive(InetAddress active) {
         IdLabel l = getIdLabel(active);
         if (l != null) {
@@ -408,18 +449,25 @@ public class Main extends Application implements
         launch();
     }
 
-    public PopOver getPopover() {
-        return popover;
+    private void toBottomScroll() {
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Platform.runLater(() -> scrollPane.setVvalue(scrollPane
+                        .getVmax()));
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
-    public HashMap<IdLabel, ChatPane> getChatMap(){
-        return chatMap;
-    }
-    public IdLabel getSelected(){
-        return selected;
-    }
 
-    public ScrollPane getScrollPane() {
-        return scrollPane;
-    }
+
+
 }
