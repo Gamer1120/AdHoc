@@ -27,24 +27,24 @@ public class IdLabel extends BorderPane {
     private int counter;
 
     private String broadcast = "228.0.0.0";
+    private boolean selected;
 
     public IdLabel(String name) {
 
         adress = name;
         counter = 0;
+        selected = false;
         this.setPrefSize(widht, height);
         this.setStyle("-fx-background-color: #FFFFFF;-fx-border-width:2px,0px,2px,0px;-fx-border-color:#F1F1F1");
 
         Image image;
         ImageView img;
         if (name.equals("AllChat")) {
-            image = new Image(this.getClass().getClassLoader()
-                    .getResourceAsStream("group.png"));
+            image = new Image(this.getClass().getClassLoader().getResourceAsStream("group.png"));
             img = new ImageView();
 
         } else {
-            image = new Image(this.getClass().getClassLoader()
-                    .getResourceAsStream("alone.png"));
+            image = new Image(this.getClass().getClassLoader().getResourceAsStream("alone.png"));
             img = new ImageView();
         }
 
@@ -79,25 +79,27 @@ public class IdLabel extends BorderPane {
         if (selected) {
             this.setStyle("-fx-background-color: #3998d6;");
             resetTextBall();
+            this.selected = true;
         } else {
             this.setStyle("-fx-background-color: #FFFFFF;-fx-border-width:2px,0px,2px,0px;-fx-border-color:#F1F1F1");
+            this.selected = false;
         }
     }
 
     public void setActive(boolean active) {
         if (active) {
-            //statusView.setImage(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
             statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background:url(greenBall.png);");
         } else {
-            //statusView.setImage(new Image(this.getClass().getClassLoader().getResourceAsStream("redBall.png")));
             statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background:url(redBall.png);");
         }
     }
 
     public void setTextBall(){
-        counter++;
-        statusView.setText(""+(counter));
-        System.out.println("counter set "+counter);
+        if(!selected) {
+            counter++;
+            statusView.setText("" + (counter));
+            System.out.println("counter set " + counter);
+        }
     }
 
     public void resetTextBall(){

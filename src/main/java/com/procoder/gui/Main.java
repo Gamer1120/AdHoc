@@ -203,7 +203,6 @@ public class Main extends Application implements
     //Proces
     @Override
     public void processString(String source, String destination, String msg) {
-        //ChatPane h = (ChatPane) scrollPane.getContent();
         ChatPane h = getChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
@@ -229,7 +228,7 @@ public class Main extends Application implements
     }
     @Override
     public void processImage(String source, String destination, Image img) {
-        ChatPane h = (ChatPane) scrollPane.getContent();
+        ChatPane h = getChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -301,7 +300,9 @@ public class Main extends Application implements
     public void sendFile(File file){
         //TODO
     }
-
+    public void sendAudio(File file){
+        //todo
+    }
 
 
 
