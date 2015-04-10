@@ -7,9 +7,13 @@ import com.procoder.util.ArrayUtils;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class TransportConnection {
+
+    // TODO Geval afhandelen waar de SYN verloren gaat
 
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
     private static final long ACK_TIMEOUT = 1000;
@@ -26,23 +30,21 @@ public class TransportConnection {
     private Network networkLayer;
     private int seq; // Huidige sequence nummer verzendende kant
     private int nextAck; // Huidige sequence van de ontvangende kant
-    private boolean established;
+    private boolean synSent;
     private boolean synReceived;
-
-
-
+    private boolean established;
 
 
 // --------------------- Constructors -------------------
 
-    public TransportConnection (InetAddress host, Network networkLayer, AdhocApplication app) {
+    public TransportConnection(InetAddress host, Network networkLayer, AdhocApplication app) {
         receivingHost = host;
         unAckedSegmentTasks = new HashMap<>();
         sendQueue = new LinkedList<>();
         receiveQueue = new LinkedList<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
-        established = false;
+        synSent = false;
         synReceived = false;
         adhocApplication = app;
     }
@@ -51,6 +53,34 @@ public class TransportConnection {
 
 // ----------------------- Commands ---------------------
 
+    public void sendSyn() {
+        TransportSegment syn = new TransportSegment(new Byte[0], seq);
+        // Het Syn pakket gebruikt 1 data byte zodat het geackt kan worden.
+        seq++;
+        syn.setSyn();
+
+        String debug = "[TL] [SND]: Ik stuur nu een SYN";
+
+        // Als de andere kant al een Syn heeft gestuurd dan
+        if (synReceived) {
+            syn.setAck(nextAck);
+            debug = "[TL] [SND]: Ik stuur nu een SYN ACK";
+        }
+
+        final String finalDebug = debug;
+
+        ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+            networkLayer.send(receivingHost, syn.toByteArray());
+            System.out.println(finalDebug);
+
+        }, 0, 1000, TimeUnit.MILLISECONDS);
+
+        unAckedSegmentTasks.put((long) (syn.seq), retransmitTask);
+        networkLayer.send(receivingHost, syn.toByteArray());
+        synSent = true;
+
+    }
+
     public void sendByte(byte b) {
         sendQueue.add(b);
     }
@@ -58,59 +88,65 @@ public class TransportConnection {
     public void processSendQueue() {
 
 
+        if (!synSent) {
+            sendSyn();
+        } else if(established) {
 
-        List<Byte> data = new LinkedList<>();
+            List<Byte> data = new LinkedList<>();
 
-        Iterator<Byte> it = sendQueue.iterator();
+            Iterator<Byte> it = sendQueue.iterator();
 
-        while (it.hasNext()) {
+            while (it.hasNext()) {
 
-            while (it.hasNext() && data.size() < 1400) {
-                // Add byte to data to be sent
-                data.add(it.next());
-                // This data will be sent, so it can be removed from the queue
-                it.remove();
+                while (it.hasNext() && data.size() < 1400) {
+                    // Add byte to data to be sent
+                    data.add(it.next());
+                    // This data will be sent, so it can be removed from the queue
+                    it.remove();
+                }
+                TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]), seq);
+                if (synReceived) {
+                    segment.setAck(nextAck);
+                }
+                seq += data.size();
+                System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
+
+                // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
+
+                ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+                    networkLayer.send(receivingHost, segment.toByteArray());
+
+                }, 0, 1000, TimeUnit.MILLISECONDS);
+
+                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length), retransmitTask);
+                data.clear();
+
             }
-            TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]), seq);
-            if (!established) {
-                segment.setSyn();
-                established = true;
-            }
-            if (synReceived) {
-                segment.setAck(nextAck);
-            }
-            seq += data.size();
-            System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
-
-            // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
-
-            ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
-                networkLayer.send(receivingHost, segment.toByteArray());
-
-            }, 0, 1000, TimeUnit.MILLISECONDS);
-
-            unAckedSegmentTasks.put((long) (segment.seq + segment.data.length), retransmitTask);
-            data.clear();
 
         }
+
+
     }
 
     public void receiveData(TransportSegment segment) {
 
-        System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length );
+        System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
-        if(!synReceived) {
-            synReceived = segment.isSyn();
-            nextAck = segment.seq;
+        if (!synReceived && segment.isSyn()) {
+            synReceived = true;
+            nextAck = segment.seq + 1;
+            if(synSent) {
+                established = true;
+            }
         }
 
-        if(synReceived) {
-            if(segment.validSeq()) {
-                if(nextAck == segment.seq) {
+        if (established) {
+            if (segment.validSeq()) {
+                if (nextAck == segment.seq) {
 
                     System.out.println("[TL] [RCV] In-order data received");
 
-                    for(byte b : segment.data) {
+                    for (byte b : segment.data) {
                         receiveQueue.add(b);
                     }
 
@@ -123,13 +159,13 @@ public class TransportConnection {
                     receiveQueueOffset = nextAck;
 
 
-                    // Verwijder alle segments met een seq + length
+                    // Verwijder alle niet geackte segments met een seq + length
 
 
                     Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         Map.Entry<Long, ScheduledFuture> entry = it.next();
-                        if(entry.getKey() < segment.ack) {
+                        if (entry.getKey() < segment.ack) {
                             entry.getValue().cancel(false);
                             it.remove();
                         }
@@ -141,7 +177,7 @@ public class TransportConnection {
                 } else if (segment.seq > nextAck) {
                     System.out.println("[TL] [RCV] Out-of-order data received");
                     Iterator<Byte> receivedBytes = Arrays.asList(segment.data).iterator();
-                    for(int i = segment.seq - receiveQueueOffset; receivedBytes.hasNext(); i++) {
+                    for (int i = segment.seq - receiveQueueOffset; receivedBytes.hasNext(); i++) {
                         receiveQueue.add(i, receivedBytes.next());
                     }
                 }
@@ -149,15 +185,15 @@ public class TransportConnection {
 
             }
 
-            // TODO Scenario waar ack het eerste pakket is.
-
             TransportSegment ack = new TransportSegment(new Byte[0], seq);
             ack.setAck(nextAck);
             networkLayer.send(receivingHost, ack.toByteArray());
 
         }
 
-        }
+        processSendQueue();
+
+    }
 
 
 }

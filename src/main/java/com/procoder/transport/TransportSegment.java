@@ -1,9 +1,8 @@
 package com.procoder.transport;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import com.procoder.util.ArrayUtils;
+
+import java.nio.ByteBuffer;
 
 class TransportSegment {
 
@@ -76,14 +75,12 @@ class TransportSegment {
         byte[] primBytes = ArrayUtils.toPrimitiveArray(data);
 
         ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
-        System.out.println("[TL] original data: " + Arrays.toString(primBytes));
         buf.put(flags);
         buf.putInt(seq);
         buf.putInt(ack);
         buf.put(primBytes);
         buf.flip();
 
-        System.out.println("[TL] data + timestamp: " + Arrays.toString(buf.array()));
 
         return buf.array();
 
