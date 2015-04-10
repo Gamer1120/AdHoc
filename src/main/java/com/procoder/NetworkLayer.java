@@ -15,9 +15,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.procoder.transport.AdhocTransport;
 
 public class NetworkLayer implements AdhocNetwork {
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(NetworkLayer.class);
     private final static int LENGTH = 1472;
     private final static int PORT = 7777;
     private final static int IPLENGTH = 4;
@@ -67,6 +72,8 @@ public class NetworkLayer implements AdhocNetwork {
         System.arraycopy(data, 0, packetData, HEADER, data.length);
         DatagramPacket packet = new DatagramPacket(packetData,
                 packetData.length, dest, PORT);
+        LOGGER.debug("[NL] Sent packet from {} to {} with id {}",
+                src.getHostAddress(), dest.getHostAddress(), id);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -139,7 +146,10 @@ public class NetworkLayer implements AdhocNetwork {
         synchronized (packets) {
             if (packets.containsKey(src)) {
                 packets.remove(src);
+                LOGGER.debug("[NL] Removed {}", src.getHostAddress());
                 initialPacket(src);
+            } else {
+                LOGGER.debug("[NL] Already removed {}", src.getHostAddress());
             }
         }
     }
@@ -147,6 +157,7 @@ public class NetworkLayer implements AdhocNetwork {
     private void initialPacket(InetAddress src) {
         DatagramPacket packet = new DatagramPacket(src.getAddress(), IPLENGTH,
                 multicast, PORT);
+        LOGGER.debug("[NL] Sent initial packet {}", src.getHostAddress());
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -180,6 +191,7 @@ public class NetworkLayer implements AdhocNetwork {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        LOGGER.debug("[NL] Ininital packet from {}", src.getHostAddress());
         removePacket(src);
     }
 
@@ -196,6 +208,8 @@ public class NetworkLayer implements AdhocNetwork {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        LOGGER.debug("[NL] Received packet from {} to {} with id {}",
+                src.getHostAddress(), dest.getHostAddress(), packetId);
         data = Arrays.copyOfRange(data, HEADER, data.length);
         if (addPacket(src, packetId)) {
             if (multicast.equals(dest)) {
