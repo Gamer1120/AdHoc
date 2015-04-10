@@ -14,6 +14,7 @@ public class DummyTransport implements AdhocTransport {
     public DummyTransport(AdhocApplication app) {
         this.app = app;
         this.networkLayer = new NetworkLayer(this);
+        new Thread(networkLayer).start();
     }
 
     @Override
