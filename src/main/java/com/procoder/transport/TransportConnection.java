@@ -3,6 +3,8 @@ package com.procoder.transport;
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
 import com.procoder.util.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -17,6 +19,7 @@ public class TransportConnection {
 
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
     private static final long ACK_TIMEOUT = 1000;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
 
 // ------------------ Instance variables ----------------
 
@@ -65,14 +68,14 @@ public class TransportConnection {
         if (synReceived) {
             syn.setAck(nextAck);
             debug = "[TL] [SND]: Ik stuur nu een SYN ACK";
-            System.out.println(debug + "voor de eerste keer");
+            LOGGER.debug(debug + "voor de eerste keer");
         }
 
         final String finalDebug = debug;
 
         ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
             networkLayer.send(receivingHost, syn.toByteArray());
-            System.out.println(finalDebug);
+            LOGGER.debug(finalDebug);
 
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
@@ -110,7 +113,7 @@ public class TransportConnection {
                     segment.setAck(nextAck);
                 }
                 seq += data.size();
-                System.out.println("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
+                LOGGER.debug("[TL] [SND]: " + Arrays.toString(segment.toByteArray()));
 
                 // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
 
@@ -147,10 +150,10 @@ public class TransportConnection {
 
     public void receiveData(TransportSegment segment) {
 
-        System.out.println("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
+        LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
         if (!synReceived && segment.isSyn()) {
-            System.out.println("[TL] [RCV] Ik ontvang voor het eerst een SYN");
+            LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
             synReceived = true;
             nextAck = segment.seq + 1;
             if(synSent) {
@@ -165,7 +168,7 @@ public class TransportConnection {
             if (segment.validSeq()) {
                 if (nextAck == segment.seq) {
 
-                    System.out.println("[TL] [RCV] In-order data received");
+                    LOGGER.debug("[TL] [RCV] In-order data received");
 
                     for (byte b : segment.data) {
                         receiveQueue.add(b);
@@ -182,10 +185,11 @@ public class TransportConnection {
                     removeAckedSegment(segment);
 
 
-                    System.out.println("[TL] [RCV] Unacked segment tasks: " + unAckedSegmentTasks);
+                    LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
+
 
                 } else if (segment.seq > nextAck) {
-                    System.out.println("[TL] [RCV] Out-of-order data received");
+                    LOGGER.debug("[TL] [RCV] Out-of-order data received");
                     Iterator<Byte> receivedBytes = Arrays.asList(segment.data).iterator();
                     for (int i = segment.seq - receiveQueueOffset; receivedBytes.hasNext(); i++) {
                         receiveQueue.add(i, receivedBytes.next());

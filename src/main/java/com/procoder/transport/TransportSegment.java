@@ -1,9 +1,14 @@
 package com.procoder.transport;
 
 import com.procoder.util.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 
 class TransportSegment {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransportSegment.class);
 
     public static final byte SEQ_FLAG = (byte) 0B10000000;
     public static final byte ACK_FLAG = (byte) 0B01000000;
@@ -76,7 +81,9 @@ class TransportSegment {
         buf.put(primBytes);
         buf.flip();
 
-        System.out.println("[TL] [SNC] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
+
+
+        LOGGER.debug("[TL] [SNC] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
 
         return buf.array();
     }
