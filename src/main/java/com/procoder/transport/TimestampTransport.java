@@ -1,15 +1,16 @@
 package com.procoder.transport;
 
+import com.procoder.AdhocApplication;
+import com.procoder.AdhocNetwork;
+import com.procoder.NetworkLayer;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.procoder.AdhocApplication;
-import com.procoder.AdhocNetwork;
-import com.procoder.NetworkLayer;
-
 public class TimestampTransport implements AdhocTransport {
+
 
     // ------------------ Instance variables ----------------
 
@@ -70,8 +71,7 @@ public class TimestampTransport implements AdhocTransport {
     public void processPacket(DatagramPacket packet) {
         byte[] data = packet.getData();
 
-        TransportSegment receivedSegment = TransportSegment
-                .parseNetworkData(data);
+        TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());

@@ -28,6 +28,7 @@ public class HostList extends Observable {
     }
 
     public void decrementTTL() {
+
         for (InetAddress a : hostMap.keySet()) {
             int i = hostMap.get(a) - 1;
             if (i != 0) {

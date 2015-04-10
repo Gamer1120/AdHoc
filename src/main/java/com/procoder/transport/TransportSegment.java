@@ -1,8 +1,7 @@
 package com.procoder.transport;
 
-import java.nio.ByteBuffer;
-
 import com.procoder.util.ArrayUtils;
+import java.nio.ByteBuffer;
 
 class TransportSegment {
 
@@ -76,6 +75,9 @@ class TransportSegment {
         buf.putInt(ack);
         buf.put(primBytes);
         buf.flip();
+
+        System.out.println("[TL] [SNC] Generating segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + " data: " + data.length);
+
         return buf.array();
     }
 
