@@ -151,7 +151,6 @@ public class LongApplicationLayer implements AdhocApplication {
      * @return
      */
     public byte[] generatePacket(InetAddress destination, PacketType type, byte[] data) {
-        // TODO Hier localhost gebruiken / de methode van Sven
         byte[] sendBytes = new byte[4];
         try {
             sendBytes = NetworkLayer.getLocalHost().getAddress();

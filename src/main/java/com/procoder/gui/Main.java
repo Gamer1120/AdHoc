@@ -266,7 +266,7 @@ public class Main extends Application implements
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
-                    applicationLayer.sendString(sender, msg);
+                    applicationLayer.sendString(selected.getInetAdress(), msg);
                 }
             }
         }
