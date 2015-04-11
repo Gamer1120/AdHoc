@@ -3,13 +3,18 @@ package com.procoder.transport;
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
 import com.procoder.NetworkLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TimestampTransport implements AdhocTransport {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimestampTransport.class);
 
 
     // ------------------ Instance variables ----------------
@@ -57,13 +62,30 @@ public class TimestampTransport implements AdhocTransport {
     @Override
     public void send(InetAddress dest, byte[] data) {
         // Dest wordt nu genegeerd
-        for (InetAddress host : getKnownHostList().getKnownHosts()) {
-            TransportConnection connection = findConnection(host);
+        try {
+            InetAddress broadCast = InetAddress.getByName("228.0.0.0");
+            if(broadCast.equals(dest)) {
+                for (InetAddress host : getKnownHostList().getKnownHosts()) {
+                    TransportConnection connection = findConnection(host);
 
-            for (byte b : data) {
-                connection.sendByte(b);
+                    for (byte b : data) {
+                        connection.sendByte(b);
+                    }
+                }
+            } else {
+                TransportConnection connection = findConnection(dest);
+
+                for (byte b : data) {
+                    connection.sendByte(b);
+                }
             }
+
+
+        } catch (UnknownHostException e) {
+            LOGGER.trace("Kan het broadcastadres niet omzetten naar een InetAddress", e);
         }
+
+
         processSendQueue();
     }
 

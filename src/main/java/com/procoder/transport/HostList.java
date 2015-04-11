@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,7 @@ public class HostList extends Observable {
 
         }
         hostMap.put(address, TTL);
-        notifyObservers(hostMap.keySet());
+        notifyObservers(new HashSet<>(hostMap.keySet()));
     }
 
     public Set<InetAddress> getKnownHosts() {
@@ -41,7 +42,7 @@ public class HostList extends Observable {
             } else {
                 hostMap.remove(a);
                 setChanged();
-                notifyObservers(hostMap.keySet());
+                notifyObservers(new HashSet<>(hostMap.keySet()));
             }
         }
 
