@@ -5,8 +5,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +24,12 @@ import java.net.UnknownHostException;
 public class IdLabel extends BorderPane {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IdLabel.class);
+
+    private static final Image GREEN_BALL = new Image(IdLabel.class.getClassLoader().getResourceAsStream("greenBall.png"));
+    private static final Image RED_BALL = new Image(IdLabel.class.getClassLoader().getResourceAsStream("redBall.png"));
+    private static final Background GREEN_BALL_BACKGROUND = new Background(new BackgroundImage(GREEN_BALL, null, null, null, null));
+    private static final Background RED_BALL_BACKGROUND = new Background(new BackgroundImage(RED_BALL, null, null, null, null));
+
 
     private double widht = 300;
     private double height = 100;
@@ -88,11 +98,9 @@ public class IdLabel extends BorderPane {
 
     public void setActive(boolean active) {
         if (active) {
-            //statusView.setImage(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
-            statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background:url(greenBall.png);");
+            statusView.setBackground(GREEN_BALL_BACKGROUND);
         } else {
-            //statusView.setImage(new Image(this.getClass().getClassLoader().getResourceAsStream("redBall.png")));
-            statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background:url(redBall.png);");
+            statusView.setBackground(RED_BALL_BACKGROUND);
         }
     }
 

@@ -427,14 +427,14 @@ public class Main extends Application implements
     public void setInactive(InetAddress inactive) {
         IdLabel l = getIdLabel(inactive);
         if (l != null) {
-            getIdLabel(inactive).setActive(false);
+            l.setActive(false);
         }
     }
 
     public void setActive(InetAddress active) {
         IdLabel l = getIdLabel(active);
         if (l != null) {
-            getIdLabel(active).setActive(true);
+            l.setActive(true);
         }
         // getIdLabel(active).setActive(true);
     }
