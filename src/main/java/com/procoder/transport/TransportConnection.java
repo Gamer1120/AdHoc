@@ -126,6 +126,8 @@ public class TransportConnection {
                 unAckedSegmentTasks.put((long) (segment.seq + segment.data.length), retransmitTask);
                 data.clear();
 
+                LOGGER.debug("[TL] [SND] Sending segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
+
             }
 
         }

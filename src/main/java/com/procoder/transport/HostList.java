@@ -1,5 +1,8 @@
 package com.procoder.transport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
 import java.util.Observable;
 import java.util.Set;
@@ -8,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HostList extends Observable {
 
     private static final int TTL = 10;
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
 
     private ConcurrentHashMap<InetAddress, Integer> hostMap;
 
@@ -18,6 +22,8 @@ public class HostList extends Observable {
     public void pingReceived(InetAddress address) {
         if (!hostMap.containsKey(address)) {
             setChanged();
+            LOGGER.debug("Hosts currently known: {}", hostMap);
+
         }
         hostMap.put(address, TTL);
         notifyObservers(hostMap.keySet());
@@ -36,6 +42,7 @@ public class HostList extends Observable {
             } else {
                 hostMap.remove(a);
                 setChanged();
+                LOGGER.debug("Hosts currently known: {}", hostMap);
                 notifyObservers(hostMap.keySet());
             }
         }
