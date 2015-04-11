@@ -1,5 +1,12 @@
 package com.procoder.routing.client;
 
+import com.procoder.NetworkLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.Inet4Address;
+
 /**
  * Link layer interface, used for clarity
  * @author Jaco ter Braak, Twente University
@@ -11,9 +18,12 @@ package com.procoder.routing.client;
  * 
  */
 public class LinkLayer {
-	private RoutingChallengeClient client;
 
-	public LinkLayer(RoutingChallengeClient client) {
+	private static final Logger LOGGER = LoggerFactory.getLogger(LinkLayer.class);
+
+	private RoutingClient client;
+
+	public LinkLayer(RoutingClient client) {
 		this.client = client;
 	}
 
@@ -21,16 +31,43 @@ public class LinkLayer {
 	 * Gets the address within the network, associated with this interface
 	 * @return address
 	 */
-	public int getOwnAddress() {
-		return client.getAddress();
+	public Inet4Address getOwnAddress() {
+		try {
+			return (Inet4Address) NetworkLayer.getLocalHost();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			return null;
+		}
+	}
+
+	public Inet4Address getBroadcastAddress() {
+		try {
+			Inet4Address broad = (Inet4Address) Inet4Address.getByName("228.0.0.0");
+			return broad;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			return null;
+		}
 	}
 
 	/**
 	 * Gets the cost of the connected link
 	 * @return The cost as a positive integer (or -1 if there is no link)
 	 */
-	public int getLinkCost(int destination) {
-		return client.GetLinkCost(destination);
+	public byte getLinkCost(Inet4Address destination) {
+		byte result = -1;
+		try {
+			destination.isReachable(100);
+			result = 1;
+		} catch (IOException e) {
+			LOGGER.debug("Unable to ping {}", destination.getHostAddress());
+		}
+
+		return result;
+
+
 	}
 
 	/**
@@ -38,8 +75,8 @@ public class LinkLayer {
 	 * @param packet
 	 * @return the result of the transmission
 	 */
-	public TransmissionResult transmit(Packet packet) {
-		return (client.Transmit(packet));
+	public void transmit(Packet packet) {
+		client.transmit(packet);
 	}
 
 	/**
@@ -47,6 +84,6 @@ public class LinkLayer {
 	 * @return the packet (or null if no packet is available)
 	 */
 	public Packet receive() {
-		return client.Receive();
+		return client.receive();
 	}
 }

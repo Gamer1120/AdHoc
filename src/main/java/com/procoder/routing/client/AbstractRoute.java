@@ -1,5 +1,7 @@
 package com.procoder.routing.client;
 
+import java.net.Inet4Address;
+
 /**
  * Object which describes a route entry in the forwarding table.
  * Can be extended to include additional data.
@@ -7,5 +9,5 @@ package com.procoder.routing.client;
  * @version 09-03-2015
  */
 public class AbstractRoute {
-	public int nextHop;
+	public Inet4Address nextHop;
 }

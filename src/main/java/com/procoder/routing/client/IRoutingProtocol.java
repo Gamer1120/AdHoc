@@ -1,5 +1,6 @@
 package com.procoder.routing.client;
 
+import java.net.Inet4Address;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,5 +29,5 @@ public interface IRoutingProtocol extends Runnable {
 	 * 
 	 * @return ForwardingTable
 	 */
-	ConcurrentHashMap<Integer, ? extends AbstractRoute> getForwardingTable();
+	ConcurrentHashMap<Inet4Address, ? extends AbstractRoute> getForwardingTable();
 }

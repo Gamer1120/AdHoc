@@ -2,18 +2,19 @@ package com.procoder.routing.protocol;
 
 import com.procoder.routing.client.*;
 
+import java.net.Inet4Address;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DummyRoutingProtocol implements IRoutingProtocol {
 	private LinkLayer linkLayer;
-	private ConcurrentHashMap<Integer, BasicRoute> forwardingTable = new ConcurrentHashMap<Integer, BasicRoute>();
+	private ConcurrentHashMap<Inet4Address, BasicRoute> forwardingTable = new ConcurrentHashMap<>();
 
 	@Override
 	public void init(LinkLayer linkLayer) {
 		this.linkLayer = linkLayer;
 		
 		// First, send a broadcast packet (to address 0), with no data
-		Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), 0, new DataTable(0));
+		Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), this.linkLayer.getBroadcastAddress(), new DVTable());
 		this.linkLayer.transmit(discoveryBroadcastPacket);
 	}
 
@@ -35,7 +36,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	}
 
 	@Override
-	public ConcurrentHashMap<Integer, BasicRoute> getForwardingTable() {
+	public ConcurrentHashMap<Inet4Address, BasicRoute> getForwardingTable() {
 		return this.forwardingTable;
 	}
 }
