@@ -21,9 +21,9 @@ public class LinkLayer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LinkLayer.class);
 
-	private RoutingClient client;
+	private RoutingUDPLinkLayer client;
 
-	public LinkLayer(RoutingClient client) {
+	public LinkLayer(RoutingUDPLinkLayer client) {
 		this.client = client;
 	}
 

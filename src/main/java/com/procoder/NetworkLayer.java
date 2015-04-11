@@ -86,7 +86,13 @@ public class NetworkLayer implements AdhocNetwork {
         }
     }
 
-    private NetworkInterface detectNetwork() throws SocketException {
+    public static final NetworkInterface detectNetwork() throws SocketException {
+        InetAddress source = null;
+        try {
+            source = NetworkLayer.getLocalHost();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // Tries to find the Ad-hoc network
         NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
         loop:
