@@ -123,7 +123,7 @@ public class TransportConnection {
 
                 }, 0, 1000, TimeUnit.MILLISECONDS);
 
-                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length), retransmitTask);
+                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), retransmitTask);
                 data.clear();
 
                 LOGGER.debug("[TL] [SND] Sending segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
