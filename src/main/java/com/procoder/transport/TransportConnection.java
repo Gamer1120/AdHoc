@@ -135,17 +135,22 @@ public class TransportConnection {
 
     public void removeAckedSegment(TransportSegment segment) {
 
-        // Verwijder alle niet geackte segments met een seq + length
-
-
-        Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Long, ScheduledFuture> entry = it.next();
-            if (entry.getKey() < segment.ack) {
-                entry.getValue().cancel(false);
-                it.remove();
+        // Natuurlijk alleen doen als de ack geldig is
+        if (segment.validAck()) {
+            // Verwijder alle niet geackte segments met een seq + length
+            Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Long, ScheduledFuture> entry = it.next();
+                // FIXME Hier zit volgens mij nog een edge case in bij sequence number wrapping
+                if (entry.getKey() < segment.ack) {
+                    entry.getValue().cancel(false);
+                    it.remove();
+                }
             }
         }
+
+
+
 
     }
 
