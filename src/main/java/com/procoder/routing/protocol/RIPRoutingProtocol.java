@@ -76,6 +76,8 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
                 if(cycles % 450 == 0) {
                     Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), linkLayer.getBroadcastAddress(), getDistanceVectorTable());
                     this.linkLayer.transmit(discoveryBroadcastPacket);
+
+                    LOGGER.debug("Huidige forwardingtable {}", forwardingTable);
                 }
 
                 Thread.sleep(10);

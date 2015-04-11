@@ -64,7 +64,13 @@ public class Packet {
 		try {
 			Inet4Address sourceAddress = BufferUtils.readI4Address(buf);
 			Inet4Address destinAddress = BufferUtils.readI4Address(buf);
-			DVTable table = DVTable.parseBytes(buf.array());
+
+			byte[] tableBytes = new byte[buf.remaining()];
+			for(int i = 0; buf.hasRemaining(); i++) {
+				tableBytes[i] = buf.get();
+			}
+
+			DVTable table = DVTable.parseBytes(tableBytes);
 			result = new Packet(sourceAddress, destinAddress, table);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

@@ -10,7 +10,7 @@ package com.procoder;
 import com.procoder.gui.AdhocGUI;
 import com.procoder.transport.AdhocTransport;
 import com.procoder.transport.HostList;
-import com.procoder.transport.TimestampTransport;
+import com.procoder.transport.TCPLikeTransport;
 import com.procoder.util.ArrayUtils;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class LongApplicationLayer implements AdhocApplication {
     public LongApplicationLayer(AdhocGUI gui) {
         this.gui = gui;
         this.receivedPackets = new HashMap<InetAddress, Queues>();
-        this.transportLayer = new TimestampTransport(this);
+        this.transportLayer = new TCPLikeTransport(this);
     }
 
     // ---------------------------//

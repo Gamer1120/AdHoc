@@ -2,7 +2,7 @@ package com.procoder.transport;
 
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
-import com.procoder.DummyNetworkLayer;
+import com.procoder.ForwardingNetworkLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +12,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TimestampTransport implements AdhocTransport {
+public class TCPLikeTransport implements AdhocTransport {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimestampTransport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TCPLikeTransport.class);
 
 
     // ------------------ Instance variables ----------------
@@ -29,10 +29,10 @@ public class TimestampTransport implements AdhocTransport {
 
     // ------------------- Constructors ---------------------
 
-    public TimestampTransport(AdhocApplication app) {
+    public TCPLikeTransport(AdhocApplication app) {
 
         this.app = app;
-        this.networkLayer = new DummyNetworkLayer(this);
+        this.networkLayer = new ForwardingNetworkLayer(this);
         this.connections = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);

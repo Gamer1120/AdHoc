@@ -24,6 +24,7 @@ public class RoutingUDPLinkLayer {
         try {
             socket = new MulticastSocket(PORT);
             socket.setLoopbackMode(false);
+            socket.setSoTimeout(10);
             InetAddress multicast = InetAddress.getByName("228.0.0.0");
             socket.joinGroup(new InetSocketAddress(multicast, PORT), NetworkLayer.detectNetwork());
         } catch (IOException e) {
@@ -50,7 +51,7 @@ public class RoutingUDPLinkLayer {
             byte [] data = Arrays.copyOfRange(receivedPacket.getData(), 0, receivedPacket.getLength());
             result = Packet.parseBytes(data);
         } catch (IOException e) {
-            e.printStackTrace();
+            //LOGGER.trace("Geen data beschikbaar op de socket", e);
         }
         return result;
     }

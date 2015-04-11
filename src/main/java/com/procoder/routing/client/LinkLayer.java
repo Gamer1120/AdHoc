@@ -32,24 +32,23 @@ public class LinkLayer {
 	 * @return address
 	 */
 	public Inet4Address getOwnAddress() {
+		Inet4Address result = null;
 		try {
-			return (Inet4Address) NetworkLayer.getLocalHost();
+			result =  (Inet4Address) NetworkLayer.getLocalHost();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			return null;
 		}
+		return result;
 	}
 
 	public Inet4Address getBroadcastAddress() {
+		Inet4Address result = null;
 		try {
-			Inet4Address broad = (Inet4Address) Inet4Address.getByName("228.0.0.0");
-			return broad;
+			result = (Inet4Address) Inet4Address.getByName("228.0.0.0");
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			return null;
 		}
+		return result;
 	}
 
 	/**
