@@ -17,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class TransportConnection {
 
-    // TODO Geval afhandelen waar de SYN verloren gaat
-
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
     private static final long ACK_TIMEOUT = 1000;
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
@@ -30,8 +28,7 @@ public class TransportConnection {
     private HashMap<Long, ScheduledFuture> unAckedSegmentTasks;
     private AdhocApplication adhocApplication;
     private Queue<Byte> sendQueue;
-    private List<Byte> receiveQueue;
-    private int receiveQueueOffset;
+    private SortedMap<Integer, TransportSegment> receivedSegments;
     private AdhocNetwork networkLayer;
     private int seq; // Huidige sequence nummer verzendende kant
     private int nextAck; // Huidige sequence van de ontvangende kant
@@ -46,7 +43,7 @@ public class TransportConnection {
         receivingHost = host;
         unAckedSegmentTasks = new HashMap<>();
         sendQueue = new LinkedList<>();
-        receiveQueue = new LinkedList<>();
+        receivedSegments = new TreeMap<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
         synSent = false;
@@ -190,30 +187,31 @@ public class TransportConnection {
 
                     LOGGER.debug("[TL] [RCV] In-order data received");
 
-                    for (byte b : segment.data) {
-                        receiveQueue.add(b);
-                    }
+                    receivedSegments.put(segment.seq, segment);
 
                     nextAck += segment.data.length;
+
                     // We hebben een aaneengesloten serie gegevens.
-                    byte[] data = ArrayUtils.toPrimitiveArray(receiveQueue.toArray(new Byte[0]));
-                    DatagramPacket packet = new DatagramPacket(data, data.length, receivingHost, 0);
+                    Queue<Byte> data = new LinkedList<>();
+                    int currentSeq = nextAck;
+                    while (receivedSegments.containsKey(currentSeq)) {
+                        TransportSegment currentSegment = receivedSegments.get(currentSeq);
+                        data.addAll(Arrays.asList(currentSegment.data));
+                        receivedSegments.remove(currentSeq);
+                        currentSeq += currentSegment.data.length;
+                    }
+
+                    DatagramPacket packet = new DatagramPacket(ArrayUtils.toPrimitiveArray(data.toArray(new Byte[data.size()])), data.size(), receivingHost, 0);
                     adhocApplication.processPacket(packet);
-                    receiveQueue.clear();
-                    receiveQueueOffset = nextAck;
 
                     removeAckedSegment(segment);
-
 
                     LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
 
 
                 } else if (segment.seq > nextAck) {
                     LOGGER.debug("[TL] [RCV] Out-of-order data received");
-                    Iterator<Byte> receivedBytes = Arrays.asList(segment.data).iterator();
-                    for (int i = segment.seq - receiveQueueOffset; receivedBytes.hasNext(); i++) {
-                        receiveQueue.add(i, receivedBytes.next());
-                    }
+                    receivedSegments.put(segment.seq, segment);
                 }
 
 
