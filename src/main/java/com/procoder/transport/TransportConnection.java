@@ -219,9 +219,15 @@ public class TransportConnection {
 
             }
 
-            TransportSegment ack = new TransportSegment(new Byte[0], seq);
-            ack.setAck(nextAck);
-            networkLayer.send(receivingHost, ack.toByteArray());
+            // Alleen segments acken die een syn zijn of die data bevatten. Oftewel geen acks acken.
+
+            if(segment.isSyn() || segment.data.length > 0) {
+                TransportSegment ack = new TransportSegment(new Byte[0], seq);
+                ack.setAck(nextAck);
+                networkLayer.send(receivingHost, ack.toByteArray());
+            }
+
+
 
         } else if(segment.validAck()) {
             removeAckedSegment(segment);
