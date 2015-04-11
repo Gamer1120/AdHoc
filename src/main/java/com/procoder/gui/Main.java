@@ -37,6 +37,7 @@ public class Main extends Application implements
         EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
     public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
+    public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
 
 
     private static final boolean DEBUG = true;
@@ -74,7 +75,7 @@ public class Main extends Application implements
         setOwnIp();
         setupCenter();
         setupSideBar();
-        Scene mainScene = new Scene(mainPane, 1000, 900);
+        Scene mainScene = new Scene(mainPane, 1200, 900);
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
         addLabel("192.168.2.2");
@@ -341,7 +342,28 @@ public class Main extends Application implements
         }
     }
     public void sendAudio(File file){
-        //todo
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new AudioCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+
+        if (!DEBUG) {
+            applicationLayer.sendAudio(selected.getInetAdress(), file);
+        }
     }
 
 

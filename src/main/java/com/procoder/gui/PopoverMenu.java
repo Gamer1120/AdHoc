@@ -67,9 +67,12 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             //Image image = new Image(file.toURI().toString());
             if(file!=null) {
                 String[] s = file.getName().split("\\.");
-                if(Main.images.contains(s[s.length-1])){
+                String extension = s[s.length-1];
+                if(Main.images.contains(extension)){
                     main.sendImage(file);
-                }else{
+                }else if(Main.audios.contains(extension)){
+                    main.sendAudio(file);
+                }else {
                     main.sendFile(file);
                 }
             }

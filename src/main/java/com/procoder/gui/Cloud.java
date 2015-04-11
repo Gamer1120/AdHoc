@@ -38,6 +38,7 @@ public class Cloud extends BorderPane {
             BorderPane.setAlignment(p, Pos.CENTER_RIGHT);
             BorderPane.setAlignment(vbox, Pos.CENTER_LEFT);
             vbox.setStyle("-fx-background-color: #93F58E; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
+            //vbox.setStyle("-fx-background-color: #93F58E;");
         } else {
             p = getRightTriangle();
             this.setRight(p);
@@ -46,6 +47,8 @@ public class Cloud extends BorderPane {
             vbox.setStyle("-fx-background-color: #E8E8E8; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
         }
         vbox.paddingProperty().setValue(new Insets(0,0,0,10));
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(10));
         //vbox.setAlignment(Pos.CENTER_LEFT);
         this.setMinHeight(25);
         this.setMinWidth(maxWidth);
