@@ -118,7 +118,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
             LOGGER.debug("[NL] Received packet from {} to {}",
                     src.getHostAddress(), dest.getHostAddress());
             data = Arrays.copyOfRange(data, HEADER, data.length);
-            if (multicast.equals(dest) || localAddress.equals(dest)) {
+            if (!src.equals(localAddress) && (multicast.equals(dest) || localAddress.equals(dest))) {
                 packet.setData(data);
                 transportLayer.processPacket(packet);
             }
