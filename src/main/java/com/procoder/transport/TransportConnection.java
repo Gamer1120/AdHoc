@@ -189,8 +189,6 @@ public class TransportConnection {
 
                     receivedSegments.put(segment.seq, segment);
 
-                    nextAck += segment.data.length;
-
                     // We hebben een aaneengesloten serie gegevens.
                     Queue<Byte> data = new LinkedList<>();
                     int currentSeq = nextAck;
@@ -200,6 +198,8 @@ public class TransportConnection {
                         receivedSegments.remove(currentSeq);
                         currentSeq += currentSegment.data.length;
                     }
+
+                    nextAck = currentSeq;
 
                     DatagramPacket packet = new DatagramPacket(ArrayUtils.toPrimitiveArray(data.toArray(new Byte[data.size()])), data.size(), receivingHost, 0);
                     adhocApplication.processPacket(packet);
