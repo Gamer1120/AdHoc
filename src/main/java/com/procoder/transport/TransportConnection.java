@@ -19,6 +19,8 @@ public class TransportConnection {
 
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
     private static final long ACK_TIMEOUT = 1000;
+    // FIXME Dit kan beter worden bijgehouden in bytes in plaats van aantal segments
+    private static final int MAX_UNACK_SEG = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
 
 // ------------------ Instance variables ----------------
@@ -76,7 +78,7 @@ public class TransportConnection {
             networkLayer.send(receivingHost, syn.toByteArray());
             LOGGER.debug(finalDebug);
 
-        }, 0, 1000, TimeUnit.MILLISECONDS);
+        }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
 
         unAckedSegmentTasks.put((long) (syn.seq), retransmitTask);
         synSent = true;
@@ -98,7 +100,8 @@ public class TransportConnection {
 
             Iterator<Byte> it = sendQueue.iterator();
 
-            while (it.hasNext()) {
+            // Hier wordt ervoor gezord dat de send window niet overschreden wordt
+            while (it.hasNext() && unAckedSegmentTasks.size() < MAX_UNACK_SEG) {
 
                 while (it.hasNext() && data.size() < 1400) {
                     // Add byte to data to be sent
@@ -106,10 +109,13 @@ public class TransportConnection {
                     // This data will be sent, so it can be removed from the queue
                     it.remove();
                 }
+
                 TransportSegment segment = new TransportSegment(data.toArray(new Byte[data.size()]), seq);
+
                 if (synReceived) {
                     segment.setAck(nextAck);
                 }
+
                 seq += data.size();
                 LOGGER.debug("[TL] [SND]: {}", segment.data.length);
 
@@ -118,7 +124,7 @@ public class TransportConnection {
                 ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
                     networkLayer.send(receivingHost, segment.toByteArray());
 
-                }, 0, 1000, TimeUnit.MILLISECONDS);
+                }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
 
                 unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), retransmitTask);
                 data.clear();
@@ -163,7 +169,7 @@ public class TransportConnection {
             nextAck = segment.seq + 1;
             if(synSent) {
                 try {
-                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getAddress() , receivingHost);
+                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getHostAddress() , receivingHost);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -172,10 +178,11 @@ public class TransportConnection {
                 sendSyn();
             }
             removeAckedSegment(segment);
+            // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
         } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
             established = true;
             try {
-                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getAddress() , receivingHost);
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getHostAddress() , receivingHost);
             } catch (IOException e) {
                 e.printStackTrace();
             }

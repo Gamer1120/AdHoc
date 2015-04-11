@@ -61,7 +61,6 @@ public class TimestampTransport implements AdhocTransport {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        // Dest wordt nu genegeerd
         try {
             InetAddress broadCast = InetAddress.getByName("228.0.0.0");
             if(broadCast.equals(dest)) {
