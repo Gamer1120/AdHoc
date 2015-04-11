@@ -82,7 +82,6 @@ public class TransportConnection {
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
         unAckedSegmentTasks.put((long) (syn.seq), retransmitTask);
-        networkLayer.send(receivingHost, syn.toByteArray());
         synSent = true;
 
     }
