@@ -22,7 +22,6 @@ public class HostList extends Observable {
     public void pingReceived(InetAddress address) {
         if (!hostMap.containsKey(address)) {
             setChanged();
-            LOGGER.debug("Hosts currently known: {}", hostMap);
 
         }
         hostMap.put(address, TTL);
@@ -42,9 +41,10 @@ public class HostList extends Observable {
             } else {
                 hostMap.remove(a);
                 setChanged();
-                LOGGER.debug("Hosts currently known: {}", hostMap);
                 notifyObservers(hostMap.keySet());
             }
         }
+
+        LOGGER.debug("Hosts currently known: {}", hostMap);
     }
 }
