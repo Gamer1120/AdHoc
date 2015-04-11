@@ -16,7 +16,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
     private final static int IPLENGTH = 4;
     private final static int HEADER = 2 * IPLENGTH;
     private AdhocTransport transportLayer;
-    private InetAddress source;
+    private InetAddress localAddress;
     private InetAddress multicast;
     private MulticastSocket socket;
 
@@ -25,7 +25,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
         try {
             socket = new MulticastSocket(PORT);
             socket.setLoopbackMode(false);
-            source = InetAddress.getLocalHost();
+            localAddress = InetAddress.getLocalHost();
             multicast = InetAddress.getByName("228.0.0.0");
             socket.joinGroup(new InetSocketAddress(multicast, PORT),
                     detectNetwork());
@@ -58,7 +58,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        send(source, dest, data);
+        send(localAddress, dest, data);
     }
 
     private void send(InetAddress src, InetAddress dest, byte[] data) {
@@ -79,7 +79,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
 
     private NetworkInterface detectNetwork() throws SocketException {
         // Tries to find the Ad-hoc network
-        NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
+        NetworkInterface netIf = NetworkInterface.getByInetAddress(localAddress);
         loop:
         for (Enumeration<NetworkInterface> ifaces = NetworkInterface
                 .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
@@ -88,7 +88,7 @@ public class DummyNetworkLayer implements AdhocNetwork {
                     .hasMoreElements(); ) {
                 InetAddress address = addresses.nextElement();
                 if (address.getHostName().startsWith("192.168.5.")) {
-                    source = address;
+                    localAddress = address;
                     netIf = iface;
                     break loop;
                 }
@@ -110,28 +110,20 @@ public class DummyNetworkLayer implements AdhocNetwork {
     }
 
     private void processPacket(DatagramPacket packet, byte[] data) {
-        InetAddress src = null;
-        InetAddress dest = null;
         try {
-            src = InetAddress.getByAddress(Arrays.copyOfRange(data, 0,
+            InetAddress src = InetAddress.getByAddress(Arrays.copyOfRange(data, 0,
                     IPLENGTH));
-            dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
+            InetAddress dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
                     IPLENGTH, HEADER));
+            LOGGER.debug("[NL] Received packet from {} to {}",
+                    src.getHostAddress(), dest.getHostAddress());
+            data = Arrays.copyOfRange(data, HEADER, data.length);
+            if (multicast.equals(dest) || localAddress.equals(dest)) {
+                packet.setData(data);
+                transportLayer.processPacket(packet);
+            }
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        }
-        LOGGER.debug("[NL] Received packet from {} to {}",
-                src.getHostAddress(), dest.getHostAddress());
-        data = Arrays.copyOfRange(data, HEADER, data.length);
-        if (multicast.equals(dest)) {
-            send(src, dest, data);
-            packet.setData(data);
-            transportLayer.processPacket(packet);
-        } else if (source.equals(dest)) {
-            packet.setData(data);
-            transportLayer.processPacket(packet);
-        } else {
-            send(src, dest, data);
         }
     }
 
