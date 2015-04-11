@@ -1,24 +1,12 @@
 package com.procoder;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import com.procoder.transport.AdhocTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.procoder.transport.AdhocTransport;
+import java.io.IOException;
+import java.net.*;
+import java.util.*;
 
 public class NetworkLayer implements AdhocNetwork {
     private static final Logger LOGGER = LoggerFactory
@@ -48,6 +36,23 @@ public class NetworkLayer implements AdhocNetwork {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public final static InetAddress getLocalHost() throws IOException {
+        InetAddress localHost = InetAddress.getLocalHost();
+        loop:
+        for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+                .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
+            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
+                    .getInetAddresses(); addresses.hasMoreElements(); ) {
+                InetAddress address = addresses.nextElement();
+                if (address.getHostName().startsWith("192.168.5.")) {
+                    localHost = address;
+                    break loop;
+                }
+            }
+        }
+        return localHost;
     }
 
     @Override
@@ -84,11 +89,12 @@ public class NetworkLayer implements AdhocNetwork {
     private NetworkInterface detectNetwork() throws SocketException {
         // Tries to find the Ad-hoc network
         NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
-        loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-                .getNetworkInterfaces(); ifaces.hasMoreElements();) {
+        loop:
+        for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+                .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
             NetworkInterface iface = ifaces.nextElement();
             for (Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses
-                    .hasMoreElements();) {
+                    .hasMoreElements(); ) {
                 InetAddress address = addresses.nextElement();
                 if (address.getHostName().startsWith("192.168.5.")) {
                     source = address;
@@ -98,22 +104,6 @@ public class NetworkLayer implements AdhocNetwork {
             }
         }
         return netIf;
-    }
-
-    public final static InetAddress getLocalHost() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
-        loop: for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-                .getNetworkInterfaces(); ifaces.hasMoreElements();) {
-            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
-                    .getInetAddresses(); addresses.hasMoreElements();) {
-                InetAddress address = addresses.nextElement();
-                if (address.getHostName().startsWith("192.168.5.")) {
-                    localHost = address;
-                    break loop;
-                }
-            }
-        }
-        return localHost;
     }
 
     private boolean addPacket(InetAddress src, byte id) {

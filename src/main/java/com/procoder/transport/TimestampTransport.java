@@ -2,7 +2,7 @@ package com.procoder.transport;
 
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
-import com.procoder.NetworkLayer;
+import com.procoder.DummyNetworkLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ public class TimestampTransport implements AdhocTransport {
     public TimestampTransport(AdhocApplication app) {
 
         this.app = app;
-        this.networkLayer = new NetworkLayer(this);
+        this.networkLayer = new DummyNetworkLayer(this);
         this.connections = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);
