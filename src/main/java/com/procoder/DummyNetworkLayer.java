@@ -65,8 +65,8 @@ public class DummyNetworkLayer implements AdhocNetwork {
         byte[] packetData = new byte[data.length + HEADER];
         byte[] sourceAddress = src.getAddress();
         byte[] destAddress = dest.getAddress();
-        System.arraycopy(sourceAddress, 0, packetData, 1, IPLENGTH);
-        System.arraycopy(destAddress, 0, packetData, 1 + IPLENGTH, IPLENGTH);
+        System.arraycopy(sourceAddress, 0, packetData, 0, IPLENGTH);
+        System.arraycopy(destAddress, 0, packetData, IPLENGTH, IPLENGTH);
         System.arraycopy(data, 0, packetData, HEADER, data.length);
         DatagramPacket packet = new DatagramPacket(packetData, packetData.length, dest, PORT);
         try {
