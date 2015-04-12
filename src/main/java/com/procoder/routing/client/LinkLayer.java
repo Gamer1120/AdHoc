@@ -10,13 +10,10 @@ import java.net.Inet4Address;
 /**
  * Link layer interface, used for clarity
  * @author Jaco ter Braak, Twente University
- * @version 17-12-2013
+ * @author Wouter Timmermans, Twente University
+ * @version 12-04-2015
  */
-/*
- * 
- * DO NOT EDIT
- * 
- */
+
 public class LinkLayer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LinkLayer.class);
@@ -35,16 +32,6 @@ public class LinkLayer {
 		Inet4Address result = null;
 		try {
 			result = (Inet4Address) NetworkUtils.getLocalHost();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-
-	public Inet4Address getBroadcastAddress() {
-		Inet4Address result = null;
-		try {
-			result = (Inet4Address) Inet4Address.getByName("228.0.0.0");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -1,6 +1,7 @@
 package com.procoder.util;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -52,4 +53,13 @@ public class NetworkUtils {
         return netIf;
     }
 
+    public static Inet4Address getBroadcastAddress() {
+        Inet4Address result = null;
+        try {
+            result = (Inet4Address) Inet4Address.getByName("228.0.0.0");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

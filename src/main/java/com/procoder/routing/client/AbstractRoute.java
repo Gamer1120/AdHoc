@@ -3,7 +3,7 @@ package com.procoder.routing.client;
 import java.net.Inet4Address;
 
 /**
- * Object which describes a route entry in the forwarding table.
+ * Object which describes a path entry in the forwarding table.
  * Can be extended to include additional data.
  * @author Jaco
  * @version 09-03-2015

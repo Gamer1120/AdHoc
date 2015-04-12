@@ -1,6 +1,7 @@
 package com.procoder.routing.protocol;
 
 import com.procoder.routing.client.*;
+import com.procoder.util.NetworkUtils;
 
 import java.net.Inet4Address;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +15,7 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 		this.linkLayer = linkLayer;
 		
 		// First, send a broadcast packet (to address 0), with no data
-		Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), this.linkLayer.getBroadcastAddress(), new DVTable());
+		Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), NetworkUtils.getBroadcastAddress(), new DVTable());
 		this.linkLayer.transmit(discoveryBroadcastPacket);
 	}
 

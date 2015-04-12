@@ -1,6 +1,7 @@
 package com.procoder.routing.protocol;
 
 import com.procoder.routing.client.*;
+import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
         forwardingTable.put(this.linkLayer.getOwnAddress(), new BasicRoute(this.linkLayer.getOwnAddress(), this.linkLayer.getOwnAddress(), (byte) 0, (byte) 0, new Inet4Address[0]));
 
         // First, send a broadcast packet (to address 0), with distance vector
-        Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), this.linkLayer.getBroadcastAddress(), getDistanceVectorTable());
+        Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), NetworkUtils.getBroadcastAddress(), getDistanceVectorTable());
         this.linkLayer.transmit(discoveryBroadcastPacket);
     }
 
@@ -51,7 +52,7 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
                 if (cycles % 15 == 0) {
                     // Checks all directly connected nodes and update forwardingtable if necessary
                     for (ConcurrentHashMap.Entry<Inet4Address, BasicRoute> entry : forwardingTable.entrySet()) {
-                        byte newCostToNext = (byte) linkLayer.getLinkCost(entry.getValue().nextHop);
+                        byte newCostToNext = linkLayer.getLinkCost(entry.getValue().nextHop);
                         newCostToNext = newCostToNext == -1 ? 127 : newCostToNext;
                         byte oldCostToNext = entry.getValue().costToNext;
                         if (linkLayer.getOwnAddress() != entry.getKey() && newCostToNext != oldCostToNext) {
@@ -72,14 +73,14 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
 
                 if (cycles % 30 == 0) {
                     if (changed) {
-                        Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), linkLayer.getBroadcastAddress(), getDistanceVectorTable());
+                        Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), NetworkUtils.getBroadcastAddress(), getDistanceVectorTable());
                         this.linkLayer.transmit(discoveryBroadcastPacket);
                     }
                     changed = false;
                 }
 
                 if(cycles % 450 == 0) {
-                    Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), linkLayer.getBroadcastAddress(), getDistanceVectorTable());
+                    Packet discoveryBroadcastPacket = new Packet(this.linkLayer.getOwnAddress(), NetworkUtils.getBroadcastAddress(), getDistanceVectorTable());
                     this.linkLayer.transmit(discoveryBroadcastPacket);
 
                     LOGGER.debug("Huidige forwardingtable {}", forwardingTable);
@@ -109,10 +110,10 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
     }
 
     public void processDV(Inet4Address sourceAddress, DVTable dV) {
-        byte sourceCost = (byte) linkLayer.getLinkCost(sourceAddress);
+        byte sourceCost = linkLayer.getLinkCost(sourceAddress);
 
         for(BasicRoute newRoute : dV) {
-            LinkedList<Inet4Address> route = new LinkedList<>(Arrays.asList(newRoute.route));
+            LinkedList<Inet4Address> route = new LinkedList<>(Arrays.asList(newRoute.path));
             route.addFirst(sourceAddress);
 
             byte newDistance = (byte) (newRoute.distance + 1);
@@ -121,7 +122,7 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
             BasicRoute currentRoute = forwardingTable.get(dest);
 
             if (currentRoute != null && currentRoute.nextHop == sourceAddress && currentRoute.distance != newDistance) {
-                forwardingTable.put(dest, new BasicRoute(dest, sourceAddress, newDistance, sourceCost, currentRoute.route));
+                forwardingTable.put(dest, new BasicRoute(dest, sourceAddress, newDistance, sourceCost, currentRoute.path));
                 LOGGER.debug("Updating cost: dest: " + dest + " cost: " + newDistance + " next hop: " + sourceAddress);
                 changed = true;
 
@@ -129,7 +130,7 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
             }
 
             if (currentRoute == null || (newDistance < currentRoute.distance && !route.contains(linkLayer.getOwnAddress()))) {
-                LOGGER.debug("Adding route: dest: " + dest + " cost: " + newDistance + " next hop: " + sourceAddress);
+                LOGGER.debug("Adding path: dest: " + dest + " cost: " + newDistance + " next hop: " + sourceAddress);
                 forwardingTable.put(dest, new BasicRoute(dest, sourceAddress, newDistance, sourceCost, route.toArray(new Inet4Address[route.size()])));
                 changed = true;
             }

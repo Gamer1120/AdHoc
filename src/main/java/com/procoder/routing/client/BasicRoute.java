@@ -22,19 +22,19 @@ public class BasicRoute extends AbstractRoute {
 
     public byte distance;
     public Inet4Address destination;
-    //Invariant route.length < 30;
-    public Inet4Address[] route;
+    //Invariant path.length < 30;
+    public Inet4Address[] path;
     public byte costToNext;
 
 
-    public BasicRoute(Inet4Address destination, Inet4Address nextHop, byte distance, byte costToNext, Inet4Address[] route) {
-        if(route.length >= 30) {
-            throw new RuntimeException("route is too long, i'm out");
+    public BasicRoute(Inet4Address destination, Inet4Address nextHop, byte distance, byte costToNext, Inet4Address[] path) {
+        if (path.length >= 30) {
+            throw new RuntimeException("path is too long, i'm out");
         }
         this.destination = destination;
         this.distance = distance;
         this.nextHop = nextHop;
-        this.route = route;
+        this.path = path;
         this.costToNext = costToNext;
     }
 
@@ -72,12 +72,12 @@ public class BasicRoute extends AbstractRoute {
     }
 
     public boolean routeContains(Inet4Address addr) {
-        return Arrays.asList(route).contains(addr);
+        return Arrays.asList(path).contains(addr);
     }
 
     public byte[] toByteArray() {
-        // Lengte, route, nextHop, destination, en costToNext
-        byte rowSize = (byte) (1 + route.length * 4 + 4 + 4 + 1);
+        // Lengte, path, nextHop, destination, en costToNext
+        byte rowSize = (byte) (1 + path.length * 4 + 4 + 4 + 1);
         // De eerste byte is de lengte van de rest van de toko van deze rij;
         ByteBuffer buf = ByteBuffer.allocate(rowSize + 1);
         buf.put(rowSize);
@@ -90,7 +90,7 @@ public class BasicRoute extends AbstractRoute {
         byte[] destBytes = destination.getAddress();
         buf.put(destBytes);
 
-        for(Inet4Address address : route) {
+        for (Inet4Address address : path) {
             byte[] bytes = address.getAddress();
             buf.put(bytes);
         }
@@ -102,7 +102,7 @@ public class BasicRoute extends AbstractRoute {
     @Override
     public String toString() {
 
-        return "Next hop: " + nextHop + " Distance: " + distance + " CostToNext: " + costToNext + " Route: " + Arrays.toString(route);
+        return "Next hop: " + nextHop + " Distance: " + distance + " CostToNext: " + costToNext + " Route: " + Arrays.toString(path);
     }
 
 
