@@ -11,9 +11,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class TransportConnection {
 
@@ -29,7 +27,7 @@ public class TransportConnection {
     private InetAddress receivingHost;
     private HashMap<Long, ScheduledFuture> unAckedSegmentTasks;
     private AdhocApplication adhocApplication;
-    private Queue<Byte> sendQueue;
+    private BlockingQueue<Byte> sendQueue;
     private SortedMap<Integer, TransportSegment> receivedSegments;
     private AdhocNetwork networkLayer;
     private int seq; // Huidige sequence nummer verzendende kant
@@ -44,7 +42,7 @@ public class TransportConnection {
     public TransportConnection(InetAddress host, AdhocNetwork networkLayer, AdhocApplication app) {
         receivingHost = host;
         unAckedSegmentTasks = new HashMap<>();
-        sendQueue = new LinkedList<>();
+        sendQueue = new LinkedBlockingQueue<>();
         receivedSegments = new TreeMap<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
