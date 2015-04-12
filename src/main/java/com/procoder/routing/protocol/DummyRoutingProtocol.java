@@ -39,4 +39,9 @@ public class DummyRoutingProtocol implements IRoutingProtocol {
 	public ConcurrentHashMap<Inet4Address, BasicRoute> getForwardingTable() {
 		return this.forwardingTable;
 	}
+
+	@Override
+	public void stop() {
+
+	}
 }

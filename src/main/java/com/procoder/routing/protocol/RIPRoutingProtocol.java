@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.Inet4Address;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RIPRoutingProtocol implements IRoutingProtocol {
@@ -16,6 +19,8 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
     private ConcurrentHashMap<Inet4Address, BasicRoute> forwardingTable = new ConcurrentHashMap<>();
     private boolean changed = false;
     private Set<Integer> localLinks = new HashSet<>();
+
+    private boolean running = true;
 
     public void init(LinkLayer linkLayer) {
         LOGGER.debug("Init node:" + linkLayer.getOwnAddress());
@@ -31,7 +36,7 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
     public void run() {
         int cycles = 0;
         try {
-            while (true) {
+            while (running) {
                 // Try to receive a packet
                 Packet packet = this.linkLayer.receive();
                 if (packet != null) {
@@ -90,6 +95,11 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
 
     public ConcurrentHashMap<Inet4Address, BasicRoute> getForwardingTable() {
         return new ConcurrentHashMap<>(this.forwardingTable);
+    }
+
+    @Override
+    public void stop() {
+        running = false;
     }
 
     public DVTable getDistanceVectorTable() {

@@ -30,4 +30,6 @@ public interface IRoutingProtocol extends Runnable {
 	 * @return ForwardingTable
 	 */
 	ConcurrentHashMap<Inet4Address, ? extends AbstractRoute> getForwardingTable();
+
+	void stop();
 }

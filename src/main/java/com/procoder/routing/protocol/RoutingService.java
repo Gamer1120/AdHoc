@@ -1,10 +1,14 @@
 package com.procoder.routing.protocol;
 
+import com.procoder.routing.client.AbstractRoute;
 import com.procoder.routing.client.IRoutingProtocol;
 import com.procoder.routing.client.LinkLayer;
 import com.procoder.routing.client.RoutingUDPLinkLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.Inet4Address;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RoutingService {
 
@@ -25,6 +29,10 @@ public class RoutingService {
     }
 
     public void stop() {
-        // TODO stop routing thread
+        routingImpl.stop();
+    }
+
+    public ConcurrentHashMap<Inet4Address, ? extends AbstractRoute> getForwardingTable() {
+        return routingImpl.getForwardingTable();
     }
 }
