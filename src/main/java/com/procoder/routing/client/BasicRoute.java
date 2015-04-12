@@ -38,6 +38,39 @@ public class BasicRoute extends AbstractRoute {
         this.costToNext = costToNext;
     }
 
+    /**
+     * @param bytes De bytes gegenereerd door toByteArray minus de eerste byte voor de lengte
+     * @return
+     */
+    public static BasicRoute parseBytes(byte[] bytes) {
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+
+        byte distance = buf.get();
+        byte costToNext = buf.get();
+        Inet4Address nextHop = null;
+        Inet4Address destination = null;
+        try {
+            nextHop = BufferUtils.readI4Address(buf);
+            destination = BufferUtils.readI4Address(buf);
+        } catch (UnknownHostException e) {
+            LOGGER.debug("Cannot parse the bytes to a valid Route");
+        }
+
+        List<Inet4Address> tempRoute = new LinkedList<>();
+
+        while (buf.remaining() >= 4) {
+            try {
+                tempRoute.add(BufferUtils.readI4Address(buf));
+            } catch (UnknownHostException e) {
+                LOGGER.debug("Cannot parse the bytes to a valid IP Adress");
+            }
+        }
+
+        return new BasicRoute(destination, nextHop, distance, costToNext, tempRoute.toArray(new Inet4Address[tempRoute.size()]));
+
+
+    }
+
     public boolean routeContains(Inet4Address addr) {
         return Arrays.asList(route).contains(addr);
     }
@@ -66,42 +99,23 @@ public class BasicRoute extends AbstractRoute {
         return buf.array();
     }
 
-    /**
-     *
-     * @param bytes De bytes gegenereerd door toByteArray minus de eerste byte voor de lengte
-     * @return
-     */
-    public static BasicRoute parseBytes(byte[] bytes) {
-        ByteBuffer buf = ByteBuffer.wrap(bytes);
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Next hop: ");
+        builder.append(nextHop);
 
-        byte distance = buf.get();
-        byte costToNext = buf.get();
-        Inet4Address nextHop = null;
-        Inet4Address destination = null;
-        try {
-            nextHop = BufferUtils.readI4Address(buf);
-            destination = BufferUtils.readI4Address(buf);
-        } catch (UnknownHostException e) {
-            LOGGER.debug("Cannot parse the bytes to a valid Route");
-        }
+        builder.append(" Distance: ");
+        builder.append(distance);
 
-        List<Inet4Address> tempRoute = new LinkedList<>();
+        builder.append(" CostToNext: ");
+        builder.append(costToNext);
 
-        while(buf.remaining() >= 4) {
-            try {
-                tempRoute.add(BufferUtils.readI4Address(buf));
-            } catch (UnknownHostException e) {
-                LOGGER.debug("Cannot parse the bytes to a valid IP Adress");
-            }
-        }
+        builder.append(" Route: ");
+        builder.append(Arrays.toString(route));
 
-        return new BasicRoute(destination, nextHop, distance, costToNext, tempRoute.toArray(new Inet4Address[tempRoute.size()]));
-
-
+        return builder.toString();
     }
-
-
-
 
 
 }
