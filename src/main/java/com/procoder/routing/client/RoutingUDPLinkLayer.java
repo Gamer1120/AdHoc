@@ -13,10 +13,8 @@ import java.util.Arrays;
 
 public class RoutingUDPLinkLayer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoutingUDPLinkLayer.class);
-
     public static final int PORT = 31337;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoutingUDPLinkLayer.class);
     private MulticastSocket socket;
 
 
@@ -48,11 +46,20 @@ public class RoutingUDPLinkLayer {
         try {
             DatagramPacket receivedPacket = new DatagramPacket(new byte[1500], 1500);
             socket.receive(receivedPacket);
-            byte [] data = Arrays.copyOfRange(receivedPacket.getData(), 0, receivedPacket.getLength());
-            result = Packet.parseBytes(data);
+            if (!receivedPacket.getAddress().equals(NetworkLayer.getLocalHost())) {
+                result = processPacket(receivedPacket);
+            }
         } catch (IOException e) {
             //LOGGER.trace("Geen data beschikbaar op de socket", e);
         }
+        return result;
+    }
+
+    private Packet processPacket(DatagramPacket packet) {
+        Packet result = null;
+        byte[] data = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+        result = Packet.parseBytes(data);
+
         return result;
     }
 
