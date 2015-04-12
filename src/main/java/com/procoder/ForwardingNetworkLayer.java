@@ -3,12 +3,13 @@ package com.procoder;
 import com.procoder.routing.protocol.RIPRoutingProtocol;
 import com.procoder.routing.protocol.RoutingService;
 import com.procoder.transport.AdhocTransport;
+import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.*;
+import java.util.Arrays;
 
 public class ForwardingNetworkLayer implements AdhocNetwork {
     private static final Logger LOGGER = LoggerFactory
@@ -32,29 +33,12 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
             localAddress = InetAddress.getLocalHost();
             multicast = InetAddress.getByName("228.0.0.0");
             socket.joinGroup(new InetSocketAddress(multicast, PORT),
-                    detectNetwork());
+                    NetworkUtils.detectNetwork());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         routingService = new RoutingService(new RIPRoutingProtocol());
-    }
-
-    public final static InetAddress getLocalHost() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
-        loop:
-        for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-                .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
-                    .getInetAddresses(); addresses.hasMoreElements(); ) {
-                InetAddress address = addresses.nextElement();
-                if (address.getHostName().startsWith("192.168.5.")) {
-                    localHost = address;
-                    break loop;
-                }
-            }
-        }
-        return localHost;
     }
 
     @Override
@@ -81,26 +65,6 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private NetworkInterface detectNetwork() throws SocketException {
-        // Tries to find the Ad-hoc network
-        NetworkInterface netIf = NetworkInterface.getByInetAddress(localAddress);
-        loop:
-        for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-                .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-            NetworkInterface iface = ifaces.nextElement();
-            for (Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses
-                    .hasMoreElements(); ) {
-                InetAddress address = addresses.nextElement();
-                if (address.getHostName().startsWith("192.168.5.")) {
-                    localAddress = address;
-                    netIf = iface;
-                    break loop;
-                }
-            }
-        }
-        return netIf;
     }
 
     private void receivePacket() {

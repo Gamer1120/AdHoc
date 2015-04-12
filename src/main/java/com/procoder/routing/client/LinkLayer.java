@@ -1,6 +1,6 @@
 package com.procoder.routing.client;
 
-import com.procoder.NetworkLayer;
+import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ public class LinkLayer {
 	public Inet4Address getOwnAddress() {
 		Inet4Address result = null;
 		try {
-			result =  (Inet4Address) NetworkLayer.getLocalHost();
+			result = (Inet4Address) NetworkUtils.getLocalHost();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -12,6 +12,7 @@ import com.procoder.transport.AdhocTransport;
 import com.procoder.transport.HostList;
 import com.procoder.transport.TCPLikeTransport;
 import com.procoder.util.ArrayUtils;
+import com.procoder.util.NetworkUtils;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,33 +43,6 @@ public class LongApplicationLayer implements AdhocApplication {
     private AdhocTransport transportLayer;
     private AdhocGUI gui;
 
-    public enum PacketType {
-        TEXT((byte) 0), IMAGE((byte) 1), AUDIO((byte) 2), FILE((byte) 3), UNDEFINED((byte) 4);
-
-        private byte number;
-
-
-        PacketType(byte number) {
-            this.number = number;
-        }
-
-        public byte toByte() {
-            return number;
-        }
-
-        public static PacketType parseByte(byte b) {
-            PacketType result = UNDEFINED;
-            for (PacketType type : PacketType.values()) {
-                if (type.number == b) {
-                    result = type;
-                    break;
-                }
-            }
-            return result;
-        }
-    }
-
-
     /**
      * Creates a new ApplicationLayer using a given GUI. Also starts the
      * TransportLayer.
@@ -80,10 +54,6 @@ public class LongApplicationLayer implements AdhocApplication {
         this.receivedPackets = new HashMap<InetAddress, Queues>();
         this.transportLayer = new TCPLikeTransport(this);
     }
-
-    // ---------------------------//
-    // SENDING TO TRANSPORT LAYER //
-    // ---------------------------//
 
     /**
      * Sends a packet to the Transport Layer.
@@ -104,6 +74,10 @@ public class LongApplicationLayer implements AdhocApplication {
         }
         transportLayer.send(dest, packet);
     }
+
+    // ---------------------------//
+    // SENDING TO TRANSPORT LAYER //
+    // ---------------------------//
 
     @Override
     public void sendFile(InetAddress dest, File input) {
@@ -142,7 +116,6 @@ public class LongApplicationLayer implements AdhocApplication {
         transportLayer.send(dest, packet);
     }
 
-
     /**
      *
      * @param destination Geaddresseerde van dit bericht
@@ -153,7 +126,7 @@ public class LongApplicationLayer implements AdhocApplication {
     public byte[] generatePacket(InetAddress destination, PacketType type, byte[] data) {
         byte[] sendBytes = new byte[4];
         try {
-            sendBytes = NetworkLayer.getLocalHost().getAddress();
+            sendBytes = NetworkUtils.getLocalHost().getAddress();
         } catch (IOException e) {
             LOGGER.error("Oepsie volgens mij ben je niet verbonden met ons supergave ad-hoc netwerk");
         }
@@ -169,22 +142,6 @@ public class LongApplicationLayer implements AdhocApplication {
 
         return buf.array();
 
-    }
-
-    // ---------------//
-    // SENDING TO GUI //
-    // ---------------//
-
-    class Queues {
-        Queue<Byte> incoming;
-        Queue<Byte> message;
-        long remaining;
-
-        public Queues() {
-            this.incoming = new LinkedList<Byte>();
-            this.message = new LinkedList<Byte>();
-            this.remaining = 0;
-        }
     }
 
     /**
@@ -282,6 +239,10 @@ public class LongApplicationLayer implements AdhocApplication {
         }
     }
 
+    // ---------------//
+    // SENDING TO GUI //
+    // ---------------//
+
     /**
      * Gets the sender of the packet as String, required for the GUI. The sender
      * is the 2nd to 5th byte in a packet.
@@ -318,13 +279,51 @@ public class LongApplicationLayer implements AdhocApplication {
         return data;
     }
 
+    @Override
+    public HostList getKnownHostList() {
+        return transportLayer.getKnownHostList();
+    }
+
+    public enum PacketType {
+        TEXT((byte) 0), IMAGE((byte) 1), AUDIO((byte) 2), FILE((byte) 3), UNDEFINED((byte) 4);
+
+        private byte number;
+
+
+        PacketType(byte number) {
+            this.number = number;
+        }
+
+        public static PacketType parseByte(byte b) {
+            PacketType result = UNDEFINED;
+            for (PacketType type : PacketType.values()) {
+                if (type.number == b) {
+                    result = type;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        public byte toByte() {
+            return number;
+        }
+    }
+
     // --------------- //
     // HELPFUL METHODS //
     // --------------- //
 
-    @Override
-    public HostList getKnownHostList() {
-        return transportLayer.getKnownHostList();
+    class Queues {
+        Queue<Byte> incoming;
+        Queue<Byte> message;
+        long remaining;
+
+        public Queues() {
+            this.incoming = new LinkedList<Byte>();
+            this.message = new LinkedList<Byte>();
+            this.remaining = 0;
+        }
     }
 
 }

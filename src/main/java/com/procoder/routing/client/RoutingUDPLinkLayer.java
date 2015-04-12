@@ -1,6 +1,6 @@
 package com.procoder.routing.client;
 
-import com.procoder.NetworkLayer;
+import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class RoutingUDPLinkLayer {
             socket.setLoopbackMode(false);
             socket.setSoTimeout(10);
             InetAddress multicast = InetAddress.getByName("228.0.0.0");
-            socket.joinGroup(new InetSocketAddress(multicast, PORT), NetworkLayer.detectNetwork());
+            socket.joinGroup(new InetSocketAddress(multicast, PORT), NetworkUtils.detectNetwork());
         } catch (IOException e) {
             LOGGER.trace("Kan socket niet openen", e);
         }
@@ -46,7 +46,7 @@ public class RoutingUDPLinkLayer {
         try {
             DatagramPacket receivedPacket = new DatagramPacket(new byte[1500], 1500);
             socket.receive(receivedPacket);
-            if (!receivedPacket.getAddress().equals(NetworkLayer.getLocalHost())) {
+            if (!receivedPacket.getAddress().equals(NetworkUtils.getLocalHost())) {
                 result = processPacket(receivedPacket);
             }
         } catch (IOException e) {

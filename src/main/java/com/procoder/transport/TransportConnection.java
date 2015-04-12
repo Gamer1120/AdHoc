@@ -2,8 +2,8 @@ package com.procoder.transport;
 
 import com.procoder.AdhocApplication;
 import com.procoder.AdhocNetwork;
-import com.procoder.NetworkLayer;
 import com.procoder.util.ArrayUtils;
+import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,7 +167,7 @@ public class TransportConnection {
             nextAck = segment.seq + 1;
             if(synSent) {
                 try {
-                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getHostAddress() , receivingHost);
+                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -180,7 +180,7 @@ public class TransportConnection {
         } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
             established = true;
             try {
-                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkLayer.getLocalHost().getHostAddress() , receivingHost);
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
             } catch (IOException e) {
                 e.printStackTrace();
             }
