@@ -101,20 +101,8 @@ public class BasicRoute extends AbstractRoute {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Next hop: ");
-        builder.append(nextHop);
 
-        builder.append(" Distance: ");
-        builder.append(distance);
-
-        builder.append(" CostToNext: ");
-        builder.append(costToNext);
-
-        builder.append(" Route: ");
-        builder.append(Arrays.toString(route));
-
-        return builder.toString();
+        return "Next hop: " + nextHop + " Distance: " + distance + " CostToNext: " + costToNext + " Route: " + Arrays.toString(route);
     }
 
 
