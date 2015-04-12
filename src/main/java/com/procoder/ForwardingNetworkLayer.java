@@ -132,7 +132,7 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
 
                     }
                 }
-            } else {
+            } else if (!src.equals(localAddress) && !dest.equals(localAddress)) {
                 // Forward het pakket naar het juiste adres.
                 BasicRoute route = (BasicRoute) routingService.getForwardingTable().get(dest);
                 DatagramPacket forwardingPacket = new DatagramPacket(Arrays.copyOf(data, data.length), data.length, route.nextHop, PORT);
