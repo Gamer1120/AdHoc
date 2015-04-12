@@ -33,7 +33,7 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
         try {
             socket = new MulticastSocket(PORT);
             socket.setLoopbackMode(false);
-            localAddress = InetAddress.getLocalHost();
+            localAddress = NetworkUtils.getLocalHost();
             multicast = InetAddress.getByName("228.0.0.0");
             socket.joinGroup(new InetSocketAddress(multicast, PORT),
                     NetworkUtils.detectNetwork());
