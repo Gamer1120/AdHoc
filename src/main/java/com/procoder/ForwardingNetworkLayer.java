@@ -120,7 +120,7 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
                     // de bestemming niet via de laatste hop van het pakket gaat.
                     BasicRoute route = (BasicRoute) ipRoutePair.getValue();
 
-                    if (!ipRoutePair.equals(localAddress) && !route.nextHop.equals(packet.getAddress()) && !Arrays.asList(route.path).contains(packet.getAddress())) {
+                    if (!ipRoutePair.getKey().equals(localAddress) && !route.nextHop.equals(packet.getAddress()) && !Arrays.asList(route.path).contains(packet.getAddress())) {
                         DatagramPacket forwardingPacket = new DatagramPacket(Arrays.copyOf(data, data.length), data.length, route.destination, PORT);
                         // TODO dit samenvoegen met de gewone send methode
                         try {
