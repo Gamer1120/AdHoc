@@ -47,8 +47,7 @@ public class Cloud extends BorderPane {
             vbox.setStyle("-fx-background-color: #E8E8E8; -fx-border-radius: 5 5 5 5; -fx-background-radius: 5 5 5 5;");
         }
         vbox.paddingProperty().setValue(new Insets(0,0,0,10));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setPadding(new Insets(10));
+
         //vbox.setAlignment(Pos.CENTER_LEFT);
         this.setMinHeight(25);
         this.setMinWidth(maxWidth);
