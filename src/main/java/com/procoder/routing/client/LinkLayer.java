@@ -58,8 +58,11 @@ public class LinkLayer {
 	public byte getLinkCost(Inet4Address destination) {
 		byte result = -1;
 		try {
-			destination.isReachable(100);
-			result = 1;
+			if (getOwnAddress().equals(destination)) {
+				result = 0;
+			} else if (destination.isReachable(100)) {
+				result = 1;
+			}
 		} catch (IOException e) {
 			LOGGER.debug("Unable to ping {}", destination.getHostAddress());
 		}
