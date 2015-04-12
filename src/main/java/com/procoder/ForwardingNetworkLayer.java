@@ -125,6 +125,7 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
                         // TODO dit samenvoegen met de gewone send methode
                         try {
                             socket.send(forwardingPacket);
+                            LOGGER.debug("Stuur broadcast pakket door naar {}", forwardingPacket.getAddress());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -137,6 +138,7 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
                 DatagramPacket forwardingPacket = new DatagramPacket(Arrays.copyOf(data, data.length), data.length, route.nextHop, PORT);
                 try {
                     socket.send(forwardingPacket);
+                    LOGGER.debug("Stuur unicast pakket voor {} door naar {}", dest, route.nextHop);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
