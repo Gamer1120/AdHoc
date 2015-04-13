@@ -62,6 +62,10 @@ public class LongApplicationLayer implements AdhocApplication {
 		this.transportLayer = new TCPLikeTransport(this);
 	}
 
+	// ---------------------------//
+	// SENDING TO TRANSPORT LAYER //
+	// ---------------------------//
+	
 	/**
 	 * Sends a packet to the Transport Layer.
 	 *
@@ -82,10 +86,6 @@ public class LongApplicationLayer implements AdhocApplication {
 		}
 		transportLayer.send(dest, packet);
 	}
-
-	// ---------------------------//
-	// SENDING TO TRANSPORT LAYER //
-	// ---------------------------//
 
 	@Override
 	public void sendFile(InetAddress dest, File input) {
@@ -119,7 +119,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		Path path = Paths.get(input.getAbsolutePath());
 		byte[] packet = null;
 		try {
-			packet = generatePacket(dest, PacketType.FILE,
+			packet = generatePacket(dest, PacketType.AUDIO,
 					Files.readAllBytes(path));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -224,7 +224,7 @@ public class LongApplicationLayer implements AdhocApplication {
 							+ ".audiofile";
 					try {
 						FileOutputStream aos = new FileOutputStream(
-								"receivedFile.file");
+								"receivedFile.mp3");
 						aos.write(dataBytes);
 						aos.close();
 					} catch (IOException e) {
