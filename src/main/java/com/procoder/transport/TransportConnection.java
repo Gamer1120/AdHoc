@@ -181,9 +181,7 @@ public class TransportConnection {
             } else if (!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
                 established = true;
                 LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-            }
-
-            if ((established && segment.isSyn()) || (!synReceived && !segment.isSyn())) {
+            } else if ((established && segment.isSyn()) || (!synReceived && !segment.isSyn())) {
                 established = false;
                 synSent = false;
                 synReceived = false;
