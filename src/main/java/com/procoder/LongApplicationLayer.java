@@ -215,9 +215,9 @@ public class LongApplicationLayer implements AdhocApplication {
 				byte extensionLength = message[1];
 				byte[] extension = Arrays.copyOfRange(message, 2,
 						2 + extensionLength);
-				byte[] senderBytes = Arrays.copyOfRange(message, 3 + extensionLength, 7 + extensionLength);
-				byte[] destenBytes = Arrays.copyOfRange(message, 8 + extensionLength, 12 + extensionLength);
-				byte[] dataBytes = Arrays.copyOfRange(message, 13 + extensionLength,
+				byte[] senderBytes = Arrays.copyOfRange(message, 2 + extensionLength, 6 + extensionLength);
+				byte[] destenBytes = Arrays.copyOfRange(message, 6 + extensionLength, 10 + extensionLength);
+				byte[] dataBytes = Arrays.copyOfRange(message, 10 + extensionLength,
 						message.length);
 				switch (type) {
 				case TEXT:
