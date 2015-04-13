@@ -36,7 +36,8 @@ import java.util.Queue;
 public class LongApplicationLayer implements AdhocApplication {
 
     private static final String ENCODING = "UTF-8";
-    private static final Logger LOGGER = LoggerFactory.getLogger(LongApplicationLayer.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(LongApplicationLayer.class);
 
     private HashMap<InetAddress, Queues> receivedPackets;
 
@@ -68,7 +69,8 @@ public class LongApplicationLayer implements AdhocApplication {
     public void sendString(InetAddress dest, String input) {
         byte[] packet = null;
         try {
-            packet = generatePacket(dest, PacketType.TEXT, input.getBytes(ENCODING));
+            packet = generatePacket(dest, PacketType.TEXT,
+                    input.getBytes(ENCODING));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,7 +86,8 @@ public class LongApplicationLayer implements AdhocApplication {
         Path path = Paths.get(input.getAbsolutePath());
         byte[] packet = null;
         try {
-            packet = generatePacket(dest, PacketType.FILE, Files.readAllBytes(path));
+            packet = generatePacket(dest, PacketType.FILE,
+                    Files.readAllBytes(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -96,7 +99,8 @@ public class LongApplicationLayer implements AdhocApplication {
         Path path = Paths.get(input.getAbsolutePath());
         byte[] packet = null;
         try {
-            packet = generatePacket(dest, PacketType.IMAGE, Files.readAllBytes(path));
+            packet = generatePacket(dest, PacketType.IMAGE,
+                    Files.readAllBytes(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -109,7 +113,8 @@ public class LongApplicationLayer implements AdhocApplication {
         Path path = Paths.get(input.getAbsolutePath());
         byte[] packet = null;
         try {
-            packet = generatePacket(dest, PacketType.FILE, Files.readAllBytes(path));
+            packet = generatePacket(dest, PacketType.FILE,
+                    Files.readAllBytes(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,12 +123,16 @@ public class LongApplicationLayer implements AdhocApplication {
 
     /**
      *
-     * @param destination Geaddresseerde van dit bericht
-     * @param type Het type van de data
-     * @param data De uiteindelijke
+     * @param destination
+     *            Geaddresseerde van dit bericht
+     * @param type
+     *            Het type van de data
+     * @param data
+     *            De uiteindelijke
      * @return
      */
-    public byte[] generatePacket(InetAddress destination, PacketType type, byte[] data) {
+    public byte[] generatePacket(InetAddress destination, PacketType type,
+            byte[] data) {
         byte[] sendBytes = new byte[4];
         try {
             sendBytes = NetworkUtils.getLocalHost().getAddress();
@@ -195,43 +204,51 @@ public class LongApplicationLayer implements AdhocApplication {
                 PacketType type = PacketType.parseByte(message[0]);
                 byte[] senderBytes = Arrays.copyOfRange(message, 1, 5);
                 byte[] destenBytes = Arrays.copyOfRange(message, 5, 9);
-                byte[] dataBytes = Arrays.copyOfRange(message, 9, message.length);
+                byte[] dataBytes = Arrays.copyOfRange(message, 9,
+                        message.length);
                 switch (type) {
-                    case TEXT:
-                        gui.processString(parseIP(senderBytes), parseIP(destenBytes), getData(dataBytes));
-                        break;
-                    case IMAGE:
-                        ByteArrayInputStream in = new ByteArrayInputStream(dataBytes);
-                        gui.processImage(parseIP(senderBytes), parseIP(destenBytes), new Image(in));
-                        break;
-                    case AUDIO:
-                        String audioname = System.currentTimeMillis() + ".audiofile";
-                        try {
-                            FileOutputStream aos =
-                                    new FileOutputStream("receivedFile.file");
-                            aos.write(dataBytes);
-                            aos.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        gui.processFile(parseIP(senderBytes), parseIP(destenBytes), new File(audioname));
-                        break;
-                    case FILE:
-                        String filename = System.currentTimeMillis() + ".file";
-                        try {
-                            FileOutputStream aos =
-                                    new FileOutputStream("receivedFile.file");
-                            aos.write(dataBytes);
-                            aos.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        gui.processFile(parseIP(senderBytes), parseIP(destenBytes), new File(filename));
-                        break;
-                    case UNDEFINED:
-                        LOGGER.error("Just received a packet with an undefined type, namely {}"
-                                        ,message[0]);
-                        break;
+                case TEXT:
+                    gui.processString(parseIP(senderBytes),
+                            parseIP(destenBytes), getData(dataBytes));
+                    break;
+                case IMAGE:
+                    ByteArrayInputStream in = new ByteArrayInputStream(
+                            dataBytes);
+                    gui.processImage(parseIP(senderBytes),
+                            parseIP(destenBytes), new Image(in));
+                    break;
+                case AUDIO:
+                    String audioname = System.currentTimeMillis()
+                            + ".audiofile";
+                    try {
+                        FileOutputStream aos = new FileOutputStream(
+                                "receivedFile.file");
+                        aos.write(dataBytes);
+                        aos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    gui.processFile(parseIP(senderBytes), parseIP(destenBytes),
+                            new File(audioname));
+                    break;
+                case FILE:
+                    String filename = System.currentTimeMillis() + ".file";
+                    try {
+                        FileOutputStream aos = new FileOutputStream(
+                                "receivedFile.file");
+                        aos.write(dataBytes);
+                        aos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    gui.processFile(parseIP(senderBytes), parseIP(destenBytes),
+                            new File(filename));
+                    break;
+                case UNDEFINED:
+                    LOGGER.error(
+                            "Just received a packet with an undefined type, namely {}",
+                            message[0]);
+                    break;
                 }
 
                 savedQueues.message = new LinkedList<>();
@@ -255,7 +272,9 @@ public class LongApplicationLayer implements AdhocApplication {
         try {
             return InetAddress.getByAddress(byteAddress).getHostAddress();
         } catch (UnknownHostException e) {
-            LOGGER.error("[AL] [RCD] Kan de bytearray {} niet omzetten naar een IP adres", byteAddress);
+            LOGGER.error(
+                    "[AL] [RCD] Kan de bytearray {} niet omzetten naar een IP adres",
+                    byteAddress);
             return "";
         }
     }
@@ -285,10 +304,10 @@ public class LongApplicationLayer implements AdhocApplication {
     }
 
     public enum PacketType {
-        TEXT((byte) 0), IMAGE((byte) 1), AUDIO((byte) 2), FILE((byte) 3), UNDEFINED((byte) 4);
+        TEXT((byte) 0), IMAGE((byte) 1), AUDIO((byte) 2), FILE((byte) 3), UNDEFINED(
+                (byte) 4);
 
         private byte number;
-
 
         PacketType(byte number) {
             this.number = number;
