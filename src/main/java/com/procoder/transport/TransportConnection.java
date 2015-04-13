@@ -178,6 +178,14 @@ public class TransportConnection {
             LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
         }
 
+        if ((established && segment.isSyn()) || (!synReceived && !segment.isSyn())) {
+            established = false;
+            synSent = false;
+            synReceived = false;
+            TransportSegment rst = new TransportSegment(new Byte[0], seq);
+            networkLayer.send(receivingHost, rst.toByteArray());
+        }
+
         if (established) {
             if (segment.validSeq()) {
                 if (nextAck == segment.seq) {

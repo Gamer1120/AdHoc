@@ -8,13 +8,12 @@ import java.nio.ByteBuffer;
 
 class TransportSegment {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransportSegment.class);
-
     public static final byte SEQ_FLAG = (byte) 0B10000000;
     public static final byte ACK_FLAG = (byte) 0B01000000;
     public static final byte DIS_FLAG = (byte) 0B00100000;
     public static final byte SYN_FLAG = (byte) 0B00010000;
-
+    public static final byte RST_FLAG = (byte) 0B00001000;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransportSegment.class);
     int seq;
     int ack;
     Byte[] data;
@@ -38,52 +37,6 @@ class TransportSegment {
         this.data = data;
     }
 
-    public boolean isDiscover() {
-        return (flags & DIS_FLAG) != 0;
-    }
-
-    public boolean validSeq() {
-        return (flags & SEQ_FLAG) != 0;
-    }
-
-    public boolean validAck() {
-        return (flags & ACK_FLAG) != 0;
-    }
-
-    private void setDiscover() {
-        flags = (byte) (flags | DIS_FLAG);
-    }
-
-    private void setSeq(int seq) {
-        this.seq = seq;
-        flags = (byte) (flags | SEQ_FLAG);
-    }
-
-    public void setAck(int ack) {
-        this.ack = ack;
-        flags = (byte) (flags | ACK_FLAG);
-    }
-
-    public void setSyn() {
-        flags = (byte) (flags | SYN_FLAG);
-    }
-
-    public boolean isSyn() {
-        return (flags & SYN_FLAG) != 0;
-    }
-
-    public byte[] toByteArray() {
-        byte[] primBytes = ArrayUtils.toPrimitiveArray(data);
-        ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
-        buf.put(flags);
-        buf.putInt(seq);
-        buf.putInt(ack);
-        buf.put(primBytes);
-        buf.flip();
-
-        return buf.array();
-    }
-
     public static TransportSegment parseNetworkData(byte[] data) {
         ByteBuffer buf = ByteBuffer.wrap(data);
         byte flags = buf.get();
@@ -101,5 +54,59 @@ class TransportSegment {
         TransportSegment result = new TransportSegment(new Byte[0]);
         result.setDiscover();
         return result;
+    }
+
+    public boolean isDiscover() {
+        return (flags & DIS_FLAG) != 0;
+    }
+
+    public boolean isSyn() {
+        return (flags & SYN_FLAG) != 0;
+    }
+
+    public boolean isRST() {
+        return (flags & RST_FLAG) != 0;
+    }
+
+    public boolean validSeq() {
+        return (flags & SEQ_FLAG) != 0;
+    }
+
+    public boolean validAck() {
+        return (flags & ACK_FLAG) != 0;
+    }
+
+    private void setDiscover() {
+        flags = (byte) (flags | DIS_FLAG);
+    }
+
+    public void setRST() {
+        flags = (byte) (flags | RST_FLAG);
+    }
+
+    private void setSeq(int seq) {
+        this.seq = seq;
+        flags = (byte) (flags | SEQ_FLAG);
+    }
+
+    public void setAck(int ack) {
+        this.ack = ack;
+        flags = (byte) (flags | ACK_FLAG);
+    }
+
+    public void setSyn() {
+        flags = (byte) (flags | SYN_FLAG);
+    }
+
+    public byte[] toByteArray() {
+        byte[] primBytes = ArrayUtils.toPrimitiveArray(data);
+        ByteBuffer buf = ByteBuffer.allocate(data.length + Long.BYTES + 1);
+        buf.put(flags);
+        buf.putInt(seq);
+        buf.putInt(ack);
+        buf.put(primBytes);
+        buf.flip();
+
+        return buf.array();
     }
 }
