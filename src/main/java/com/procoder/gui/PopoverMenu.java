@@ -41,7 +41,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         smileyButton.setMinWidth(minWidth);
         backgroundButton.setMinWidth(minWidth);
 
-        this.getChildren().addAll(uploadButton, smileyButton, backgroundButton);
+        this.getChildren().addAll(uploadButton, backgroundButton);
 
 
 
@@ -66,9 +66,20 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             File file = fileChooser.showOpenDialog(new Stage());
             //Image image = new Image(file.toURI().toString());
             if(file!=null) {
-                main.sendImage(file);
+                String[] s = file.getName().split("\\.");
+                String extension = s[s.length-1];
+                if(Main.images.contains(extension)){
+                    main.sendImage(file);
+                }else if(Main.audios.contains(extension)){
+                    main.sendAudio(file);
+                }else {
+                    main.sendFile(file);
+                }
             }
             main.getPopover().hide();
+
+
+
         }else if(event.getSource().equals(backgroundButton)){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open background file");

@@ -1,3 +1,7 @@
+.root{
+    font-family: 'OpenSansEmoji';
+    src: url('OpenSansEmoji.ttf');
+}
 .scroll-pane > .viewport{
 -fx-background-color:transparent;
 
