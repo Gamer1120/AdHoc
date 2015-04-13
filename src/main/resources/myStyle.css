@@ -12,3 +12,13 @@
 -fx-background-repeat:no-repeat;
 -fx-background-size:stretch;
 }
+
+#buttons{
+-fx-background-color: #FFFFFF;
+-fx-border-width:2px,0px,2px,0px;
+-fx-border-color:#F1F1F1
+}
+
+#buttons:hover{
+fx-background-color: #000000;
+}

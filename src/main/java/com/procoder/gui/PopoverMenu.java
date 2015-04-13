@@ -22,25 +22,26 @@ import java.util.HashMap;
 public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
     private Button uploadButton;
-    private Button smileyButton;
     private Button backgroundButton;
     private Main main;
 
-    private double minWidth = 100;
+    private double minWidth = 120;
 
     public PopoverMenu(Main main){
         //this.getChildren().add(new Label("TEST"));
         this.main = main;
         uploadButton = new Button("Upload");
-        smileyButton = new Button("Smiley");
         backgroundButton = new Button("Background");
         uploadButton.setFocusTraversable(false);
-        smileyButton.setFocusTraversable(false);
+
         backgroundButton.setFocusTraversable(false);
         uploadButton.setMinWidth(minWidth);
-        smileyButton.setMinWidth(minWidth);
         backgroundButton.setMinWidth(minWidth);
 
+
+
+        uploadButton.setId("buttons");
+        backgroundButton.setId("buttons");
         this.getChildren().addAll(uploadButton, backgroundButton);
 
 
@@ -84,24 +85,26 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open background file");
             File file = fileChooser.showOpenDialog(new Stage());
-            //System.out.println(file.toURI());
-            main.getScrollPane().setStyle("-fx-background-image:url(" + file.toURI() + ");");
+            if(file!=null) {
+                //System.out.println(file.toURI());
+                main.getScrollPane().setStyle("-fx-background-image:url(" + file.toURI() + ");");
 
-            byte dataToWrite[] = null;
-            try {
-                dataToWrite = Files.readAllBytes(file.toPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            FileOutputStream out;
-            try {
-                out = new FileOutputStream("background.png");
-                out.write(dataToWrite);
-                out.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }catch(IOException e){
-                e.printStackTrace();
+                byte dataToWrite[] = null;
+                try {
+                    dataToWrite = Files.readAllBytes(file.toPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                FileOutputStream out;
+                try {
+                    out = new FileOutputStream("background.png");
+                    out.write(dataToWrite);
+                    out.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
