@@ -1,6 +1,5 @@
 package com.procoder;
 
-import com.procoder.routing.client.AbstractRoute;
 import com.procoder.routing.client.BasicRoute;
 import com.procoder.routing.protocol.RIPRoutingProtocol;
 import com.procoder.routing.protocol.RoutingService;
@@ -12,15 +11,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
-import java.util.Map;
 
 public class ForwardingNetworkLayer implements AdhocNetwork {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(NetworkLayer.class);
     private final static int LENGTH = 1472;
+    private final static byte TTL = 4;
     private final static int PORT = 7777;
     private final static int IPLENGTH = 4;
-    private final static int HEADER = 2 * IPLENGTH;
+    private final static int HEADER = 2 * IPLENGTH + 1;
     private AdhocTransport transportLayer;
     private InetAddress localAddress;
     private InetAddress multicast;
@@ -51,16 +50,17 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        send(localAddress, dest, data);
+        send(localAddress, dest, data, TTL);
     }
 
-    private void send(InetAddress src, InetAddress dest, byte[] data) {
+    private void send(InetAddress src, InetAddress dest, byte[] data, byte ttl) {
         byte[] packetData = new byte[data.length + HEADER];
         byte[] sourceAddress = src.getAddress();
         byte[] destAddress = dest.getAddress();
-        System.arraycopy(sourceAddress, 0, packetData, 0, IPLENGTH);
-        System.arraycopy(destAddress, 0, packetData, IPLENGTH, IPLENGTH);
+        System.arraycopy(sourceAddress, 0, packetData, 1, IPLENGTH);
+        System.arraycopy(destAddress, 0, packetData, IPLENGTH + 1, IPLENGTH);
         System.arraycopy(data, 0, packetData, HEADER, data.length);
+        packetData[0] = ttl;
 
 
         BasicRoute route = (BasicRoute) routingService.getForwardingTable().get(dest);
@@ -97,10 +97,10 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
     private void processPacket(DatagramPacket packet, byte[] data) {
         try {
             byte[] noHeaderdata;
-            InetAddress src = InetAddress.getByAddress(Arrays.copyOfRange(data, 0,
-                    IPLENGTH));
+            InetAddress src = InetAddress.getByAddress(Arrays.copyOfRange(data, 1,
+                    IPLENGTH + 1));
             InetAddress dest = InetAddress.getByAddress(Arrays.copyOfRange(data,
-                    IPLENGTH, HEADER));
+                    IPLENGTH + 1, HEADER));
             LOGGER.debug("[NL] Received packet from {} to {}",
                     src.getHostAddress(), dest.getHostAddress());
             noHeaderdata = Arrays.copyOfRange(data, HEADER, data.length);
@@ -114,23 +114,10 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
             }
 
             // Pakketten voor multicast moeten doorgestuurd worden naar computers die het nog niet hebben.
-            if (dest.equals(NetworkUtils.getBroadcastAddress())) {
-                for (Map.Entry<Inet4Address, ? extends AbstractRoute> ipRoutePair : routingService.getForwardingTable().entrySet()) {
-                    // Hoeft alleen door te sturen als het adres niet de laatste hop van het pakket is en als de path naar
-                    // de bestemming niet via de laatste hop van het pakket gaat.
-                    BasicRoute route = (BasicRoute) ipRoutePair.getValue();
-
-                    if (!src.equals(localAddress) && !ipRoutePair.getKey().equals(localAddress) && !route.nextHop.equals(packet.getAddress()) && !Arrays.asList(route.path).contains(packet.getAddress())) {
-                        DatagramPacket forwardingPacket = new DatagramPacket(Arrays.copyOf(data, data.length), data.length, route.destination, PORT);
-                        // TODO dit samenvoegen met de gewone send methode
-                        try {
-                            socket.send(forwardingPacket);
-                            LOGGER.debug("Stuur broadcast pakket door naar {}", forwardingPacket.getAddress());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
+            if (dest.equals(NetworkUtils.getBroadcastAddress()) && !packet.getAddress().equals(NetworkUtils.getLocalHost())) {
+                data[0]--;
+                if (data[0] > 0) {
+                    send(src, dest, noHeaderdata, data[0]); // Rebroadcast pakket met ttl 1 lager.
                 }
             } else if (!src.equals(localAddress) && !dest.equals(localAddress)) {
                 // Forward het pakket naar het juiste adres.

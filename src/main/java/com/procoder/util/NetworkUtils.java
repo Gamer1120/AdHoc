@@ -10,30 +10,32 @@ import java.util.Enumeration;
 public class NetworkUtils {
 
 
-    public static InetAddress getLocalHost() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
-        loop:
-        for (Enumeration<NetworkInterface> ifaces = NetworkInterface
-                .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-            for (Enumeration<InetAddress> addresses = ifaces.nextElement()
-                    .getInetAddresses(); addresses.hasMoreElements(); ) {
-                InetAddress address = addresses.nextElement();
-                if (address.getHostName().startsWith("192.168.5.")) {
-                    localHost = address;
-                    break loop;
+    public static InetAddress getLocalHost() {
+        InetAddress localHost = null;
+        try {
+            localHost = InetAddress.getLocalHost();
+
+            loop:
+            for (Enumeration<NetworkInterface> ifaces = NetworkInterface
+                    .getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
+                for (Enumeration<InetAddress> addresses = ifaces.nextElement()
+                        .getInetAddresses(); addresses.hasMoreElements(); ) {
+                    InetAddress address = addresses.nextElement();
+                    if (address.getHostName().startsWith("192.168.5.")) {
+                        localHost = address;
+                        break loop;
+                    }
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return localHost;
     }
 
     public static NetworkInterface detectNetwork() throws SocketException {
-        InetAddress source = null;
-        try {
-            source = getLocalHost();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        InetAddress source = getLocalHost();
+
         // Tries to find the Ad-hoc network
         NetworkInterface netIf = NetworkInterface.getByInetAddress(source);
         loop:
@@ -44,7 +46,6 @@ public class NetworkUtils {
                     .hasMoreElements(); ) {
                 InetAddress address = addresses.nextElement();
                 if (address.getHostName().startsWith("192.168.5.")) {
-                    source = address;
                     netIf = iface;
                     break loop;
                 }
