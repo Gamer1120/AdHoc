@@ -57,7 +57,13 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
                         byte oldCostToNext = entry.getValue().costToNext;
                         if (linkLayer.getOwnAddress() != entry.getKey() && newCostToNext != oldCostToNext) {
                             changed = true;
-                            byte newCost = (byte) (entry.getValue().distance - oldCostToNext + newCostToNext);
+                            int tempNewCost = entry.getValue().distance - oldCostToNext + newCostToNext;
+                            byte newCost = (byte) tempNewCost;
+                            if (tempNewCost > Byte.MAX_VALUE) {
+                                newCost = Byte.MAX_VALUE;
+                            } else if (tempNewCost < 0) {
+                                newCost = 0;
+                            }
                             BasicRoute newRoute = entry.getValue();
                             newRoute.distance = newCost;
                             newRoute.costToNext = newCostToNext;
