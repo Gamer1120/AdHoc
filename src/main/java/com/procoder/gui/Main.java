@@ -221,7 +221,7 @@ public class Main extends Application implements
     //Proces
     @Override
     public void processString(String source, String destination, String msg) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -243,7 +243,7 @@ public class Main extends Application implements
 
     @Override
     public void processFile(String source, String destination, File file) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -265,7 +265,7 @@ public class Main extends Application implements
 
     @Override
     public void processImage(String source, String destination, Image img) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -286,7 +286,7 @@ public class Main extends Application implements
     }
 
     public void processAudio(String source, String destination, File sound){
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -478,9 +478,9 @@ public class Main extends Application implements
         return scrollPane;
     }
 
-    private ChatPane getChatPane(String source, String destination) {
+    private ChatPane getReceiveChatPane(String destination) {
         for(IdLabel i: chatMap.keySet()){
-            if(i.getAdress().equals(source)){
+            if (i.getAdress().equals(destination)) {
                 return chatMap.get(i);
             }
         }
