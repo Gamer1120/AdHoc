@@ -134,11 +134,8 @@ public class LongApplicationLayer implements AdhocApplication {
     public byte[] generatePacket(InetAddress destination, PacketType type,
             byte[] data) {
         byte[] sendBytes = new byte[4];
-        try {
-            sendBytes = NetworkUtils.getLocalHost().getAddress();
-        } catch (IOException e) {
-            LOGGER.error("Oepsie volgens mij ben je niet verbonden met ons supergave ad-hoc netwerk");
-        }
+        sendBytes = NetworkUtils.getLocalHost().getAddress();
+        LOGGER.error("Oepsie volgens mij ben je niet verbonden met ons supergave ad-hoc netwerk");
         byte[] destBytes = destination.getAddress();
         byte typeBytes = type.toByte();
         int messageSize = sendBytes.length + destBytes.length + 1 + data.length;

@@ -30,11 +30,7 @@ public class LinkLayer {
 	 */
 	public Inet4Address getOwnAddress() {
 		Inet4Address result = null;
-		try {
-			result = (Inet4Address) NetworkUtils.getLocalHost();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		result = (Inet4Address) NetworkUtils.getLocalHost();
 		return result;
 	}
 

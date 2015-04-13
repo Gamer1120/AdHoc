@@ -7,7 +7,6 @@ import com.procoder.util.NetworkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.*;
@@ -166,11 +165,8 @@ public class TransportConnection {
             synReceived = true;
             nextAck = segment.seq + 1;
             if(synSent) {
-                try {
-                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
+
                 established = true;
             } else {
                 sendSyn();
@@ -179,11 +175,7 @@ public class TransportConnection {
             // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
         } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
             established = true;
-            try {
-                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
         }
 
         if (established) {
