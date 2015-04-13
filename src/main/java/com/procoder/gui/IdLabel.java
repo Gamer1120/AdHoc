@@ -51,7 +51,7 @@ public class IdLabel extends BorderPane {
         label.setStyle("-fx-font-size:25px;-fx-font-weight:bold");
         label.setMinWidth(100);
         //statusView = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
-        statusView = new Label("0");
+        statusView = new Label("");
         statusView.setPrefSize(25, 25);
         statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background-image:url(greenBall.png);");
         statusView.setAlignment(Pos.CENTER);

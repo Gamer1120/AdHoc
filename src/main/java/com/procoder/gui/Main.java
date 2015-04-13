@@ -140,7 +140,8 @@ public class Main extends Application implements
         commandPanel = new HBox();
         // ipField = new TextField("TODO");
         text = new TextField();
-        text.setPrefWidth(500);
+        text.setPrefWidth(750);
+
         text.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
