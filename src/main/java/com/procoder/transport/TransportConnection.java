@@ -88,7 +88,6 @@ public class TransportConnection {
 
     public void processSendQueue() {
 
-
         if (!synSent) {
             sendSyn();
         } else if(established) {
@@ -158,85 +157,93 @@ public class TransportConnection {
 
     public void receiveData(TransportSegment segment) {
 
-        LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
-
-        if (!synReceived && segment.isSyn()) {
-            LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
-            synReceived = true;
-            nextAck = segment.seq + 1;
-            if(synSent) {
-                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-
-                established = true;
-            } else {
-                sendSyn();
-            }
-            removeAckedSegment(segment);
-            // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
-        } else if(!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
-            established = true;
-            LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-        }
-
-        if ((established && segment.isSyn()) || (!synReceived && !segment.isSyn())) {
+        if (segment.isRST()) {
+            LOGGER.debug("RESET Ontvangen");
             established = false;
             synSent = false;
             synReceived = false;
-            TransportSegment rst = new TransportSegment(new Byte[0], seq);
-            networkLayer.send(receivingHost, rst.toByteArray());
-        }
+        } else {
 
-        if (established) {
-            if (segment.validSeq()) {
-                if (nextAck == segment.seq) {
+            LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
-                    LOGGER.debug("[TL] [RCV] In-order data received");
+            if (!synReceived && segment.isSyn()) {
+                LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
+                synReceived = true;
+                nextAck = segment.seq + 1;
+                if (synSent) {
+                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
+                    established = true;
+                } else {
+                    sendSyn();
+                }
+                removeAckedSegment(segment);
+                // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
+            } else if (!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
+                established = true;
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
+            }
 
-                    receivedSegments.put(segment.seq, segment);
+            if ((established && segment.isSyn()) || (!synReceived && !segment.isSyn())) {
+                established = false;
+                synSent = false;
+                synReceived = false;
+                TransportSegment rst = new TransportSegment(new Byte[0], seq);
+                networkLayer.send(receivingHost, rst.toByteArray());
+                LOGGER.debug("Sending RESET");
+            }
 
-                    // We hebben een aaneengesloten serie gegevens.
-                    Queue<Byte> data = new LinkedList<>();
-                    int currentSeq = nextAck;
-                    while (receivedSegments.containsKey(currentSeq)) {
-                        TransportSegment currentSegment = receivedSegments.get(currentSeq);
-                        data.addAll(Arrays.asList(currentSegment.data));
-                        receivedSegments.remove(currentSeq);
-                        currentSeq += currentSegment.data.length;
+            if (established) {
+                if (segment.validSeq()) {
+                    if (nextAck == segment.seq) {
+
+                        LOGGER.debug("[TL] [RCV] In-order data received");
+
+                        receivedSegments.put(segment.seq, segment);
+
+                        // We hebben een aaneengesloten serie gegevens.
+                        Queue<Byte> data = new LinkedList<>();
+                        int currentSeq = nextAck;
+                        while (receivedSegments.containsKey(currentSeq)) {
+                            TransportSegment currentSegment = receivedSegments.get(currentSeq);
+                            data.addAll(Arrays.asList(currentSegment.data));
+                            receivedSegments.remove(currentSeq);
+                            currentSeq += currentSegment.data.length;
+                        }
+
+                        nextAck = currentSeq;
+
+                        DatagramPacket packet = new DatagramPacket(ArrayUtils.toPrimitiveArray(data.toArray(new Byte[data.size()])), data.size(), receivingHost, 0);
+                        adhocApplication.processPacket(packet);
+
+                        removeAckedSegment(segment);
+
+                        LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
+
+
+                    } else if (segment.seq > nextAck) {
+                        LOGGER.debug("[TL] [RCV] Out-of-order data received");
+                        receivedSegments.put(segment.seq, segment);
                     }
 
-                    nextAck = currentSeq;
 
-                    DatagramPacket packet = new DatagramPacket(ArrayUtils.toPrimitiveArray(data.toArray(new Byte[data.size()])), data.size(), receivingHost, 0);
-                    adhocApplication.processPacket(packet);
+                }
 
-                    removeAckedSegment(segment);
+                // Alleen segments acken die een syn zijn of die data bevatten. Oftewel geen acks acken.
 
-                    LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
-
-
-                } else if (segment.seq > nextAck) {
-                    LOGGER.debug("[TL] [RCV] Out-of-order data received");
-                    receivedSegments.put(segment.seq, segment);
+                if (segment.isSyn() || segment.data.length > 0) {
+                    TransportSegment ack = new TransportSegment(new Byte[0], seq);
+                    ack.setAck(nextAck);
+                    networkLayer.send(receivingHost, ack.toByteArray());
                 }
 
 
+            } else if (segment.validAck()) {
+                removeAckedSegment(segment);
             }
 
-            // Alleen segments acken die een syn zijn of die data bevatten. Oftewel geen acks acken.
+            processSendQueue();
 
-            if(segment.isSyn() || segment.data.length > 0) {
-                TransportSegment ack = new TransportSegment(new Byte[0], seq);
-                ack.setAck(nextAck);
-                networkLayer.send(receivingHost, ack.toByteArray());
-            }
-
-
-
-        } else if(segment.validAck()) {
-            removeAckedSegment(segment);
         }
-
-        processSendQueue();
 
     }
 
