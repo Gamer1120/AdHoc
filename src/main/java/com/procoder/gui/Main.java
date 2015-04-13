@@ -36,6 +36,10 @@ import java.util.*;
 public class Main extends Application implements
         EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
 
+    public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
+    public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
+
+
     private static final boolean DEBUG = false;
 
     private VBox side;
@@ -71,8 +75,7 @@ public class Main extends Application implements
         setOwnIp();
         setupCenter();
         setupSideBar();
-
-        Scene mainScene = new Scene(mainPane, 1000, 900);
+        Scene mainScene = new Scene(mainPane, 1200, 900);
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
         addLabel("192.168.2.2");
@@ -203,7 +206,6 @@ public class Main extends Application implements
     //Proces
     @Override
     public void processString(String source, String destination, String msg) {
-        //ChatPane h = (ChatPane) scrollPane.getContent();
         ChatPane h = getChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
@@ -212,7 +214,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(msg, source), true);
+                            h.add(new StringCloud(msg, source), true);
                         }
                     }
                 });
@@ -225,11 +227,7 @@ public class Main extends Application implements
     }
     @Override
     public void processFile(String source, String destination, File file) {
-        // TODO
-    }
-    @Override
-    public void processImage(String source, String destination, Image img) {
-        ChatPane h = (ChatPane) scrollPane.getContent();
+        ChatPane h = getChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -237,7 +235,28 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(img, source), true);
+                            h.add(new FileCloud(file, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+    @Override
+    public void processImage(String source, String destination, Image img) {
+        ChatPane h = getChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new ImageCloud(img, source), true);
                         }
                     }
                 });
@@ -262,7 +281,7 @@ public class Main extends Application implements
         if (!msg.isEmpty()) {
             ChatPane h = (ChatPane) scrollPane.getContent();
             if (h != null) {
-                Cloud newCloud = new Cloud(msg, true);
+                Cloud newCloud = new StringCloud(msg);
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
@@ -282,7 +301,7 @@ public class Main extends Application implements
                     @Override
                     public void run() {
                         if (h != null) {
-                            h.add(new Cloud(new Image(img.toURI().toString())),
+                            h.add(new ImageCloud(new Image(img.toURI().toString())),
                                     false);
                         }
                     }
@@ -299,9 +318,53 @@ public class Main extends Application implements
         }
     }
     public void sendFile(File file){
-        //TODO
-    }
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new FileCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
 
+        if (!DEBUG) {
+            applicationLayer.sendFile(selected.getInetAdress(), file);
+        }
+    }
+    public void sendAudio(File file){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new AudioCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+
+        if (!DEBUG) {
+            applicationLayer.sendAudio(selected.getInetAdress(), file);
+        }
+    }
 
 
 
