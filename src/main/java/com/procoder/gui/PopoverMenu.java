@@ -41,7 +41,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         smileyButton.setMinWidth(minWidth);
         backgroundButton.setMinWidth(minWidth);
 
-        this.getChildren().addAll(uploadButton, smileyButton, backgroundButton);
+        this.getChildren().addAll(uploadButton, backgroundButton);
 
 
 
