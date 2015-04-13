@@ -65,7 +65,7 @@ public class LongApplicationLayer implements AdhocApplication {
 	// ---------------------------//
 	// SENDING TO TRANSPORT LAYER //
 	// ---------------------------//
-	
+
 	/**
 	 * Sends a packet to the Transport Layer.
 	 *
@@ -80,7 +80,7 @@ public class LongApplicationLayer implements AdhocApplication {
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.TEXT,
-					input.getBytes(ENCODING));
+					input.getBytes(ENCODING), new byte[] {});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -90,10 +90,12 @@ public class LongApplicationLayer implements AdhocApplication {
 	@Override
 	public void sendFile(InetAddress dest, File input) {
 		Path path = Paths.get(input.getAbsolutePath());
+		String filename = input.getName();
+		String extension = filename.substring(filename.lastIndexOf('.') + 1);
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.FILE,
-					Files.readAllBytes(path));
+					Files.readAllBytes(path), extension.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -103,10 +105,12 @@ public class LongApplicationLayer implements AdhocApplication {
 	@Override
 	public void sendImage(InetAddress dest, File input) {
 		Path path = Paths.get(input.getAbsolutePath());
+		String filename = input.getName();
+		String extension = filename.substring(filename.lastIndexOf('.') + 1);
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.IMAGE,
-					Files.readAllBytes(path));
+					Files.readAllBytes(path), extension.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -117,10 +121,12 @@ public class LongApplicationLayer implements AdhocApplication {
 	@Override
 	public void sendAudio(InetAddress dest, File input) {
 		Path path = Paths.get(input.getAbsolutePath());
+		String filename = input.getName();
+		String extension = filename.substring(filename.lastIndexOf('.') + 1);
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.AUDIO,
-					Files.readAllBytes(path));
+					Files.readAllBytes(path), extension.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -138,15 +144,18 @@ public class LongApplicationLayer implements AdhocApplication {
 	 * @return
 	 */
 	public byte[] generatePacket(InetAddress destination, PacketType type,
-			byte[] data) {
+			byte[] data, byte[] extension) {
 		byte[] sendBytes = new byte[4];
 		sendBytes = NetworkUtils.getLocalHost().getAddress();
 		byte[] destBytes = destination.getAddress();
 		byte typeBytes = type.toByte();
-		int messageSize = sendBytes.length + destBytes.length + 1 + data.length;
+		int messageSize = sendBytes.length + destBytes.length + 2
+				+ extension.length + data.length;
 		ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
 		buf.putLong(messageSize);
 		buf.put(typeBytes);
+		buf.put(new byte[] { (byte) extension.length });
+		buf.put(extension);
 		buf.put(sendBytes);
 		buf.put(destBytes);
 		buf.put(data);
@@ -202,11 +211,13 @@ public class LongApplicationLayer implements AdhocApplication {
 				byte[] message = ArrayUtils
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
-
 				PacketType type = PacketType.parseByte(message[0]);
-				byte[] senderBytes = Arrays.copyOfRange(message, 1, 5);
-				byte[] destenBytes = Arrays.copyOfRange(message, 5, 9);
-				byte[] dataBytes = Arrays.copyOfRange(message, 9,
+				byte extensionLength = message[1];
+				byte[] extension = Arrays.copyOfRange(message, 2,
+						2 + extensionLength);
+				byte[] senderBytes = Arrays.copyOfRange(message, 3 + extensionLength, 7 + extensionLength);
+				byte[] destenBytes = Arrays.copyOfRange(message, 8 + extensionLength, 12 + extensionLength);
+				byte[] dataBytes = Arrays.copyOfRange(message, 13 + extensionLength,
 						message.length);
 				switch (type) {
 				case TEXT:
@@ -220,11 +231,9 @@ public class LongApplicationLayer implements AdhocApplication {
 							parseIP(destenBytes), new Image(in));
 					break;
 				case AUDIO:
-					String audioname = System.currentTimeMillis()
-							+ ".mp3";
+					String audioname = System.currentTimeMillis() + "." + new String(extension);
 					try {
-						FileOutputStream aos = new FileOutputStream(
-								audioname);
+						FileOutputStream aos = new FileOutputStream(audioname);
 						aos.write(dataBytes);
 						aos.close();
 					} catch (IOException e) {
@@ -234,10 +243,9 @@ public class LongApplicationLayer implements AdhocApplication {
 							parseIP(destenBytes), new File(audioname));
 					break;
 				case FILE:
-					String filename = System.currentTimeMillis() + ".file";
+					String filename = System.currentTimeMillis() + "." + new String(extension);
 					try {
-						FileOutputStream aos = new FileOutputStream(
-								filename);
+						FileOutputStream aos = new FileOutputStream(filename);
 						aos.write(dataBytes);
 						aos.close();
 					} catch (IOException e) {
