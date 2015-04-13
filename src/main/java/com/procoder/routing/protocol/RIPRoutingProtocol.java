@@ -116,9 +116,9 @@ public class RIPRoutingProtocol implements IRoutingProtocol {
             LinkedList<Inet4Address> route = new LinkedList<>(Arrays.asList(newRoute.path));
             route.addFirst(sourceAddress);
 
-            byte newDistance = newRoute.distance++;
-            if ((newRoute.distance + 1) > Byte.MAX_VALUE) {
-                newDistance = Byte.MAX_VALUE;
+            byte newDistance = newRoute.distance;
+            if (newDistance != Byte.MAX_VALUE) {
+                newDistance++;
             }
             Inet4Address dest = newRoute.destination;
 
