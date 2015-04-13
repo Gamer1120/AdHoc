@@ -8,6 +8,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,12 +16,15 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
+import org.controlsfx.control.PopOver;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 /**
  * Created by reneb_000 on 11-4-2015.
@@ -35,7 +39,8 @@ public class AudioCloud extends Cloud {
     private Duration duration;
     private DecimalFormat df;
     private Button playButton;
-
+    private PopOver volumePopover;
+    private Slider volumeSlider;
 
     public AudioCloud(File music){
         super(true);
@@ -43,10 +48,13 @@ public class AudioCloud extends Cloud {
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(10);
 
+        VBox musicbox = new VBox();
+        Label musicLabel = new Label(music.getName());
+
         media = new Media(music.toURI().toString());
         mediaplayer = new MediaPlayer(media);
         //mediaplayer.play();
-        ImageView musicIcon = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("music.png")));
+        //ImageView musicIcon = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("music.png")));
         playButton = new Button();
         playButton.setMinHeight(25);
         playButton.setMinWidth(25);
@@ -73,7 +81,7 @@ public class AudioCloud extends Cloud {
             }
         });
         Button volume = new Button();
-        volume.setMinSize(25, 25);
+        volume.setMaxSize(25, 25);
         String volumeurl = this.getClass().getClassLoader().getResource("volume.png").toString();
         volume.setStyle("-fx-background-image:url(" + volumeurl + ");-fx-background-color:transparent;-fx-background-repeat:no-repeat");
 
@@ -81,11 +89,15 @@ public class AudioCloud extends Cloud {
             @Override
             public void run() {
                 duration = media.getDuration();
-                timeLabel.setText(formatTime(mediaplayer.getCurrentTime(),duration));
+                timeLabel.setText(formatTime(mediaplayer.getCurrentTime(), duration));
             }
         });
 
         df = new DecimalFormat("0.00");
+        DecimalFormatSymbols symbol = new DecimalFormatSymbols();
+        symbol.setDecimalSeparator('.');
+
+        df.setDecimalFormatSymbols(symbol);
         slider = new Slider();
         slider.setMinWidth(100);
 
@@ -95,9 +107,30 @@ public class AudioCloud extends Cloud {
         //timeLabel = new Label(formatTime(mediaplayer.getCurrentTime(),duration));
         timeLabel.setMinWidth(50);
 
+        volumeSlider = new Slider(0,1,1);
+        volumeSlider.setOrientation(Orientation.VERTICAL);
+        volumeSlider.setMaxHeight(100);
+        volumeSlider.setMaxWidth(20);
+        volumePopover = new PopOver(volumeSlider);
+        volumePopover.setMaxWidth(20);
+        volumePopover.setMaxHeight(25);
+        volumePopover.setHideOnEscape(true);
 
+        mediaplayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
 
+        volumePopover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
 
+        volume.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+                if(volumePopover.isShowing()){
+                    volumePopover.hide();
+                }else {
+                    volumePopover.show(volume);
+                }
+            }
+        });
         slider.valueProperty().addListener(new InvalidationListener() {
             public void invalidated(Observable ov) {
                 if (slider.isValueChanging()) {
@@ -110,6 +143,127 @@ public class AudioCloud extends Cloud {
             }
         });
 
+        mediaplayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
+            @Override
+            public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
+                updateValues();
+            }
+        });
+        hbox.getChildren().addAll(playButton, volume, slider, timeLabel, stop);
+        musicbox.getChildren().addAll(hbox, musicLabel);
+        musicbox.setAlignment(Pos.CENTER);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(10));
+        vbox.getChildren().add(musicbox);
+    }
+
+    public AudioCloud(File music, String user){
+        super(true);
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
+        hbox.setSpacing(10);
+
+        VBox musicbox = new VBox();
+        Label musicLabel = new Label(music.getName());
+
+        media = new Media(music.toURI().toString());
+        mediaplayer = new MediaPlayer(media);
+        //mediaplayer.play();
+        //ImageView musicIcon = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("music.png")));
+        playButton = new Button();
+        playButton.setMinHeight(25);
+        playButton.setMinWidth(25);
+        String url = this.getClass().getClassLoader().getResource("play.png").toString();
+        playButton.setStyle("-fx-background-image:url(" + url + ");-fx-background-color:transparent;-fx-background-repeat:no-repeat");
+        playButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                setPlayButton();
+            }
+        });
+
+        Label userLabel = new Label(user);
+        userLabel.setPadding(new Insets(0, 0, 0, 10));
+        userLabel.setStyle("-fx-font-size:12px;-fx-font-style:italic;");
+        userLabel.setAlignment(Pos.CENTER_LEFT);
+
+
+
+        Button stop = new Button();
+        String stopurl = this.getClass().getClassLoader().getResource("stop.png").toString();
+        stop.setStyle("-fx-background-image:url(" + stopurl + ");-fx-background-color:transparent;-fx-background-repeat:no-repeat");
+        stop.setMinSize(25, 25);
+        stop.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                mediaplayer.stop();
+                play = false;
+                String url = this.getClass().getClassLoader().getResource("play.png").toString();
+                playButton.setStyle("-fx-background-image:url(" + url + ");-fx-background-color:transparent;-fx-background-repeat:no-repeat");
+            }
+        });
+        Button volume = new Button();
+        volume.setMaxSize(25, 25);
+        String volumeurl = this.getClass().getClassLoader().getResource("volume.png").toString();
+        volume.setStyle("-fx-background-image:url(" + volumeurl + ");-fx-background-color:transparent;-fx-background-repeat:no-repeat");
+
+        mediaplayer.setOnReady(new Runnable() {
+            @Override
+            public void run() {
+                duration = media.getDuration();
+                timeLabel.setText(formatTime(mediaplayer.getCurrentTime(), duration));
+            }
+        });
+
+        df = new DecimalFormat("0.00");
+        DecimalFormatSymbols symbol = new DecimalFormatSymbols();
+        symbol.setDecimalSeparator('.');
+
+        df.setDecimalFormatSymbols(symbol);
+        slider = new Slider();
+        slider.setMinWidth(100);
+
+
+        timeLabel = new Label();
+
+        //timeLabel = new Label(formatTime(mediaplayer.getCurrentTime(),duration));
+        timeLabel.setMinWidth(50);
+
+        volumeSlider = new Slider(0,1,1);
+        volumeSlider.setOrientation(Orientation.VERTICAL);
+        volumeSlider.setMaxHeight(100);
+        volumeSlider.setMaxWidth(20);
+        volumePopover = new PopOver(volumeSlider);
+        volumePopover.setMaxWidth(20);
+        volumePopover.setMaxHeight(25);
+        volumePopover.setHideOnEscape(true);
+
+        mediaplayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
+
+        volumePopover.arrowLocationProperty().setValue(PopOver.ArrowLocation.BOTTOM_CENTER);
+
+        volume.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+                if(volumePopover.isShowing()){
+                    volumePopover.hide();
+                }else {
+                    volumePopover.show(volume);
+                }
+            }
+        });
+        slider.valueProperty().addListener(new InvalidationListener() {
+            public void invalidated(Observable ov) {
+                if (slider.isValueChanging()) {
+                    // multiply duration by percentage calculated by slider position
+                    if (duration != null) {
+                        mediaplayer.seek(duration.multiply(slider.getValue() / 100.0));
+                    }
+                    updateValues();
+                }
+            }
+        });
 
         mediaplayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
             @Override
@@ -117,14 +271,14 @@ public class AudioCloud extends Cloud {
                 updateValues();
             }
         });
-
-
-        hbox.getChildren().addAll(musicIcon, playButton, volume, slider,timeLabel, stop);
-
+        hbox.getChildren().addAll(playButton, volume, slider, timeLabel, stop);
+        musicbox.getChildren().addAll(hbox, musicLabel);
+        musicbox.setAlignment(Pos.CENTER);
         vbox.setAlignment(Pos.CENTER);
         vbox.setPadding(new Insets(10));
-        vbox.getChildren().add(hbox);
+        vbox.getChildren().addAll(userLabel,musicbox);
     }
+
 
 
     protected void updateValues() {
@@ -144,10 +298,6 @@ public class AudioCloud extends Cloud {
                         timeLabel.setText(formatTime(currentTime, duration));
                         setPlayButton();
                     }
-                    /*
-                    if (!volumeSlider.isValueChanging()) {
-                        volumeSlider.setValue((int) Math.round(mp.getVolume() * 100));
-                    }*/
                 }
             });
         }

@@ -100,13 +100,17 @@ public class IdLabel extends BorderPane {
     public void setTextBall(){
         if(!selected) {
             counter++;
-            statusView.setText("" + (counter));
+            if(counter>=99) {
+                statusView.setText("99");
+            }else{
+                statusView.setText("" + (counter));
+            }
         }
     }
 
     public void resetTextBall(){
         counter=0;
-        statusView.setText("0");
+        statusView.setText("");
     }
 
     public String getAdress() {
