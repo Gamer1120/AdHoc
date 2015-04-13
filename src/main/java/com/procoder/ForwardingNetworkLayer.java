@@ -114,10 +114,12 @@ public class ForwardingNetworkLayer implements AdhocNetwork {
             }
 
             // Pakketten voor multicast moeten doorgestuurd worden naar computers die het nog niet hebben.
-            if (dest.equals(NetworkUtils.getBroadcastAddress()) && !packet.getAddress().equals(NetworkUtils.getLocalHost())) {
-                data[0]--;
-                if (data[0] > 0) {
-                    send(src, dest, noHeaderdata, data[0]); // Rebroadcast pakket met ttl 1 lager.
+            if (dest.equals(NetworkUtils.getBroadcastAddress())) {
+                if (!packet.getAddress().equals(NetworkUtils.getLocalHost())) {
+                    data[0]--;
+                    if (data[0] > 0) {
+                        send(src, dest, noHeaderdata, data[0]); // Rebroadcast pakket met ttl 1 lager.
+                    }
                 }
             } else if (!src.equals(localAddress) && !dest.equals(localAddress)) {
                 // Forward het pakket naar het juiste adres.
