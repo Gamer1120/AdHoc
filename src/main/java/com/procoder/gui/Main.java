@@ -32,452 +32,440 @@ import java.util.*;
  * Created by reneb_000 on 7-4-2015.
  */
 @SuppressWarnings("restriction")
-public class Main extends Application implements
-		EventHandler<javafx.event.ActionEvent>, Observer {
+public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
-	public final static HashSet<String> images = new HashSet<String>(
-			Arrays.asList("png", "bmp", "jpeg", "jpg"));
-	public final static HashSet<String> audios = new HashSet<String>(
-			Arrays.asList("mp3"));
+    public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
+    public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
 
-	private static final boolean DEBUG = false;
 
-	private VBox side;
-	private BorderPane mainPane;
-	private BorderPane center;
-	private HBox commandPanel; // onder textfield voor invullen voor tekst en
-								// knop om te verzenden
-	private ScrollPane scrollPane;
-	private HashMap<IdLabel, ChatPane> chatMap;
-	private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
 
-	private Button sendButton;
-	private Button optionButton;
-	private Button smileyButton;
-	private TextField text;
-	private Insets padding;
-	private IdLabel selected;
-	private IdLabel allChat;
+    private static final boolean DEBUG = false;
 
-	private AdhocApplication applicationLayer;
+    private VBox side;
+    private BorderPane mainPane;
+    private BorderPane center;
+    private HBox commandPanel; // onder textfield voor invullen voor tekst en
+                               // knop om te verzenden
+    private ScrollPane scrollPane;
+    private HashMap<IdLabel, ChatPane> chatMap;
+    private Set<InetAddress> knownAdresses = new HashSet<InetAddress>();
 
-	private PopOver popover;
-	private PopOver smileyOver;
-	private PopoverMenu popoverMenu;
-	private String ownIp;
+    private Button sendButton;
+    private Button optionButton;
+    private Button smileyButton;
+    private TextField text;
+    private Insets padding;
+    private IdLabel selected;
+    private IdLabel allChat;
 
-	public static void main(String[] args) {
-		launch();
-	}
+    private InetAddress sender;
+    private AdhocApplication applicationLayer;
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("AWESOME ADHOC");
-		mainPane = new BorderPane();
-		chatMap = new HashMap<IdLabel, ChatPane>();
-		padding = new Insets(10);
-		selected = null;
-		setOwnIp();
-		setupCenter();
-		setupSideBar();
-		Scene mainScene = new Scene(mainPane, 1200, 900);
-		mainScene.getStylesheets().add(
-				this.getClass().getClassLoader().getResource("myStyle.css")
-						.toURI().toString());
+    private PopOver popover;
+    private PopOver smileyOver;
+    private PopoverMenu popoverMenu;
+    private String ownIp;
 
-		// addLabel("192.168.2.2");
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        primaryStage.setTitle("AWESOME ADHOC");
+        mainPane = new BorderPane();
+        chatMap = new HashMap<IdLabel, ChatPane>();
+        padding = new Insets(10);
+        selected = null;
+        setOwnIp();
+        setupCenter();
+        setupSideBar();
+        Scene mainScene = new Scene(mainPane, 1200, 900);
+        mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
-		ChatPane h = (ChatPane) scrollPane.getContent();
-		// h.add(new Cloud("test", false), true);
+        //addLabel("192.168.2.2");
 
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override
-			public void handle(WindowEvent t) {
-				Platform.exit();
-				System.exit(0);
-			}
-		});
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        // h.add(new Cloud("test", false), true);
 
-		primaryStage.setScene(mainScene);
-		primaryStage.show();
-		// processString("Ikke", "", "Dit is een test");
-		// processString("Jije","", "Dit is er ook nog een");
-		// processString("192.168.2.2",ownIp, "TEST");
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
 
-		if (!DEBUG) {
-			applicationLayer = new LongApplicationLayer(this);
-			applicationLayer.getKnownHostList().addObserver(this);
-		}
-	}
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
+        //processString("Ikke", "", "Dit is een test");
+        //processString("Jije","", "Dit is er ook nog een");
+        //processString("192.168.2.2",ownIp, "TEST");
 
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Setup
-	private void setOwnIp() {
-		ownIp = NetworkUtils.getLocalHost().getHostAddress();
-	}
+        if (!DEBUG) {
+            sender = InetAddress.getLocalHost();
+            applicationLayer = new LongApplicationLayer(this);
+            applicationLayer.getKnownHostList().addObserver(this);
+        }
+    }
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Setup
+    private void setOwnIp() {
+ 		ownIp = NetworkUtils.getLocalHost().getHostAddress();
+    }
+    private void setupCenter() {
+        center = new BorderPane();
 
-	private void setupCenter() {
-		center = new BorderPane();
+        scrollPane = new ScrollPane();
+        scrollPane.setPrefHeight(Double.MAX_VALUE);
+        scrollPane.setFitToWidth(true);
 
-		scrollPane = new ScrollPane();
-		scrollPane.setPrefHeight(Double.MAX_VALUE);
-		scrollPane.setFitToWidth(true);
+        //scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;-fx-background-size:contain;");
+        scrollPane.setId("scroll");
+        setBgScrollpane();
+        //scrollPane.setPrefViewportHeight(500);
 
-		// scrollPane.setStyle("-fx-fit-to-height: false; -fx-fit-to-width: true;-fx-background-size:contain;");
-		scrollPane.setId("scroll");
-		setBgScrollpane();
-		// scrollPane.setPrefViewportHeight(500);
+        scrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.SPACE) {
+                    scrollPane.setVvalue(scrollPane.getVmax());
+                }
+            }
+        });
 
-		scrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent event) {
-				if (event.getCode() == KeyCode.SPACE) {
-					scrollPane.setVvalue(scrollPane.getVmax());
-				}
-			}
-		});
+        commandPanel = new HBox();
+        // ipField = new TextField("TODO");
+        text = new TextField();
+        text.setPrefWidth(750);
 
-		commandPanel = new HBox();
-		// ipField = new TextField("TODO");
-		text = new TextField();
-		text.setPrefWidth(500);
-		text.setOnKeyPressed(new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent event) {
-				if (event.getCode() == KeyCode.ENTER) {
-					sendString(text.getText());
-					toBottomScroll();
-				}
-			}
-		});
-		popoverMenu = new PopoverMenu(this);
-		popover = new PopOver(popoverMenu);
-		// popover.setHideOnEscape(true);
-		popover.arrowLocationProperty().setValue(
-				PopOver.ArrowLocation.BOTTOM_CENTER);
+        text.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ENTER) {
+                    sendString(text.getText());
+                    toBottomScroll();
+                }
+            }
+        });
+        popoverMenu = new PopoverMenu(this);
+        popover = new PopOver(popoverMenu);
+        // popover.setHideOnEscape(true);
+        popover.arrowLocationProperty().setValue(
+                PopOver.ArrowLocation.BOTTOM_CENTER);
 
-		text.requestFocus();
-		sendButton = new Button("Send");
+        text.requestFocus();
+        sendButton = new Button("Send");
 
-		ImageView v = new ImageView();
-		Image i = new Image(this.getClass().getClassLoader()
-				.getResourceAsStream("gear.png"));
-		v.setImage(i);
-		ImageView smv = new ImageView();
-		Image smi = new Image(this.getClass().getClassLoader()
-				.getResourceAsStream("smiley.png"));
-		smv.setImage(smi);
+        ImageView v = new ImageView();
+        Image i = new Image(this.getClass().getClassLoader()
+                .getResourceAsStream("gear.png"));
+        v.setImage(i);
+        ImageView smv = new ImageView();
+        Image smi = new Image(this.getClass().getClassLoader()
+                .getResourceAsStream("smiley.png"));
+        smv.setImage(smi);
 
-		optionButton = new Button("", v);
-		smileyButton = new Button("", smv);
-		smileyButton.setOnAction(this);
-		optionButton.setOnAction(this);
-		sendButton.setOnAction(this);
+        optionButton = new Button("", v);
+        smileyButton = new Button("",smv);
+        smileyButton.setOnAction(this);
+        optionButton.setOnAction(this);
+        sendButton.setOnAction(this);
 
-		smileyOver = new PopOver(new SmileyPanel(this));
-		smileyOver.setDetachable(false);
-		smileyOver.arrowLocationProperty().setValue(
-				PopOver.ArrowLocation.BOTTOM_CENTER);
+        smileyOver = new PopOver(new SmileyPanel(this));
+        smileyOver.setDetachable(false);
+        smileyOver.arrowLocationProperty().setValue(
+                PopOver.ArrowLocation.BOTTOM_CENTER);
 
-		commandPanel.getChildren().addAll(text, sendButton, optionButton,
-				smileyButton);
-		center.setBottom(commandPanel);
-		center.setCenter(scrollPane);
-		mainPane.setCenter(center);
-	}
+        commandPanel.getChildren().addAll(text, sendButton, optionButton, smileyButton);
+        center.setBottom(commandPanel);
+        center.setCenter(scrollPane);
+        mainPane.setCenter(center);
+    }
+    private void setBgScrollpane() {
+        File file = new File("background.png");
+        scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
+    }
+    private void setupSideBar() {
+        side = new VBox();
+        side.setPrefSize(300, 900);
+        side.setStyle("-fx-background-color: #FFFFFF;");
+        side.getChildren().add(new ChatLabel());
+        addAllChat();
+        mainPane.setLeft(side);
 
-	private void setBgScrollpane() {
-		File file = new File("background.png");
-		scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
-	}
+    }
+    public void addAllChat() {
+        allChat = new IdLabel("AllChat");
+        allChat.setSelected(true);
+        selected = allChat;
+        side.getChildren().add(allChat);
+        ChatPane chatPane = new ChatPane(allChat);
 
-	private void setupSideBar() {
-		side = new VBox();
-		side.setPrefSize(300, 900);
-		side.setStyle("-fx-background-color: #FFFFFF;");
-		side.getChildren().add(new ChatLabel());
-		addAllChat();
-		mainPane.setLeft(side);
+        chatMap.put(allChat, chatPane);
+        allChat.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                idLabelClick(event);
+            }
+        });
+        scrollPane.setContent(chatPane);
+    }
+ 
 
-	}
 
-	public void addAllChat() {
-		allChat = new IdLabel("AllChat");
-		allChat.setSelected(true);
-		selected = allChat;
-		side.getChildren().add(allChat);
-		ChatPane chatPane = new ChatPane(allChat);
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Proces
+    public void processString(String source, String destination, String msg) {
+        ChatPane h = getReceiveChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new StringCloud(msg, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+    public void processFile(String source, String destination, File file) {
+        ChatPane h = getReceiveChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new FileCloud(file, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+    public void processImage(String source, String destination, Image img) {
+        ChatPane h = getReceiveChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new ImageCloud(img, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
+    public void processAudio(String source, String destination, File sound){
+        ChatPane h = getReceiveChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new AudioCloud(sound, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
+    }
 
-		chatMap.put(allChat, chatPane);
-		allChat.setOnMouseClicked(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent event) {
-				idLabelClick(event);
-			}
-		});
-		scrollPane.setContent(chatPane);
-	}
 
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Proces
-	public void processString(String source, String destination, String msg) {
-		ChatPane h = getReceiveChatPane(source, destination);
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new StringCloud(msg, source), true);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
-	}
 
-	public void processFile(String source, String destination, File file) {
-		ChatPane h = getReceiveChatPane(source, destination);
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new FileCloud(file, source), true);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
-	}
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Send
+    public void sendString(String msg) {
+        // drawPane.getChildren().add(new Label(msg));
+        if (!msg.isEmpty()) {
+            ChatPane h = (ChatPane) scrollPane.getContent();
+            if (h != null) {
+                Cloud newCloud = new StringCloud(msg);
+                h.add(newCloud, false);
+                text.setText("");
+                if (!DEBUG) {
+                    applicationLayer.sendString(sender, msg);
+                }
+            }
+        }
 
-	public void processImage(String source, String destination, Image img) {
-		ChatPane h = getReceiveChatPane(source, destination);
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new ImageCloud(img, source), true);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
-	}
+        scrollPane.setVvalue(scrollPane.getVmax());
+    }
+    public void sendImage(File img) {
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new ImageCloud(new Image(img.toURI().toString())),
+                                    false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
 
-	public void processAudio(String source, String destination, File sound) {
-		ChatPane h = getReceiveChatPane(source, destination);
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new AudioCloud(sound, source), true);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
-	}
+        if (!DEBUG) {
+            applicationLayer.sendImage(selected.getInetAdress(), img);
+        }
+    }
+    public void sendFile(File file){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new FileCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
 
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Send
-	public void sendString(String msg) {
-		// drawPane.getChildren().add(new Label(msg));
-		if (!msg.isEmpty()) {
-			ChatPane h = (ChatPane) scrollPane.getContent();
-			if (h != null) {
-				Cloud newCloud = new StringCloud(msg);
-				h.add(newCloud, false);
-				text.setText("");
-				if (!DEBUG) {
-					applicationLayer.sendString(selected.getInetAdress(), msg);
-				}
-			}
-		}
+        if (!DEBUG) {
+            applicationLayer.sendFile(selected.getInetAdress(), file);
+        }
+    }
+    public void sendAudio(File file){
+        ChatPane h = (ChatPane) scrollPane.getContent();
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new AudioCloud(file), false);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
 
-		scrollPane.setVvalue(scrollPane.getVmax());
-	}
+        if (!DEBUG) {
+            applicationLayer.sendAudio(selected.getInetAdress(), file);
+        }
+    }
 
-	public void sendImage(File img) {
-		ChatPane h = (ChatPane) scrollPane.getContent();
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new ImageCloud(new Image(img.toURI()
-									.toString())), false);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
 
-		if (!DEBUG) {
-			applicationLayer.sendImage(selected.getInetAdress(), img);
-		}
-	}
 
-	public void sendFile(File file) {
-		ChatPane h = (ChatPane) scrollPane.getContent();
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new FileCloud(file), false);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
 
-		if (!DEBUG) {
-			applicationLayer.sendFile(selected.getInetAdress(), file);
-		}
-	}
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Events
+    @Override
+    public void handle(javafx.event.ActionEvent event) {
+        if (event.getSource().equals(sendButton)) {
+            sendString(text.getText());
+        } else if (event.getSource().equals(optionButton)) {
+            if (popover.isShowing()) {
+                popover.hide();
+            } else {
+                popover.show(optionButton);
+            }
+        }else if(event.getSource().equals(smileyButton)){
+            if(smileyOver.isShowing()){
+                smileyOver.hide();
+            }else{
+                smileyOver.show(smileyButton);
+            }
+        }
+    }
+    @Override
+    public void update(Observable o, Object arg) {
+        Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
+        Set<InetAddress> copie = new HashSet<InetAddress>();
+        copie.addAll(knownAdresses);
 
-	public void sendAudio(File file) {
-		ChatPane h = (ChatPane) scrollPane.getContent();
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (h != null) {
-							h.add(new AudioCloud(file), false);
-						}
-					}
-				});
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-		toBottomScroll();
+        copie.removeAll(newAdress);
+        for (InetAddress a : copie) {
+            updateStatus(a, false);
+        }
 
-		if (!DEBUG) {
-			applicationLayer.sendAudio(selected.getInetAdress(), file);
-		}
-	}
+        for (InetAddress a : knownAdresses) {
+            if (newAdress.contains(a)) {
+                updateStatus(a, true);
+            }
+        }
 
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Events
-	@Override
-	public void handle(javafx.event.ActionEvent event) {
-		if (event.getSource().equals(sendButton)) {
-			sendString(text.getText());
-		} else if (event.getSource().equals(optionButton)) {
-			if (popover.isShowing()) {
-				popover.hide();
-			} else {
-				popover.show(optionButton);
-			}
-		} else if (event.getSource().equals(smileyButton)) {
-			if (smileyOver.isShowing()) {
-				smileyOver.hide();
-			} else {
-				smileyOver.show(smileyButton);
-			}
-		}
-	}
+        newAdress.removeAll(knownAdresses);
+        for (InetAddress a : newAdress) {
+            Platform.runLater(() -> addLabel(a.toString()));
 
-	@Override
-	public void update(Observable o, Object arg) {
-		Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
-		Set<InetAddress> copie = new HashSet<InetAddress>();
-		copie.addAll(knownAdresses);
+            knownAdresses.add(a);
+        }
 
-		copie.removeAll(newAdress);
-		for (InetAddress a : copie) {
-			updateStatus(a, false);
-		}
+    }
 
-		for (InetAddress a : knownAdresses) {
-			if (newAdress.contains(a)) {
-				updateStatus(a, true);
-			}
-		}
 
-		newAdress.removeAll(knownAdresses);
-		for (InetAddress a : newAdress) {
-			Platform.runLater(() -> addLabel(a.getHostAddress()));
 
-			knownAdresses.add(a);
-		}
 
-	}
-
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Getters
-	public PopOver getPopover() {
-		return popover;
-	}
-
-	private IdLabel getIdLabel(InetAddress a) {
-		for (IdLabel i : chatMap.keySet()) {
-			if (i.getAdress().equals(a.getHostAddress())) {
-				return i;
-			}
-		}
-		return null;
-	}
-
-	public HashMap<IdLabel, ChatPane> getChatMap() {
-		return chatMap;
-	}
-
-	public IdLabel getSelected() {
-		return selected;
-	}
-
-	public ScrollPane getScrollPane() {
-		return scrollPane;
-	}
-
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Getters
+    public PopOver getPopover() {
+        return popover;
+    }
+    private IdLabel getIdLabel(InetAddress a) {
+        for (IdLabel i : chatMap.keySet()) {
+            if (i.getAdress().equals(a.getHostName())) {
+                return i;
+            }
+        }
+        return null;
+    }
+    public HashMap<IdLabel, ChatPane> getChatMap(){
+        return chatMap;
+    }
+    public IdLabel getSelected(){
+        return selected;
+    }
+    public ScrollPane getScrollPane() {
+        return scrollPane;
+    }
 	private ChatPane getReceiveChatPane(String source, String destination) {
 		String comparer = ownIp.equals(destination) ? source : destination;
 		for (IdLabel i : chatMap.keySet()) {
@@ -488,78 +476,92 @@ public class Main extends Application implements
 		return chatMap.get(allChat);
 
 	}
+    public void addSmiley(String s){
+        text.setText(text.getText()+s);
+    }
 
-	public void addSmiley(String s) {
-		text.setText(text.getText() + s);
-	}
 
-	// /////////////////////////////////////////////////////////////
-	// /////////////////////////////////////////////////////////////
-	// Overige shit
-	public void addLabel(String name) {
-		IdLabel newLabel = new IdLabel(name);
-		side.getChildren().add(newLabel);
-		ChatPane chatPane = new ChatPane(newLabel);
-		chatMap.put(newLabel, chatPane);
-		newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent event) {
-				idLabelClick(event);
-			}
-		});
-	}
 
-	private void idLabelClick(MouseEvent event) {
-		if (selected != null) {
-			selected.setSelected(false);
-		}
-		selected = (IdLabel) event.getSource();
-		scrollPane.setContent(chatMap.get(selected));
-		selected.setSelected(true);
-	}
 
-	public void updateStatus(InetAddress address, boolean active) {
-		Platform.runLater(() -> {
-			if (active) {
-				setActive(address);
-			} else {
-				setInactive(address);
-			}
-		});
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //Overige shit
+    public void addLabel(String name) {
+        IdLabel newLabel = new IdLabel(name);
+        side.getChildren().add(newLabel);
+        ChatPane chatPane = new ChatPane(newLabel);
+        chatMap.put(newLabel, chatPane);
+        newLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                idLabelClick(event);
+            }
+        });
+    }
 
-	}
+    private void idLabelClick(MouseEvent event) {
+        if (selected != null) {
+            selected.setSelected(false);
+        }
+        selected = (IdLabel) event.getSource();
+        scrollPane.setContent(chatMap.get(selected));
+        selected.setSelected(true);
+        if(selected.getActive()){
+            text.setEditable(true);
+        }else{
+            text.setEditable(false);
+        }
+    }
 
-	public void setInactive(InetAddress inactive) {
-		IdLabel l = getIdLabel(inactive);
-		if (l != null) {
-			l.setActive(false);
-		}
-	}
+    public void updateStatus(InetAddress address, boolean active) {
+        Platform.runLater(() -> {
+            if (active) {
+                setActive(address);
+            } else {
+                setInactive(address);
+            }
+        });
 
-	public void setActive(InetAddress active) {
-		IdLabel l = getIdLabel(active);
-		if (l != null) {
-			l.setActive(true);
-		}
-		// getIdLabel(active).setActive(true);
-	}
+    }
 
-	private void toBottomScroll() {
-		Thread t = new Thread(new Task() {
-			@Override
-			protected Object call() throws Exception {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Platform.runLater(() -> scrollPane.setVvalue(scrollPane
-						.getVmax()));
-				return null;
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-	}
+    public void setInactive(InetAddress inactive) {
+        IdLabel l = getIdLabel(inactive);
+        if (l != null) {
+            getIdLabel(inactive).setActive(false);
+        }
+    }
+
+    public void setActive(InetAddress active) {
+        IdLabel l = getIdLabel(active);
+        if (l != null) {
+            getIdLabel(active).setActive(true);
+        }
+        // getIdLabel(active).setActive(true);
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+
+    private void toBottomScroll() {
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Platform.runLater(() -> scrollPane.setVvalue(scrollPane
+                        .getVmax()));
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+
+
 
 }

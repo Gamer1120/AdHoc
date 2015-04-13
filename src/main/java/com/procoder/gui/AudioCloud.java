@@ -158,7 +158,7 @@ public class AudioCloud extends Cloud {
     }
 
     public AudioCloud(File music, String user){
-        super(true);
+        super(false);
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(10);

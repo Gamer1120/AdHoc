@@ -38,6 +38,7 @@ public class IdLabel extends BorderPane {
 
     private String broadcast = "228.0.0.0";
     private boolean selected;
+    private boolean active = true;
 
     public IdLabel(String name) {
         adress = name;
@@ -61,7 +62,7 @@ public class IdLabel extends BorderPane {
         label.setStyle("-fx-font-size:25px;-fx-font-weight:bold");
         label.setMinWidth(100);
         //statusView = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
-        statusView = new Label("0");
+        statusView = new Label("");
         statusView.setPrefSize(25, 25);
         statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background-image:url(greenBall.png);");
         statusView.setAlignment(Pos.CENTER);
@@ -95,6 +96,11 @@ public class IdLabel extends BorderPane {
         } else {
             statusView.setBackground(RED_BALL_BACKGROUND);
         }
+        this.active = active;
+    }
+
+    public boolean getActive(){
+        return active;
     }
 
     public void setTextBall(){
