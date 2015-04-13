@@ -221,10 +221,10 @@ public class LongApplicationLayer implements AdhocApplication {
 					break;
 				case AUDIO:
 					String audioname = System.currentTimeMillis()
-							+ ".audiofile";
+							+ ".mp3";
 					try {
 						FileOutputStream aos = new FileOutputStream(
-								"receivedFile.mp3");
+								audioname);
 						aos.write(dataBytes);
 						aos.close();
 					} catch (IOException e) {
@@ -237,7 +237,7 @@ public class LongApplicationLayer implements AdhocApplication {
 					String filename = System.currentTimeMillis() + ".file";
 					try {
 						FileOutputStream aos = new FileOutputStream(
-								"receivedFile.file");
+								filename);
 						aos.write(dataBytes);
 						aos.close();
 					} catch (IOException e) {
