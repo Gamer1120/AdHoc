@@ -514,6 +514,11 @@ public class Main extends Application implements
         selected = (IdLabel) event.getSource();
         scrollPane.setContent(chatMap.get(selected));
         selected.setSelected(true);
+        if(selected.getActive()){
+            text.setEditable(true);
+        }else{
+            text.setEditable(false);
+        }
     }
 
     public void updateStatus(InetAddress address, boolean active) {

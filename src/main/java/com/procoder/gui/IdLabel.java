@@ -28,6 +28,7 @@ public class IdLabel extends BorderPane {
 
     private String broadcast = "228.0.0.0";
     private boolean selected;
+    private boolean active = true;
 
     public IdLabel(String name) {
         adress = name;
@@ -85,6 +86,11 @@ public class IdLabel extends BorderPane {
         } else {
             statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background:url(redBall.png);");
         }
+        this.active = active;
+    }
+
+    public boolean getActive(){
+        return active;
     }
 
     public void setTextBall(){
