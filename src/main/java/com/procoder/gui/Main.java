@@ -39,8 +39,10 @@ public class Main extends Application implements
     public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
     public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
 
+    private String broadcast = "228.0.0.0";
 
-    private static final boolean DEBUG = true;
+
+    private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
@@ -78,7 +80,7 @@ public class Main extends Application implements
         Scene mainScene = new Scene(mainPane, 1200, 900);
         mainScene.getStylesheets().add(this.getClass().getClassLoader().getResource("myStyle.css").toURI().toString());
 
-        addLabel("192.168.2.2");
+        //addLabel("192.168.2.2");
 
         ChatPane h = (ChatPane) scrollPane.getContent();
         // h.add(new Cloud("test", false), true);
@@ -93,9 +95,9 @@ public class Main extends Application implements
 
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        processString("Ikke", "", "Dit is een test");
-        processString("Jije","", "Dit is er ook nog een");
-        processString("192.168.2.2",ownIp, "TEST");
+        //processString("Ikke", "", "Dit is een test");
+        //processString("Jije","", "Dit is er ook nog een");
+        //processString("192.168.2.2",ownIp, "TEST");
 
         if (!DEBUG) {
             sender = InetAddress.getLocalHost();
@@ -267,8 +269,25 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-    public void processAudio(String user, File sound){
-        //TODO
+    public void processAudio(String source, String destination, File sound){
+        ChatPane h = getChatPane(source, destination);
+        Thread t = new Thread(new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (h != null) {
+                            h.add(new AudioCloud(sound, source), true);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        toBottomScroll();
     }
 
 
@@ -377,7 +396,6 @@ public class Main extends Application implements
         if (event.getSource().equals(sendButton)) {
             sendString(text.getText());
         } else if (event.getSource().equals(optionButton)) {
-            // TODO
             if (popover.isShowing()) {
                 popover.hide();
             } else {
