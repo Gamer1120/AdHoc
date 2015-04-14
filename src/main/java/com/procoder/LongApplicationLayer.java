@@ -91,11 +91,14 @@ public class LongApplicationLayer implements AdhocApplication {
 	public void sendFile(InetAddress dest, File input) {
 		Path path = Paths.get(input.getAbsolutePath());
 		String filename = input.getName();
-		String extension = filename.substring(filename.lastIndexOf('.') + 1);
+		if (filename.length() > 100) {
+			filename = System.currentTimeMillis()
+					+ filename.substring(filename.lastIndexOf('.') + 1);
+		}
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.FILE,
-					Files.readAllBytes(path), extension.getBytes());
+					Files.readAllBytes(path), filename.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -212,13 +215,15 @@ public class LongApplicationLayer implements AdhocApplication {
 						.toPrimitiveArray(savedQueues.message
 								.toArray(new Byte[0]));
 				PacketType type = PacketType.parseByte(message[0]);
-				byte extensionLength = message[1];
-				byte[] extension = Arrays.copyOfRange(message, 2,
-						2 + extensionLength);
-				byte[] senderBytes = Arrays.copyOfRange(message, 2 + extensionLength, 6 + extensionLength);
-				byte[] destenBytes = Arrays.copyOfRange(message, 6 + extensionLength, 10 + extensionLength);
-				byte[] dataBytes = Arrays.copyOfRange(message, 10 + extensionLength,
-						message.length);
+				byte filenameLength = message[1];
+				byte[] fn = Arrays.copyOfRange(message, 2,
+						2 + filenameLength);
+				byte[] senderBytes = Arrays.copyOfRange(message,
+						2 + filenameLength, 6 + filenameLength);
+				byte[] destenBytes = Arrays.copyOfRange(message,
+						6 + filenameLength, 10 + filenameLength);
+				byte[] dataBytes = Arrays.copyOfRange(message,
+						10 + filenameLength, message.length);
 				switch (type) {
 				case TEXT:
 					gui.processString(parseIP(senderBytes),
@@ -231,7 +236,7 @@ public class LongApplicationLayer implements AdhocApplication {
 							parseIP(destenBytes), new Image(in));
 					break;
 				case AUDIO:
-					String audioname = System.currentTimeMillis() + "." + new String(extension);
+					String audioname = new String(fn);
 					try {
 						FileOutputStream aos = new FileOutputStream(audioname);
 						aos.write(dataBytes);
@@ -243,7 +248,7 @@ public class LongApplicationLayer implements AdhocApplication {
 							parseIP(destenBytes), new File(audioname));
 					break;
 				case FILE:
-					String filename = System.currentTimeMillis() + "." + new String(extension);
+					String filename = new String(fn);
 					try {
 						FileOutputStream aos = new FileOutputStream(filename);
 						aos.write(dataBytes);
