@@ -203,14 +203,13 @@ public class TransportConnection {
                 LOGGER.debug("[TL] [RCV] Out-of-order data received");
                 receivedSegments.put(segment.seq, segment);
             }
+        }
 
-            // Syn en segments die data bevatten ACKEN
-
-            if (!ackSent && segment.isSyn() || segment.data.length > 0) {
-                TransportSegment ack = new TransportSegment(new Byte[0], seq);
-                ack.setAck(nextAck);
-                networkLayer.send(receivingHost, ack.toByteArray());
-            }
+        // Syn en segments die data bevatten ACKEN
+        if (!ackSent && segment.isSyn() || segment.data.length > 0) {
+            TransportSegment ack = new TransportSegment(new Byte[0], seq);
+            ack.setAck(nextAck);
+            networkLayer.send(receivingHost, ack.toByteArray());
         }
 
         removeAckedSegment(segment);
@@ -240,8 +239,7 @@ public class TransportConnection {
             nextAck++; // SYN ACK neemt een data byte in beslag.
             synReceived = true;
             established = true;
-
-            // TODO Dit segment mag ook data bevatten
+            // ACK sturen
         } else if (!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
             // ACK op een syn ack
             established = true;
