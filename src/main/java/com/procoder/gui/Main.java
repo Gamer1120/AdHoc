@@ -58,13 +58,12 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private IdLabel selected;
     private IdLabel allChat;
 
-    private InetAddress sender;
     private AdhocApplication applicationLayer;
 
     private PopOver popover;
     private PopOver smileyOver;
     private PopoverMenu popoverMenu;
-    private String ownIp;
+    private InetAddress ownIp;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -99,7 +98,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         //processString("192.168.2.2",ownIp, "TEST");
 
         if (!DEBUG) {
-            sender = InetAddress.getLocalHost();
             applicationLayer = new LongApplicationLayer(this);
             applicationLayer.getKnownHostList().addObserver(this);
         }
@@ -108,7 +106,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     ///////////////////////////////////////////////////////////////
     //Setup
     private void setOwnIp() {
- 		ownIp = NetworkUtils.getLocalHost().getHostAddress();
+ 		ownIp = NetworkUtils.getLocalHost();
     }
     private void setupCenter() {
         center = new BorderPane();
@@ -309,7 +307,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 h.add(newCloud, false);
                 text.setText("");
                 if (!DEBUG) {
-                    applicationLayer.sendString(sender, msg);
+                    applicationLayer.sendString(selected.getInetAdress(), msg);
                 }
             }
         }
