@@ -4,20 +4,14 @@ package com.procoder;
  * com.procoder.Application Layer for the Ad hoc multi-client chat application.
  *
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter Timmermans
- * s1004751, René Boschma s???
+ *         s1004751, René Boschma s???
  */
 
-import com.procoder.gui.AdhocGUI;
-import com.procoder.transport.AdhocTransport;
-import com.procoder.transport.HostList;
-import com.procoder.transport.TCPLikeTransport;
-import com.procoder.util.ArrayUtils;
-import com.procoder.util.NetworkUtils;
-import javafx.scene.image.Image;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -29,6 +23,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javafx.scene.image.Image;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.procoder.gui.Main;
+import com.procoder.transport.AdhocTransport;
+import com.procoder.transport.HostList;
+import com.procoder.transport.TCPLikeTransport;
+import com.procoder.util.ArrayUtils;
+import com.procoder.util.NetworkUtils;
 
 // TODO Gaat stuk bij IPv6 adressen
 
@@ -42,7 +48,7 @@ public class LongApplicationLayer implements AdhocApplication {
     private HashMap<InetAddress, Queues> receivedPackets;
 
     private AdhocTransport transportLayer;
-    private AdhocGUI gui;
+    private Main gui;
 
     /**
      * Creates a new ApplicationLayer using a given GUI. Also starts the
@@ -50,11 +56,15 @@ public class LongApplicationLayer implements AdhocApplication {
      *
      * @param gui
      */
-    public LongApplicationLayer(AdhocGUI gui) {
+    public LongApplicationLayer(Main gui) {
         this.gui = gui;
         this.receivedPackets = new HashMap<InetAddress, Queues>();
         this.transportLayer = new TCPLikeTransport(this);
     }
+
+    // ---------------------------//
+    // SENDING TO TRANSPORT LAYER //
+    // ---------------------------//
 
     /**
      * Sends a packet to the Transport Layer.
@@ -70,51 +80,39 @@ public class LongApplicationLayer implements AdhocApplication {
         byte[] packet = null;
         try {
             packet = generatePacket(dest, PacketType.TEXT,
-                    input.getBytes(ENCODING));
+                    input.getBytes(ENCODING), new byte[] {});
         } catch (IOException e) {
             e.printStackTrace();
         }
         transportLayer.send(dest, packet);
     }
 
-    // ---------------------------//
-    // SENDING TO TRANSPORT LAYER //
-    // ---------------------------//
-
     @Override
     public void sendFile(InetAddress dest, File input) {
-        Path path = Paths.get(input.getAbsolutePath());
-        byte[] packet = null;
-        try {
-            packet = generatePacket(dest, PacketType.FILE,
-                    Files.readAllBytes(path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        transportLayer.send(dest, packet);
+        sendPacket(dest, input, PacketType.FILE);
     }
 
     @Override
     public void sendImage(InetAddress dest, File input) {
-        Path path = Paths.get(input.getAbsolutePath());
-        byte[] packet = null;
-        try {
-            packet = generatePacket(dest, PacketType.IMAGE,
-                    Files.readAllBytes(path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        transportLayer.send(dest, packet);
-
+        sendPacket(dest, input, PacketType.IMAGE);
     }
 
     @Override
     public void sendAudio(InetAddress dest, File input) {
+        sendPacket(dest, input, PacketType.AUDIO);
+    }
+
+    public void sendPacket(InetAddress dest, File input, PacketType type) {
         Path path = Paths.get(input.getAbsolutePath());
+        String filename = input.getName();
+        if (filename.length() > Byte.MAX_VALUE - Byte.MIN_VALUE) {
+            filename = System.currentTimeMillis()
+                    + filename.substring(filename.lastIndexOf('.') + 1);
+        }
         byte[] packet = null;
         try {
-            packet = generatePacket(dest, PacketType.FILE,
-                    Files.readAllBytes(path));
+            packet = generatePacket(dest, type, Files.readAllBytes(path),
+                    filename.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,7 +120,6 @@ public class LongApplicationLayer implements AdhocApplication {
     }
 
     /**
-     *
      * @param destination
      *            Geaddresseerde van dit bericht
      * @param type
@@ -132,21 +129,23 @@ public class LongApplicationLayer implements AdhocApplication {
      * @return
      */
     public byte[] generatePacket(InetAddress destination, PacketType type,
-            byte[] data) {
+            byte[] data, byte[] filename) {
         byte[] sendBytes = new byte[4];
         sendBytes = NetworkUtils.getLocalHost().getAddress();
         byte[] destBytes = destination.getAddress();
         byte typeBytes = type.toByte();
-        int messageSize = sendBytes.length + destBytes.length + 1 + data.length;
+        int messageSize = sendBytes.length + destBytes.length + 2
+                + filename.length + data.length;
         ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
         buf.putLong(messageSize);
         buf.put(typeBytes);
+        buf.put((byte) (filename.length + Byte.MIN_VALUE));
+        buf.put(filename);
         buf.put(sendBytes);
         buf.put(destBytes);
         buf.put(data);
 
         return buf.array();
-
     }
 
     /**
@@ -160,7 +159,7 @@ public class LongApplicationLayer implements AdhocApplication {
     public void processPacket(DatagramPacket packet) {
         byte[] bytestream = packet.getData();
         InetAddress sender = packet.getAddress();
-        Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
+        Queues savedQueues = receivedPackets.get(sender);
         savedQueues = savedQueues == null ? new Queues() : savedQueues;
         receivedPackets.put(sender, savedQueues);
 
@@ -196,12 +195,15 @@ public class LongApplicationLayer implements AdhocApplication {
                 byte[] message = ArrayUtils
                         .toPrimitiveArray(savedQueues.message
                                 .toArray(new Byte[0]));
-
                 PacketType type = PacketType.parseByte(message[0]);
-                byte[] senderBytes = Arrays.copyOfRange(message, 1, 5);
-                byte[] destenBytes = Arrays.copyOfRange(message, 5, 9);
-                byte[] dataBytes = Arrays.copyOfRange(message, 9,
-                        message.length);
+                int filenameLength = (int) message[1] - Byte.MIN_VALUE;
+                byte[] fn = Arrays.copyOfRange(message, 2, 2 + filenameLength);
+                byte[] senderBytes = Arrays.copyOfRange(message,
+                        2 + filenameLength, 6 + filenameLength);
+                byte[] destenBytes = Arrays.copyOfRange(message,
+                        6 + filenameLength, 10 + filenameLength);
+                byte[] dataBytes = Arrays.copyOfRange(message,
+                        10 + filenameLength, message.length);
                 switch (type) {
                 case TEXT:
                     gui.processString(parseIP(senderBytes),
@@ -214,24 +216,21 @@ public class LongApplicationLayer implements AdhocApplication {
                             parseIP(destenBytes), new Image(in));
                     break;
                 case AUDIO:
-                    String audioname = System.currentTimeMillis()
-                            + ".audiofile";
+                    String audioname = new String(fn);
                     try {
-                        FileOutputStream aos = new FileOutputStream(
-                                "receivedFile.file");
+                        FileOutputStream aos = new FileOutputStream(audioname);
                         aos.write(dataBytes);
                         aos.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    gui.processFile(parseIP(senderBytes), parseIP(destenBytes),
-                            new File(audioname));
+                    gui.processAudio(parseIP(senderBytes),
+                            parseIP(destenBytes), new File(audioname));
                     break;
                 case FILE:
-                    String filename = System.currentTimeMillis() + ".file";
+                    String filename = new String(fn);
                     try {
-                        FileOutputStream aos = new FileOutputStream(
-                                "receivedFile.file");
+                        FileOutputStream aos = new FileOutputStream(filename);
                         aos.write(dataBytes);
                         aos.close();
                     } catch (IOException e) {

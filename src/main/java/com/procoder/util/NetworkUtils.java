@@ -21,7 +21,7 @@ public class NetworkUtils {
                 for (Enumeration<InetAddress> addresses = ifaces.nextElement()
                         .getInetAddresses(); addresses.hasMoreElements(); ) {
                     InetAddress address = addresses.nextElement();
-                    if (address.getHostName().startsWith("192.168.5.")) {
+                    if (address.getHostAddress().startsWith("192.168.5.")) {
                         localHost = address;
                         break loop;
                     }
@@ -45,7 +45,7 @@ public class NetworkUtils {
             for (Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses
                     .hasMoreElements(); ) {
                 InetAddress address = addresses.nextElement();
-                if (address.getHostName().startsWith("192.168.5.")) {
+                if (address.getHostAddress().startsWith("192.168.5.")) {
                     netIf = iface;
                     break loop;
                 }

@@ -1,6 +1,5 @@
 package com.procoder.gui;
 
-
 import com.procoder.AdhocApplication;
 import com.procoder.LongApplicationLayer;
 import com.procoder.util.NetworkUtils;
@@ -33,11 +32,11 @@ import java.util.*;
  * Created by reneb_000 on 7-4-2015.
  */
 @SuppressWarnings("restriction")
-public class Main extends Application implements
-        EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
+public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
     public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
     public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
+
 
 
     private static final boolean DEBUG = false;
@@ -64,11 +63,7 @@ public class Main extends Application implements
     private PopOver popover;
     private PopOver smileyOver;
     private PopoverMenu popoverMenu;
-    private String ownIp;
-
-    public static void main(String[] args) {
-        launch();
-    }
+    private InetAddress ownIp;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -107,14 +102,12 @@ public class Main extends Application implements
             applicationLayer.getKnownHostList().addObserver(this);
         }
     }
-
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Setup
     private void setOwnIp() {
-        ownIp = NetworkUtils.getLocalHost().getHostAddress();
+ 		ownIp = NetworkUtils.getLocalHost();
     }
-
     private void setupCenter() {
         center = new BorderPane();
 
@@ -139,7 +132,8 @@ public class Main extends Application implements
         commandPanel = new HBox();
         // ipField = new TextField("TODO");
         text = new TextField();
-        text.setPrefWidth(500);
+        text.setPrefWidth(750);
+
         text.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
@@ -183,12 +177,10 @@ public class Main extends Application implements
         center.setCenter(scrollPane);
         mainPane.setCenter(center);
     }
-
     private void setBgScrollpane() {
         File file = new File("background.png");
         scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
     }
-
     private void setupSideBar() {
         side = new VBox();
         side.setPrefSize(300, 900);
@@ -198,7 +190,6 @@ public class Main extends Application implements
         mainPane.setLeft(side);
 
     }
-
     public void addAllChat() {
         allChat = new IdLabel("AllChat");
         allChat.setSelected(true);
@@ -215,11 +206,12 @@ public class Main extends Application implements
         });
         scrollPane.setContent(chatPane);
     }
+ 
+
 
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Proces
-    @Override
     public void processString(String source, String destination, String msg) {
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -240,8 +232,6 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-
-    @Override
     public void processFile(String source, String destination, File file) {
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -262,8 +252,6 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-
-    @Override
     public void processImage(String source, String destination, Image img) {
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -284,7 +272,6 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-
     public void processAudio(String source, String destination, File sound){
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -306,6 +293,8 @@ public class Main extends Application implements
         toBottomScroll();
     }
 
+
+
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Send
@@ -325,7 +314,6 @@ public class Main extends Application implements
 
         scrollPane.setVvalue(scrollPane.getVmax());
     }
-
     public void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -351,7 +339,6 @@ public class Main extends Application implements
             applicationLayer.sendImage(selected.getInetAdress(), img);
         }
     }
-
     public void sendFile(File file){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -376,7 +363,6 @@ public class Main extends Application implements
             applicationLayer.sendFile(selected.getInetAdress(), file);
         }
     }
-
     public void sendAudio(File file){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -402,6 +388,9 @@ public class Main extends Application implements
         }
     }
 
+
+
+
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Events
@@ -423,7 +412,6 @@ public class Main extends Application implements
             }
         }
     }
-
     @Override
     public void update(Observable o, Object arg) {
         Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
@@ -450,13 +438,15 @@ public class Main extends Application implements
 
     }
 
+
+
+
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Getters
     public PopOver getPopover() {
         return popover;
     }
-
     private IdLabel getIdLabel(InetAddress a) {
         for (IdLabel i : chatMap.keySet()) {
             if (i.getAdress().equals(a.getHostAddress())) {
@@ -465,33 +455,31 @@ public class Main extends Application implements
         }
         return null;
     }
-
     public HashMap<IdLabel, ChatPane> getChatMap(){
         return chatMap;
     }
-
     public IdLabel getSelected(){
         return selected;
     }
-
     public ScrollPane getScrollPane() {
         return scrollPane;
     }
+	private ChatPane getReceiveChatPane(String source, String destination) {
+		String comparer = ownIp.equals(destination) ? source : destination;
+		for (IdLabel i : chatMap.keySet()) {
+			if (i.getAdress().equals(comparer)) {
+				return chatMap.get(i);
+			}
+		}
+		return chatMap.get(allChat);
 
-    private ChatPane getReceiveChatPane(String source, String destination) {
-        String comparer = ownIp.equals(destination) ? source : destination;
-        for(IdLabel i: chatMap.keySet()){
-            if (i.getAdress().equals(comparer)) {
-                return chatMap.get(i);
-            }
-        }
-        return chatMap.get(allChat);
-
-    }
-
+	}
     public void addSmiley(String s){
-        text.setText(text.getText() + s);
+        text.setText(text.getText()+s);
     }
+
+
+
 
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
@@ -516,6 +504,11 @@ public class Main extends Application implements
         selected = (IdLabel) event.getSource();
         scrollPane.setContent(chatMap.get(selected));
         selected.setSelected(true);
+        if(selected.getActive()){
+            text.setEditable(true);
+        }else{
+            text.setEditable(false);
+        }
     }
 
     public void updateStatus(InetAddress address, boolean active) {
@@ -532,16 +525,20 @@ public class Main extends Application implements
     public void setInactive(InetAddress inactive) {
         IdLabel l = getIdLabel(inactive);
         if (l != null) {
-            l.setActive(false);
+            getIdLabel(inactive).setActive(false);
         }
     }
 
     public void setActive(InetAddress active) {
         IdLabel l = getIdLabel(active);
         if (l != null) {
-            l.setActive(true);
+            getIdLabel(active).setActive(true);
         }
         // getIdLabel(active).setActive(true);
+    }
+
+    public static void main(String[] args) {
+        launch();
     }
 
     private void toBottomScroll() {
