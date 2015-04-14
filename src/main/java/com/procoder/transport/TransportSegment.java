@@ -107,6 +107,10 @@ class TransportSegment {
         buf.put(primBytes);
         buf.flip();
 
+        if (!isDiscover()) {
+            LOGGER.debug("[TL] [SND] Sending segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + "rst: " + isRST() + " data: " + data.length);
+        }
+
         return buf.array();
     }
 }
