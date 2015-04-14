@@ -236,7 +236,7 @@ public class TransportConnection {
         } else if (segment.isSyn() && segment.validAck() && synSent && !synReceived) {
             //SYN ACK wanneer nog geen syn ontvangen en een syn verstuurd
             LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-            nextAck++; // SYN ACK neemt een data byte in beslag.
+            nextAck = segment.seq + 1; // SYN ACK neemt een data byte in beslag.
             synReceived = true;
             established = true;
             // ACK sturen
