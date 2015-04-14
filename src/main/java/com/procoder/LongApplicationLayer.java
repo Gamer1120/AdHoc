@@ -125,11 +125,14 @@ public class LongApplicationLayer implements AdhocApplication {
 	public void sendAudio(InetAddress dest, File input) {
 		Path path = Paths.get(input.getAbsolutePath());
 		String filename = input.getName();
-		String extension = filename.substring(filename.lastIndexOf('.') + 1);
+		if (filename.length() > 100) {
+			filename = System.currentTimeMillis()
+					+ filename.substring(filename.lastIndexOf('.') + 1);
+		}
 		byte[] packet = null;
 		try {
 			packet = generatePacket(dest, PacketType.AUDIO,
-					Files.readAllBytes(path), extension.getBytes());
+					Files.readAllBytes(path), filename.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
