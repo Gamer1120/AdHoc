@@ -158,9 +158,8 @@ public class LongApplicationLayer implements AdhocApplication {
     @Override
     public void processPacket(DatagramPacket packet) {
         byte[] bytestream = packet.getData();
-        // FIXME herken juiste afzender
         InetAddress sender = packet.getAddress();
-        Queues savedQueues = receivedPackets.get(sender); // Kan null zijn.
+        Queues savedQueues = receivedPackets.get(sender);
         savedQueues = savedQueues == null ? new Queues() : savedQueues;
         receivedPackets.put(sender, savedQueues);
 
