@@ -1,15 +1,21 @@
 package com.procoder.transport;
 
+import com.procoder.AdhocApplication;
+import com.procoder.AdhocNetwork;
+import com.procoder.ForwardingNetworkLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.procoder.AdhocApplication;
-import com.procoder.AdhocNetwork;
-import com.procoder.NetworkLayer;
+public class TCPLikeTransport implements AdhocTransport {
 
-public class TimestampTransport implements AdhocTransport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TCPLikeTransport.class);
+
 
     // ------------------ Instance variables ----------------
 
@@ -23,10 +29,10 @@ public class TimestampTransport implements AdhocTransport {
 
     // ------------------- Constructors ---------------------
 
-    public TimestampTransport(AdhocApplication app) {
+    public TCPLikeTransport(AdhocApplication app) {
 
         this.app = app;
-        this.networkLayer = new NetworkLayer(this);
+        this.networkLayer = new ForwardingNetworkLayer(this);
         this.connections = new HashMap<>();
         new Thread(networkLayer).start();
         disco = new Discoverer(this);
@@ -55,14 +61,30 @@ public class TimestampTransport implements AdhocTransport {
 
     @Override
     public void send(InetAddress dest, byte[] data) {
-        // Dest wordt nu genegeerd
-        for (InetAddress host : getKnownHostList().getKnownHosts()) {
-            TransportConnection connection = findConnection(host);
+        try {
+            InetAddress broadCast = InetAddress.getByName("228.0.0.0");
+            if(broadCast.equals(dest)) {
+                for (InetAddress host : getKnownHostList().getKnownHosts()) {
+                    TransportConnection connection = findConnection(host);
 
-            for (byte b : data) {
-                connection.sendByte(b);
+                    for (byte b : data) {
+                        connection.sendByte(b);
+                    }
+                }
+            } else {
+                TransportConnection connection = findConnection(dest);
+
+                for (byte b : data) {
+                    connection.sendByte(b);
+                }
             }
+
+
+        } catch (UnknownHostException e) {
+            LOGGER.trace("Kan het broadcastadres niet omzetten naar een InetAddress", e);
         }
+
+
         processSendQueue();
     }
 
@@ -70,8 +92,7 @@ public class TimestampTransport implements AdhocTransport {
     public void processPacket(DatagramPacket packet) {
         byte[] data = packet.getData();
 
-        TransportSegment receivedSegment = TransportSegment
-                .parseNetworkData(data);
+        TransportSegment receivedSegment = TransportSegment.parseNetworkData(data);
 
         if (receivedSegment.isDiscover()) {
             disco.addHost(packet.getAddress());

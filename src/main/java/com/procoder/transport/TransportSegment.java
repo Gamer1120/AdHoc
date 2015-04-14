@@ -1,10 +1,14 @@
 package com.procoder.transport;
 
+import com.procoder.util.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 
-import com.procoder.util.ArrayUtils;
-
 class TransportSegment {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransportSegment.class);
 
     public static final byte SEQ_FLAG = (byte) 0B10000000;
     public static final byte ACK_FLAG = (byte) 0B01000000;
@@ -76,6 +80,7 @@ class TransportSegment {
         buf.putInt(ack);
         buf.put(primBytes);
         buf.flip();
+
         return buf.array();
     }
 

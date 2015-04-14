@@ -1,8 +1,8 @@
 package com.procoder.gui;
 
-
 import com.procoder.AdhocApplication;
 import com.procoder.LongApplicationLayer;
+import com.procoder.util.NetworkUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -26,22 +26,20 @@ import org.controlsfx.control.PopOver;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 
 /**
  * Created by reneb_000 on 7-4-2015.
  */
 @SuppressWarnings("restriction")
-public class Main extends Application implements
-        EventHandler<javafx.event.ActionEvent>, Observer, AdhocGUI {
+public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
     public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
     public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
 
 
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private VBox side;
     private BorderPane mainPane;
@@ -110,11 +108,7 @@ public class Main extends Application implements
     ///////////////////////////////////////////////////////////////
     //Setup
     private void setOwnIp() {
-        try {
-            ownIp = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+ 		ownIp = NetworkUtils.getLocalHost().getHostAddress();
     }
     private void setupCenter() {
         center = new BorderPane();
@@ -220,9 +214,8 @@ public class Main extends Application implements
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Proces
-    @Override
     public void processString(String source, String destination, String msg) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -241,9 +234,8 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-    @Override
     public void processFile(String source, String destination, File file) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -262,9 +254,8 @@ public class Main extends Application implements
         t.start();
         toBottomScroll();
     }
-    @Override
     public void processImage(String source, String destination, Image img) {
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -284,7 +275,7 @@ public class Main extends Application implements
         toBottomScroll();
     }
     public void processAudio(String source, String destination, File sound){
-        ChatPane h = getChatPane(source, destination);
+        ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
             @Override
             protected Object call() throws Exception {
@@ -475,15 +466,16 @@ public class Main extends Application implements
     public ScrollPane getScrollPane() {
         return scrollPane;
     }
-    private ChatPane getChatPane(String source, String destination) {
-        for(IdLabel i: chatMap.keySet()){
-            if(i.getAdress().equals(source)){
-                return chatMap.get(i);
-            }
-        }
-        return chatMap.get(allChat);
+	private ChatPane getReceiveChatPane(String source, String destination) {
+		String comparer = ownIp.equals(destination) ? source : destination;
+		for (IdLabel i : chatMap.keySet()) {
+			if (i.getAdress().equals(comparer)) {
+				return chatMap.get(i);
+			}
+		}
+		return chatMap.get(allChat);
 
-    }
+	}
     public void addSmiley(String s){
         text.setText(text.getText()+s);
     }
