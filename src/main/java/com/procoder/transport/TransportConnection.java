@@ -198,7 +198,7 @@ public class TransportConnection {
 
                 removeAckedSegment(segment);
 
-                LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
+                LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks.size());
             } else {
                 // Out of order data wanneer established
                 // TODO Alleen binnen een bepaalde range in de buffer zetten
