@@ -242,8 +242,9 @@ public class TransportConnection {
             // ACK op een syn ack
             established = true;
             LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-        } else {
+        } else if (!established) {
             // Andere gevallen stuur een reset.
+            LOGGER.debug("Ik stuur nu een RESET");
             TransportSegment syn = new TransportSegment(new Byte[0], seq);
             syn.setRST();
             networkLayer.send(receivingHost, syn.toByteArray());
