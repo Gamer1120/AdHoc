@@ -24,9 +24,9 @@ public class TransportConnection {
 
 
     private InetAddress receivingHost;
-    private HashMap<Long, ScheduledFuture> unAckedSegmentTasks;
+    private HashMap<Long, UnAckedSegmentTask> unAckedSegmentTasks;
     private AdhocApplication adhocApplication;
-    private BlockingQueue<Byte> sendQueue;
+    private BlockingDeque<Byte> sendQueue;
     private SortedMap<Integer, TransportSegment> receivedSegments;
     private AdhocNetwork networkLayer;
     private int seq; // Huidige sequence nummer verzendende kant
@@ -41,7 +41,7 @@ public class TransportConnection {
     public TransportConnection(InetAddress host, AdhocNetwork networkLayer, AdhocApplication app) {
         receivingHost = host;
         unAckedSegmentTasks = new HashMap<>();
-        sendQueue = new LinkedBlockingQueue<>();
+        sendQueue = new LinkedBlockingDeque<>();
         receivedSegments = new TreeMap<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
@@ -71,13 +71,15 @@ public class TransportConnection {
 
         final String finalDebug = debug;
 
+        byte[] data = syn.toByteArray();
+
         ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
-            networkLayer.send(receivingHost, syn.toByteArray());
+            networkLayer.send(receivingHost, data);
             LOGGER.debug(finalDebug);
 
         }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
 
-        unAckedSegmentTasks.put((long) (syn.seq), retransmitTask);
+        unAckedSegmentTasks.put((long) (syn.seq), new UnAckedSegmentTask(data, retransmitTask));
         synSent = true;
 
     }
@@ -117,12 +119,14 @@ public class TransportConnection {
 
                 // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
 
+                byte[] unAckData = segment.toByteArray();
+
                 ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
-                    networkLayer.send(receivingHost, segment.toByteArray());
+                    networkLayer.send(receivingHost, unAckData);
 
                 }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
 
-                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), retransmitTask);
+                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), new UnAckedSegmentTask(unAckData, retransmitTask));
                 data.clear();
 
                 LOGGER.debug("[TL] [SND] Sending segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
@@ -139,12 +143,12 @@ public class TransportConnection {
         // Natuurlijk alleen doen als de ack geldig is
         if (segment.validAck()) {
             // Verwijder alle niet geackte segments met een seq + length
-            Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
+            Iterator<Map.Entry<Long, UnAckedSegmentTask>> it = unAckedSegmentTasks.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<Long, ScheduledFuture> entry = it.next();
+                Map.Entry<Long, UnAckedSegmentTask> entry = it.next();
                 // FIXME Hier zit volgens mij nog een edge case in bij sequence number wrapping
                 if (entry.getKey() < segment.ack) {
-                    entry.getValue().cancel(false);
+                    entry.getValue().fut.cancel(false);
                     it.remove();
                 }
             }
@@ -217,6 +221,28 @@ public class TransportConnection {
 
     }
 
+    private void reQueueUnAck() {
+
+        // Add unacked data to front of the queue
+
+        TreeMap<Long, UnAckedSegmentTask> sortedUnAcked = new TreeMap<>(unAckedSegmentTasks);
+        List<UnAckedSegmentTask> taskList = new LinkedList<>(sortedUnAcked.values());
+
+        ListIterator<UnAckedSegmentTask> it = taskList.listIterator();
+
+        while (it.hasPrevious()) {
+            UnAckedSegmentTask task = it.previous();
+            byte[] data = task.data;
+            task.fut.cancel(true);
+            for (byte b : data) {
+                sendQueue.addLast(b);
+            }
+        }
+
+        unAckedSegmentTasks.clear();
+
+    }
+
     private boolean processFlags(TransportSegment segment) {
         boolean ackSent = false;
         if (segment.isRST()) {
@@ -225,6 +251,7 @@ public class TransportConnection {
             established = false;
             synSent = false;
             synReceived = false;
+            reQueueUnAck();
             sendSyn();
         } else if (segment.isSyn() && !synReceived && !synSent) {
             // SYN wanneer nog geen syn ontvangen
@@ -258,6 +285,16 @@ public class TransportConnection {
         }
 
         return ackSent;
+    }
+
+    private class UnAckedSegmentTask {
+        byte[] data;
+        ScheduledFuture fut;
+
+        public UnAckedSegmentTask(byte[] data, ScheduledFuture fut) {
+            this.data = data;
+            this.fut = fut;
+        }
     }
 
 
