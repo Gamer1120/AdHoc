@@ -23,6 +23,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
     private Button uploadButton;
     private Button backgroundButton;
+    private Button selfieButton;
     private Main main;
 
     private double minWidth = 120;
@@ -32,22 +33,25 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         this.main = main;
         uploadButton = new Button("Upload");
         backgroundButton = new Button("Background");
+        selfieButton = new Button("Selfie");
         uploadButton.setFocusTraversable(false);
-
+        selfieButton.setFocusTraversable(false);
         backgroundButton.setFocusTraversable(false);
         uploadButton.setMinWidth(minWidth);
         backgroundButton.setMinWidth(minWidth);
-
+        selfieButton.setMinWidth(minWidth);
 
 
         uploadButton.setId("buttons");
         backgroundButton.setId("buttons");
-        this.getChildren().addAll(uploadButton, backgroundButton);
+        selfieButton.setId("buttons");
+        this.getChildren().addAll(uploadButton, backgroundButton, selfieButton);
 
 
 
         uploadButton.setOnAction(this);
         backgroundButton.setOnAction(this);
+        selfieButton.setOnAction(this);
 
     }
 
@@ -79,8 +83,6 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             }
             main.getPopover().hide();
 
-
-
         }else if(event.getSource().equals(backgroundButton)){
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open background file");
@@ -106,6 +108,9 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
                     e.printStackTrace();
                 }
             }
+        }
+        else if(event.getSource().equals(selfieButton)){
+
         }
     }
 }

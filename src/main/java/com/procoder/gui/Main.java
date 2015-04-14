@@ -35,7 +35,7 @@ import java.util.*;
 public class Main extends Application implements EventHandler<javafx.event.ActionEvent>, Observer {
 
     public final static HashSet<String> images = new HashSet<String>(Arrays.asList("png","bmp","jpeg","jpg"));
-    public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3"));
+    public final static HashSet<String> audios = new HashSet<String>(Arrays.asList("mp3", "wav", "mp4"));
 
 
 
