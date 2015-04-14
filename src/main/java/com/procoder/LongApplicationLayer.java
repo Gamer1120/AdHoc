@@ -129,25 +129,23 @@ public class LongApplicationLayer implements AdhocApplication {
      * @return
      */
     public byte[] generatePacket(InetAddress destination, PacketType type,
-            byte[] data, byte[] extension) {
+            byte[] data, byte[] filename) {
         byte[] sendBytes = new byte[4];
         sendBytes = NetworkUtils.getLocalHost().getAddress();
         byte[] destBytes = destination.getAddress();
         byte typeBytes = type.toByte();
         int messageSize = sendBytes.length + destBytes.length + 2
-                + extension.length + data.length + Byte.MIN_VALUE;
-        ByteBuffer buf = ByteBuffer.allocate(messageSize - Byte.MIN_VALUE
-                + Long.BYTES);
+                + filename.length + data.length;
+        ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
         buf.putLong(messageSize);
         buf.put(typeBytes);
-        buf.put(new byte[] { (byte) extension.length });
-        buf.put(extension);
+        buf.put((byte) (filename.length + Byte.MIN_VALUE));
+        buf.put(filename);
         buf.put(sendBytes);
         buf.put(destBytes);
         buf.put(data);
 
         return buf.array();
-
     }
 
     /**
@@ -199,7 +197,7 @@ public class LongApplicationLayer implements AdhocApplication {
                         .toPrimitiveArray(savedQueues.message
                                 .toArray(new Byte[0]));
                 PacketType type = PacketType.parseByte(message[0]);
-                int filenameLength = message[1] - Byte.MIN_VALUE;
+                int filenameLength = (int) message[1] - Byte.MIN_VALUE;
                 byte[] fn = Arrays.copyOfRange(message, 2, 2 + filenameLength);
                 byte[] senderBytes = Arrays.copyOfRange(message,
                         2 + filenameLength, 6 + filenameLength);
