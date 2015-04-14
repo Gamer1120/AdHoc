@@ -157,27 +157,57 @@ public class TransportConnection {
 
     public void receiveData(TransportSegment segment) {
 
-        if (segment.isRST()) {
+        /*
+        Verschillende gevallen:
+        * SYN wanneer nog geen syn ontvangen
+        * SYN ACK wanneer nog geen syn ontvangen en een syn verstuurd
+        * ACK op een syn ack
+        * In order data wanneer established
+        * Out of order data wanneer established
+        * Andere gevallen stuur een reset.
+        * Waneer een reset ontvangen, zet established, synSent en synReceived op false.
+         */
+
+        LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
+
+        if (segment.isSyn() && !synReceived) {
+
+            LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
+            synReceived = true;
+            nextAck = segment.seq + 1;
+            if (synSent) {
+                LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
+                established = true;
+            } else {
+                sendSyn();
+            }
+            removeAckedSegment(segment);
+
+        } else if (segment.isSyn() && segment.validAck() && synSent && !synReceived) {
+
+        } else if (!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
+
+        } else if (established && segment.validAck() && nextAck == segment.seq) {
+            if (nextAck == segment.seq) {
+                // In order data
+            } else {
+                // Out of order data
+                // TODO Alleen binnen een bepaalde range in de buffer zetten
+            }
+
+        } else if (segment.isRST()) {
             LOGGER.debug("RESET Ontvangen");
             established = false;
             synSent = false;
             synReceived = false;
         } else {
+            // Reset Sturen
+        }
 
-            LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
-            if (!synReceived && segment.isSyn()) {
-                LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
-                synReceived = true;
-                nextAck = segment.seq + 1;
-                if (synSent) {
-                    LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
-                    established = true;
-                } else {
-                    sendSyn();
-                }
-                removeAckedSegment(segment);
-                // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
+        if (!synReceived && segment.isSyn()) {
+
+            // Dit is waar als het ontvangen segment de ACK is op een SYN ACK
             } else if (!established && synReceived && synSent && segment.validAck() && segment.ack == seq) {
                 established = true;
                 LOGGER.debug("[TL] [RCV] Verbinding tussen {} en {} is nu in de state established", NetworkUtils.getLocalHost().getHostAddress(), receivingHost);
