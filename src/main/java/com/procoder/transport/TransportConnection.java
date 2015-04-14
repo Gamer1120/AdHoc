@@ -213,6 +213,7 @@ public class TransportConnection {
         }
 
         removeAckedSegment(segment);
+        processSendQueue();
 
     }
 
