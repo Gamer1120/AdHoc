@@ -431,7 +431,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         newAdress.removeAll(knownAdresses);
         for (InetAddress a : newAdress) {
-            Platform.runLater(() -> addLabel(a.toString()));
+            Platform.runLater(() -> addLabel(a.getHostAddress()));
 
             knownAdresses.add(a);
         }
@@ -449,7 +449,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     }
     private IdLabel getIdLabel(InetAddress a) {
         for (IdLabel i : chatMap.keySet()) {
-            if (i.getAdress().equals(a.getHostName())) {
+            if (i.getAdress().equals(a.getHostAddress())) {
                 return i;
             }
         }
