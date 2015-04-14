@@ -225,6 +225,7 @@ public class TransportConnection {
             established = false;
             synSent = false;
             synReceived = false;
+            sendSyn();
         } else if (segment.isSyn() && !synReceived && !synSent) {
             // SYN wanneer nog geen syn ontvangen
             LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
