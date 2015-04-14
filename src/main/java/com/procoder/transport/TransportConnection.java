@@ -251,6 +251,7 @@ public class TransportConnection {
             established = false;
             synSent = false;
             synReceived = false;
+            seq = new Random().nextInt();
             reQueueUnAck();
             sendSyn();
         } else if (segment.isSyn() && !synReceived && !synSent) {
