@@ -170,7 +170,7 @@ public class TransportConnection {
 
         LOGGER.debug("[TL] [RCV] Processing segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
-        processFlags(segment);
+        boolean ackSent = processFlags(segment);
 
         if (established && segment.validAck() && nextAck == segment.seq) {
             // In order data wanneer established
@@ -203,21 +203,22 @@ public class TransportConnection {
                 LOGGER.debug("[TL] [RCV] Out-of-order data received");
                 receivedSegments.put(segment.seq, segment);
             }
-        }
 
-        // Syn en segments die data bevatten ACKEN
+            // Syn en segments die data bevatten ACKEN
 
-        if (segment.isSyn() || segment.data.length > 0) {
-            TransportSegment ack = new TransportSegment(new Byte[0], seq);
-            ack.setAck(nextAck);
-            networkLayer.send(receivingHost, ack.toByteArray());
+            if (!ackSent && segment.isSyn() || segment.data.length > 0) {
+                TransportSegment ack = new TransportSegment(new Byte[0], seq);
+                ack.setAck(nextAck);
+                networkLayer.send(receivingHost, ack.toByteArray());
+            }
         }
 
         removeAckedSegment(segment);
 
     }
 
-    private void processFlags(TransportSegment segment) {
+    private boolean processFlags(TransportSegment segment) {
+        boolean ackSent = false;
         if (segment.isRST()) {
             // Reset ontvangen
             LOGGER.debug("RESET Ontvangen");
@@ -231,6 +232,7 @@ public class TransportConnection {
             nextAck = segment.seq + 1;
             sendSyn();
             removeAckedSegment(segment);
+            ackSent = true;
 
         } else if (segment.isSyn() && segment.validAck() && synSent && !synReceived) {
             //SYN ACK wanneer nog geen syn ontvangen en een syn verstuurd
@@ -249,6 +251,8 @@ public class TransportConnection {
             syn.setRST();
             networkLayer.send(receivingHost, syn.toByteArray());
         }
+
+        return ackSent;
     }
 
 
