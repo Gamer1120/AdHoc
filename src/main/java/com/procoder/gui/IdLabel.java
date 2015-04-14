@@ -63,7 +63,7 @@ public class IdLabel extends BorderPane {
         //statusView = new ImageView(new Image(this.getClass().getClassLoader().getResourceAsStream("greenBall.png")));
         statusView = new Label("0");
         statusView.setPrefSize(25, 25);
-        statusView.setStyle("-fx-background-repeat:no-repeat;-fx-background-image:url(greenBall.png);");
+        statusView.setBackground(GREEN_BALL_BACKGROUND);
         statusView.setAlignment(Pos.CENTER);
         BorderPane.setAlignment(img, Pos.CENTER_LEFT);
         this.setLeft(img);
