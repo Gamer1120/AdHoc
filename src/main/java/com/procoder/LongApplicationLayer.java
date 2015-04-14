@@ -105,7 +105,7 @@ public class LongApplicationLayer implements AdhocApplication {
     public void sendPacket(InetAddress dest, File input, PacketType type) {
         Path path = Paths.get(input.getAbsolutePath());
         String filename = input.getName();
-        if (filename.length() > 100) {
+        if (filename.length() > Byte.MAX_VALUE - Byte.MIN_VALUE) {
             filename = System.currentTimeMillis()
                     + filename.substring(filename.lastIndexOf('.') + 1);
         }
@@ -135,7 +135,7 @@ public class LongApplicationLayer implements AdhocApplication {
         byte[] destBytes = destination.getAddress();
         byte typeBytes = type.toByte();
         int messageSize = sendBytes.length + destBytes.length + 2
-                + extension.length + data.length;
+                + extension.length + data.length + Byte.MIN_VALUE;
         ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
         buf.putLong(messageSize);
         buf.put(typeBytes);
@@ -198,7 +198,7 @@ public class LongApplicationLayer implements AdhocApplication {
                         .toPrimitiveArray(savedQueues.message
                                 .toArray(new Byte[0]));
                 PacketType type = PacketType.parseByte(message[0]);
-                byte filenameLength = message[1];
+                int filenameLength = message[1] - Byte.MIN_VALUE;
                 byte[] fn = Arrays.copyOfRange(message, 2, 2 + filenameLength);
                 byte[] senderBytes = Arrays.copyOfRange(message,
                         2 + filenameLength, 6 + filenameLength);
