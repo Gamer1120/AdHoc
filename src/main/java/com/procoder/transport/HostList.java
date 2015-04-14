@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HostList extends Observable {
 
-    private static final int TTL = 10;
+    private static final int TTL = 15;
     private static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
 
     private ConcurrentHashMap<InetAddress, Integer> hostMap;
