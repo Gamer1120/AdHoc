@@ -136,7 +136,8 @@ public class LongApplicationLayer implements AdhocApplication {
         byte typeBytes = type.toByte();
         int messageSize = sendBytes.length + destBytes.length + 2
                 + extension.length + data.length + Byte.MIN_VALUE;
-        ByteBuffer buf = ByteBuffer.allocate(messageSize + Long.BYTES);
+        ByteBuffer buf = ByteBuffer.allocate(messageSize - Byte.MIN_VALUE
+                + Long.BYTES);
         buf.putLong(messageSize);
         buf.put(typeBytes);
         buf.put(new byte[] { (byte) extension.length });
