@@ -23,7 +23,6 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
     private Button uploadButton;
     private Button backgroundButton;
-    private Button selfieButton;
     private Main main;
 
     private double minWidth = 120;
@@ -33,25 +32,20 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         this.main = main;
         uploadButton = new Button("Upload");
         backgroundButton = new Button("Background");
-        selfieButton = new Button("Selfie");
         uploadButton.setFocusTraversable(false);
-        selfieButton.setFocusTraversable(false);
         backgroundButton.setFocusTraversable(false);
         uploadButton.setMinWidth(minWidth);
         backgroundButton.setMinWidth(minWidth);
-        selfieButton.setMinWidth(minWidth);
 
 
         uploadButton.setId("buttons");
         backgroundButton.setId("buttons");
-        selfieButton.setId("buttons");
-        this.getChildren().addAll(uploadButton, backgroundButton, selfieButton);
+        this.getChildren().addAll(uploadButton, backgroundButton);
 
 
 
         uploadButton.setOnAction(this);
         backgroundButton.setOnAction(this);
-        selfieButton.setOnAction(this);
 
     }
 
