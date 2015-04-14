@@ -252,6 +252,9 @@ public class TransportConnection {
             TransportSegment syn = new TransportSegment(new Byte[0], seq);
             syn.setRST();
             networkLayer.send(receivingHost, syn.toByteArray());
+            established = false;
+            synSent = false;
+            synReceived = false;
         }
 
         return ackSent;
