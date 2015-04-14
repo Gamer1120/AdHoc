@@ -65,6 +65,10 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     private PopoverMenu popoverMenu;
     private InetAddress ownIp;
 
+    public static void main(String[] args) {
+        launch();
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("AWESOME ADHOC");
@@ -102,12 +106,14 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             applicationLayer.getKnownHostList().addObserver(this);
         }
     }
+
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Setup
     private void setOwnIp() {
  		ownIp = NetworkUtils.getLocalHost();
     }
+
     private void setupCenter() {
         center = new BorderPane();
 
@@ -177,10 +183,12 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         center.setCenter(scrollPane);
         mainPane.setCenter(center);
     }
+
     private void setBgScrollpane() {
         File file = new File("background.png");
         scrollPane.setStyle("-fx-background-image:url(" + file.toURI() + ");");
     }
+
     private void setupSideBar() {
         side = new VBox();
         side.setPrefSize(300, 900);
@@ -190,6 +198,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         mainPane.setLeft(side);
 
     }
+
     public void addAllChat() {
         allChat = new IdLabel("AllChat");
         allChat.setSelected(true);
@@ -206,8 +215,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         scrollPane.setContent(chatPane);
     }
- 
-
 
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
@@ -232,6 +239,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.start();
         toBottomScroll();
     }
+
     public void processFile(String source, String destination, File file) {
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -252,6 +260,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.start();
         toBottomScroll();
     }
+
     public void processImage(String source, String destination, Image img) {
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -272,6 +281,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         t.start();
         toBottomScroll();
     }
+
     public void processAudio(String source, String destination, File sound){
         ChatPane h = getReceiveChatPane(source, destination);
         Thread t = new Thread(new Task() {
@@ -293,8 +303,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         toBottomScroll();
     }
 
-
-
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Send
@@ -314,6 +322,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         scrollPane.setVvalue(scrollPane.getVmax());
     }
+
     public void sendImage(File img) {
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -339,6 +348,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             applicationLayer.sendImage(selected.getInetAdress(), img);
         }
     }
+
     public void sendFile(File file){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -363,6 +373,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             applicationLayer.sendFile(selected.getInetAdress(), file);
         }
     }
+
     public void sendAudio(File file){
         ChatPane h = (ChatPane) scrollPane.getContent();
         Thread t = new Thread(new Task() {
@@ -388,9 +399,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         }
     }
 
-
-
-
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Events
@@ -412,6 +420,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             }
         }
     }
+
     @Override
     public void update(Observable o, Object arg) {
         Set<InetAddress> newAdress = new HashSet<>((Set<InetAddress>) arg);
@@ -438,15 +447,13 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
     }
 
-
-
-
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
     //Getters
     public PopOver getPopover() {
         return popover;
     }
+
     private IdLabel getIdLabel(InetAddress a) {
         for (IdLabel i : chatMap.keySet()) {
             if (i.getAdress().equals(a.getHostAddress())) {
@@ -455,31 +462,34 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         }
         return null;
     }
+
     public HashMap<IdLabel, ChatPane> getChatMap(){
         return chatMap;
     }
+
     public IdLabel getSelected(){
         return selected;
     }
+
     public ScrollPane getScrollPane() {
         return scrollPane;
     }
-	private ChatPane getReceiveChatPane(String source, String destination) {
-		String comparer = ownIp.equals(destination) ? source : destination;
-		for (IdLabel i : chatMap.keySet()) {
-			if (i.getAdress().equals(comparer)) {
+
+    private ChatPane getReceiveChatPane(String source, String destination) {
+
+        String comparer = ownIp.getHostAddress().equals(destination) ? source : destination;
+        for (IdLabel i : chatMap.keySet()) {
+            if (i.getAdress().equals(comparer)) {
 				return chatMap.get(i);
 			}
 		}
 		return chatMap.get(allChat);
 
 	}
+
     public void addSmiley(String s){
-        text.setText(text.getText()+s);
+        text.setText(text.getText() + s);
     }
-
-
-
 
     ///////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////
@@ -535,10 +545,6 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             getIdLabel(active).setActive(true);
         }
         // getIdLabel(active).setActive(true);
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 
     private void toBottomScroll() {
