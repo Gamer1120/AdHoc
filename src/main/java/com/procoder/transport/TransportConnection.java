@@ -215,7 +215,10 @@ public class TransportConnection {
         }
 
         removeAckedSegment(segment);
-        processSendQueue();
+
+        if (established) {
+            processSendQueue();
+        }
 
     }
 
