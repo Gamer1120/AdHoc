@@ -15,7 +15,7 @@ import java.util.concurrent.*;
 public class TransportConnection {
 
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
-    private static final long ACK_TIMEOUT = 1000;
+    private static final long ACK_TIMEOUT = 5000;
     // FIXME Dit kan beter worden bijgehouden in bytes in plaats van aantal segments
     private static final int MAX_UNACK_SEG = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
@@ -208,7 +208,7 @@ public class TransportConnection {
         }
 
         // Syn en segments die data bevatten ACKEN
-        if (!ackSent && segment.isSyn() || segment.data.length > 0) {
+        if (!ackSent && (segment.isSyn() || segment.data.length > 0)) {
             TransportSegment ack = new TransportSegment(new Byte[0], seq);
             ack.setAck(nextAck);
             networkLayer.send(receivingHost, ack.toByteArray());
