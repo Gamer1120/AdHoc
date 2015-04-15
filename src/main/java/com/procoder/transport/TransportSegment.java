@@ -1,9 +1,12 @@
 package com.procoder.transport;
 
 import com.procoder.util.ArrayUtils;
+import com.procoder.util.Encryption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 
 class TransportSegment {
@@ -13,6 +16,7 @@ class TransportSegment {
     public static final byte DIS_FLAG = (byte) 0B00100000;
     public static final byte SYN_FLAG = (byte) 0B00010000;
     public static final byte RST_FLAG = (byte) 0B00001000;
+    private static final SecretKey KEY = new SecretKeySpec(Encryption.KEY, 0, Encryption.KEY.length, "AES");
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportSegment.class);
     int seq;
     int ack;
@@ -38,7 +42,7 @@ class TransportSegment {
     }
 
     public static TransportSegment parseNetworkData(byte[] data) {
-        ByteBuffer buf = ByteBuffer.wrap(data);
+        ByteBuffer buf = ByteBuffer.wrap(Encryption.getDecrypted(data, KEY));
         byte flags = buf.get();
         int seq = buf.getInt();
         int ack = buf.getInt();
@@ -107,6 +111,6 @@ class TransportSegment {
         buf.put(primBytes);
         buf.flip();
 
-        return buf.array();
+        return Encryption.getEncrypted(buf.array(), KEY);
     }
 }
