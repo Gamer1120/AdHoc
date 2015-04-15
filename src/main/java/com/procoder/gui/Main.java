@@ -72,6 +72,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("AWESOME ADHOC");
+        primaryStage.setResizable(false);
         mainPane = new BorderPane();
         chatMap = new HashMap<IdLabel, ChatPane>();
         padding = new Insets(10);
