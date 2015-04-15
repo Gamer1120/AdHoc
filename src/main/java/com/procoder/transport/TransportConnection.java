@@ -174,7 +174,7 @@ public class TransportConnection {
 
         boolean ackSent = processFlags(segment);
 
-        if (established && segment.validAck() && nextAck == segment.seq) {
+        if (established && segment.validAck()) {
             // In order data wanneer established
             if (nextAck == segment.seq) {
                 LOGGER.debug("[TL] [RCV] In-order data received");
@@ -255,6 +255,8 @@ public class TransportConnection {
             seq = new Random().nextInt();
             reQueueUnAck();
             sendSyn();
+            ackSent = true; // RST niet acken
+
         } else if (segment.isSyn() && !synReceived && !synSent) {
             // SYN wanneer nog geen syn ontvangen
             LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
@@ -278,12 +280,13 @@ public class TransportConnection {
         } else if ((!established && !synSent && !synReceived) || (established && segment.isSyn())) {
             // Andere gevallen stuur een reset.
             LOGGER.debug("Ik stuur nu een RESET");
-            TransportSegment syn = new TransportSegment(new Byte[0], seq);
-            syn.setRST();
+            TransportSegment syn = TransportSegment.genRST();
             networkLayer.send(receivingHost, syn.toByteArray());
             established = false;
             synSent = false;
             synReceived = false;
+            receivedSegments.clear(); // Reeds ontvangen data niks meer mee doen
+            ackSent = true; // Dit pakket niet acken
         }
 
         return ackSent;

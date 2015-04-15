@@ -56,6 +56,12 @@ class TransportSegment {
         return result;
     }
 
+    public static TransportSegment genRST() {
+        TransportSegment result = new TransportSegment(new Byte[0]);
+        result.setRST();
+        return result;
+    }
+
     public boolean isDiscover() {
         return (flags & DIS_FLAG) != 0;
     }
