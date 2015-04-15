@@ -1,12 +1,16 @@
 package com.procoder.gui;
 
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -14,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by reneb_000 on 9-4-2015.
@@ -22,15 +27,17 @@ import java.nio.file.Files;
 @SuppressWarnings("restriction")
 public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PopoverMenu.class);
+    private final AtomicBoolean capturing = new AtomicBoolean();
     private Button uploadButton;
     private Button backgroundButton;
     private Button drawButton;
     private Button selfieButton;
     private Main main;
-
     private double minWidth = 120;
 
     public PopoverMenu(Main main){
+        capturing.set(false);
         //this.getChildren().add(new Label("TEST"));
         this.main = main;
         uploadButton = new Button("Upload");
@@ -119,20 +126,32 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             new DrawPanel(main);
         }
         else if(event.getSource().equals(selfieButton)){
-            new Thread(() -> {
-                synchronized (main) {
-                    Webcam webcam = Webcam.getDefault();
-                    //webcam.setViewSize(WebcamResolution.VGA.getSize());
-                    webcam.open();
-                    try {
-                        ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
-                        main.sendImage(new File("webcam.png"));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    webcam.close();
+
+            try {
+                if (!capturing.get()) {
+                    capturing.set(true);
+                    new Thread(() -> {
+                        Webcam webcam = Webcam.getDefault();
+                        //webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        webcam.open();
+                        try {
+                            ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
+                            main.sendImage(new File("webcam.png"));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        webcam.close();
+                        capturing.set(false);
+                    }).start();
                 }
-            }).start();
+            } catch (WebcamException e) {
+                LOGGER.trace("Webcam capture has failed", e);
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Webcam error");
+                alert.setHeaderText("Selfie error occurred");
+                alert.setContentText(e.getMessage());
+                alert.show();
+            }
 
         }
 
