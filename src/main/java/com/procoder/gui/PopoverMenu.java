@@ -1,19 +1,20 @@
 package com.procoder.gui;
 
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
 
 /**
  * Created by reneb_000 on 9-4-2015.
@@ -118,7 +119,15 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
         }
         else if(event.getSource().equals(selfieButton)){
-            //TODO hier selfie shit doen
+            Webcam webcam = Webcam.getDefault();
+            webcam.setViewSize(WebcamResolution.VGA.getSize());
+            webcam.open();
+            try {
+                ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
+                main.sendImage(new File("webcam.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
