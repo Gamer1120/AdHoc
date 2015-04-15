@@ -60,6 +60,12 @@ class TransportSegment {
         return result;
     }
 
+    public static TransportSegment genRST() {
+        TransportSegment result = new TransportSegment(new Byte[0]);
+        result.setRST();
+        return result;
+    }
+
     public boolean isDiscover() {
         return (flags & DIS_FLAG) != 0;
     }
@@ -110,6 +116,10 @@ class TransportSegment {
         buf.putInt(ack);
         buf.put(primBytes);
         buf.flip();
+
+        if (!isDiscover()) {
+            LOGGER.debug("[TL] [SND] Sending segment  seq: " + seq + " ack: " + ack + " Syn: " + isSyn() + "rst: " + isRST() + " data: " + data.length);
+        }
 
         return Encryption.getEncrypted(buf.array(), KEY);
     }

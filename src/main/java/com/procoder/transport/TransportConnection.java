@@ -15,7 +15,7 @@ import java.util.concurrent.*;
 public class TransportConnection {
 
     private static final ScheduledThreadPoolExecutor TIMEOUT_EXECUTOR = new ScheduledThreadPoolExecutor(2);
-    private static final long ACK_TIMEOUT = 1000;
+    private static final long ACK_TIMEOUT = 5000;
     // FIXME Dit kan beter worden bijgehouden in bytes in plaats van aantal segments
     private static final int MAX_UNACK_SEG = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportConnection.class);
@@ -24,9 +24,9 @@ public class TransportConnection {
 
 
     private InetAddress receivingHost;
-    private HashMap<Long, ScheduledFuture> unAckedSegmentTasks;
+    private HashMap<Long, UnAckedSegmentTask> unAckedSegmentTasks;
     private AdhocApplication adhocApplication;
-    private BlockingQueue<Byte> sendQueue;
+    private BlockingDeque<Byte> sendQueue;
     private SortedMap<Integer, TransportSegment> receivedSegments;
     private AdhocNetwork networkLayer;
     private int seq; // Huidige sequence nummer verzendende kant
@@ -41,7 +41,7 @@ public class TransportConnection {
     public TransportConnection(InetAddress host, AdhocNetwork networkLayer, AdhocApplication app) {
         receivingHost = host;
         unAckedSegmentTasks = new HashMap<>();
-        sendQueue = new LinkedBlockingQueue<>();
+        sendQueue = new LinkedBlockingDeque<>();
         receivedSegments = new TreeMap<>();
         this.networkLayer = networkLayer;
         seq = new Random().nextInt();
@@ -71,13 +71,15 @@ public class TransportConnection {
 
         final String finalDebug = debug;
 
+        final byte[] data = syn.toByteArray();
+
         ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
-            networkLayer.send(receivingHost, syn.toByteArray());
+            networkLayer.send(receivingHost, data);
             LOGGER.debug(finalDebug);
 
         }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
 
-        unAckedSegmentTasks.put((long) (syn.seq), retransmitTask);
+        unAckedSegmentTasks.put((long) (syn.seq), new UnAckedSegmentTask(data, retransmitTask));
         synSent = true;
 
     }
@@ -117,15 +119,20 @@ public class TransportConnection {
 
                 // Segment is nog niet geacked dus toevoegen aan de ongeackte segments en schedule de retransmit.
 
-                ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
-                    networkLayer.send(receivingHost, segment.toByteArray());
+                byte[] unAckData = segment.toByteArray();
 
-                }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
+                if (unAckData.length > 0) {
+                    ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+                        networkLayer.send(receivingHost, unAckData);
 
-                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), retransmitTask);
+                    }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
+
+                    unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), new UnAckedSegmentTask(unAckData, retransmitTask));
+                } else {
+                    networkLayer.send(receivingHost, unAckData);
+                }
+
                 data.clear();
-
-                LOGGER.debug("[TL] [SND] Sending segment  seq: " + segment.seq + " ack: " + segment.ack + " Syn: " + segment.isSyn() + " data: " + segment.data.length);
 
             }
 
@@ -139,12 +146,12 @@ public class TransportConnection {
         // Natuurlijk alleen doen als de ack geldig is
         if (segment.validAck()) {
             // Verwijder alle niet geackte segments met een seq + length
-            Iterator<Map.Entry<Long, ScheduledFuture>> it = unAckedSegmentTasks.entrySet().iterator();
+            Iterator<Map.Entry<Long, UnAckedSegmentTask>> it = unAckedSegmentTasks.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<Long, ScheduledFuture> entry = it.next();
+                Map.Entry<Long, UnAckedSegmentTask> entry = it.next();
                 // FIXME Hier zit volgens mij nog een edge case in bij sequence number wrapping
                 if (entry.getKey() < segment.ack) {
-                    entry.getValue().cancel(false);
+                    entry.getValue().fut.cancel(true);
                     it.remove();
                 }
             }
@@ -172,7 +179,7 @@ public class TransportConnection {
 
         boolean ackSent = processFlags(segment);
 
-        if (established && segment.validAck() && nextAck == segment.seq) {
+        if (established && segment.validAck()) {
             // In order data wanneer established
             if (nextAck == segment.seq) {
                 LOGGER.debug("[TL] [RCV] In-order data received");
@@ -196,7 +203,7 @@ public class TransportConnection {
 
                 removeAckedSegment(segment);
 
-                LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks);
+                LOGGER.debug("[TL] [RCV] Unacked segment tasks: {}", unAckedSegmentTasks.size());
             } else {
                 // Out of order data wanneer established
                 // TODO Alleen binnen een bepaalde range in de buffer zetten
@@ -206,14 +213,39 @@ public class TransportConnection {
         }
 
         // Syn en segments die data bevatten ACKEN
-        if (!ackSent && segment.isSyn() || segment.data.length > 0) {
+        if (!ackSent && (segment.isSyn() || segment.data.length > 0)) {
             TransportSegment ack = new TransportSegment(new Byte[0], seq);
             ack.setAck(nextAck);
             networkLayer.send(receivingHost, ack.toByteArray());
         }
 
         removeAckedSegment(segment);
-        processSendQueue();
+
+        if (established) {
+            processSendQueue();
+        }
+
+    }
+
+    private void reQueueUnAck() {
+
+        // Add unacked data to front of the queue
+
+        TreeMap<Long, UnAckedSegmentTask> sortedUnAcked = new TreeMap<>(unAckedSegmentTasks);
+        List<UnAckedSegmentTask> taskList = new LinkedList<>(sortedUnAcked.values());
+
+        ListIterator<UnAckedSegmentTask> it = taskList.listIterator();
+
+        while (it.hasPrevious()) {
+            UnAckedSegmentTask task = it.previous();
+            byte[] data = task.data;
+            task.fut.cancel(true);
+            for (byte b : data) {
+                sendQueue.addLast(b);
+            }
+        }
+
+        unAckedSegmentTasks.clear();
 
     }
 
@@ -225,9 +257,13 @@ public class TransportConnection {
             established = false;
             synSent = false;
             synReceived = false;
+            seq = new Random().nextInt();
+            reQueueUnAck();
             sendSyn();
+            ackSent = true; // RST niet acken
+
         } else if (segment.isSyn() && !synReceived && !synSent) {
-            // SYN wanneer nog geen syn ontvangen
+            // SYN wanneer nog geen syn ontvangen en nog niet verstuurd
             LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
             synReceived = true;
             nextAck = segment.seq + 1;
@@ -249,15 +285,26 @@ public class TransportConnection {
         } else if ((!established && !synSent && !synReceived) || (established && segment.isSyn())) {
             // Andere gevallen stuur een reset.
             LOGGER.debug("Ik stuur nu een RESET");
-            TransportSegment syn = new TransportSegment(new Byte[0], seq);
-            syn.setRST();
+            TransportSegment syn = TransportSegment.genRST();
             networkLayer.send(receivingHost, syn.toByteArray());
             established = false;
             synSent = false;
             synReceived = false;
+            receivedSegments.clear(); // Reeds ontvangen data niks meer mee doen
+            ackSent = true; // Dit pakket niet acken
         }
 
         return ackSent;
+    }
+
+    private class UnAckedSegmentTask {
+        byte[] data;
+        ScheduledFuture fut;
+
+        public UnAckedSegmentTask(byte[] data, ScheduledFuture fut) {
+            this.data = data;
+            this.fut = fut;
+        }
     }
 
 
