@@ -19,6 +19,7 @@ import java.util.HashMap;
  * Created by reneb_000 on 9-4-2015.
  */
 
+@SuppressWarnings("restriction")
 public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
 
     private Button uploadButton;
@@ -65,8 +66,8 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             File file = fileChooser.showOpenDialog(new Stage());
             //Image image = new Image(file.toURI().toString());
             if(file!=null) {
-                String[] s = file.getName().split("\\.");
-                String extension = s[s.length-1];
+                String filename = file.getName();
+                String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
                 if(Main.images.contains(extension)){
                     main.sendImage(file);
                 }else if(Main.audios.contains(extension)){
