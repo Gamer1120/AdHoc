@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 /**
  * Created by reneb_000 on 10-4-2015.
  */
+@SuppressWarnings("restriction")
 public class ImageCloud extends Cloud {
 
 

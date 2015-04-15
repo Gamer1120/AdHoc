@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 /**
  * Created by reneb_000 on 10-4-2015.
  */
+@SuppressWarnings("restriction")
 public class StringCloud extends Cloud {
 
     public StringCloud(String msg) {
