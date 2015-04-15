@@ -75,6 +75,7 @@ public class SmileyPanel extends GridPane {
                 @Override
                 public void handle(MouseEvent event) {
                     main.addSmiley(newLabel.getText());
+                    main.getText().end();
                 }
             });
             this.add(newLabel,counterx, countery);

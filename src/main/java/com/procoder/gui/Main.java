@@ -420,6 +420,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
                 smileyOver.show(smileyButton);
             }
         }
+        text.requestFocus();
     }
 
     @Override
@@ -453,6 +454,9 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
     //Getters
     public PopOver getPopover() {
         return popover;
+    }
+    public TextField getText(){
+        return text;
     }
 
     private IdLabel getIdLabel(InetAddress a) {
