@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 public class ForwardingNetworkLayer implements AdhocNetwork {
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(NetworkLayer.class);
+            .getLogger(ForwardingNetworkLayer.class);
     private final static int LENGTH = 1472;
     private final static byte TTL = 4;
     private final static int PORT = 7777;
