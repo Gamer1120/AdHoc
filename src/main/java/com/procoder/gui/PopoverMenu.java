@@ -119,16 +119,18 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         }
         else if(event.getSource().equals(selfieButton)){
             new Thread(() -> {
-                Webcam webcam = Webcam.getDefault();
-                //webcam.setViewSize(WebcamResolution.VGA.getSize());
-                webcam.open();
-                try {
-                    ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
-                    main.sendImage(new File("webcam.png"));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                synchronized (main) {
+                    Webcam webcam = Webcam.getDefault();
+                    //webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    webcam.open();
+                    try {
+                        ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
+                        main.sendImage(new File("webcam.png"));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    webcam.close();
                 }
-                webcam.close();
             }).start();
 
         }
