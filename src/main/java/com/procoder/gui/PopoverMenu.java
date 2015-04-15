@@ -135,8 +135,9 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
                         webcam.setViewSize(WebcamResolution.VGA.getSize());
                         try {
                             webcam.open();
-                            ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
-                            main.sendImage(new File("webcam.png"));
+                            File capture = new File("webcam.jpg");
+                            ImageIO.write(webcam.getImage(), "JPG", capture);
+                            main.sendImage(capture);
                         } catch (WebcamException e) {
                             LOGGER.trace("Webcam capture has failed", e);
                             Alert alert = new Alert(Alert.AlertType.ERROR);
