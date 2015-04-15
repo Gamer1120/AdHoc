@@ -152,6 +152,8 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
         });
         popoverMenu = new PopoverMenu(this);
         popover = new PopOver(popoverMenu);
+        popover.setAutoHide(true);
+        popover.setDetachable(false);
         // popover.setHideOnEscape(true);
         popover.arrowLocationProperty().setValue(
                 PopOver.ArrowLocation.BOTTOM_CENTER);
@@ -176,6 +178,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
 
         smileyOver = new PopOver(new SmileyPanel(this));
         smileyOver.setDetachable(false);
+        smileyOver.setAutoHide(true);
         smileyOver.arrowLocationProperty().setValue(
                 PopOver.ArrowLocation.BOTTOM_CENTER);
 
@@ -413,6 +416,7 @@ public class Main extends Application implements EventHandler<javafx.event.Actio
             } else {
                 popover.show(optionButton);
             }
+
         }else if(event.getSource().equals(smileyButton)){
             if(smileyOver.isShowing()){
                 smileyOver.hide();
