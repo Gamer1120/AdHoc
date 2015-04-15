@@ -71,7 +71,7 @@ public class TransportConnection {
 
         final String finalDebug = debug;
 
-        byte[] data = syn.toByteArray();
+        final byte[] data = syn.toByteArray();
 
         ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
             networkLayer.send(receivingHost, data);
@@ -121,12 +121,17 @@ public class TransportConnection {
 
                 byte[] unAckData = segment.toByteArray();
 
-                ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+                if (unAckData.length > 0) {
+                    ScheduledFuture retransmitTask = TIMEOUT_EXECUTOR.scheduleAtFixedRate(() -> {
+                        networkLayer.send(receivingHost, unAckData);
+
+                    }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
+
+                    unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), new UnAckedSegmentTask(unAckData, retransmitTask));
+                } else {
                     networkLayer.send(receivingHost, unAckData);
+                }
 
-                }, 0, ACK_TIMEOUT, TimeUnit.MILLISECONDS);
-
-                unAckedSegmentTasks.put((long) (segment.seq + segment.data.length - 1), new UnAckedSegmentTask(unAckData, retransmitTask));
                 data.clear();
 
             }
@@ -146,7 +151,7 @@ public class TransportConnection {
                 Map.Entry<Long, UnAckedSegmentTask> entry = it.next();
                 // FIXME Hier zit volgens mij nog een edge case in bij sequence number wrapping
                 if (entry.getKey() < segment.ack) {
-                    entry.getValue().fut.cancel(false);
+                    entry.getValue().fut.cancel(true);
                     it.remove();
                 }
             }
@@ -258,7 +263,7 @@ public class TransportConnection {
             ackSent = true; // RST niet acken
 
         } else if (segment.isSyn() && !synReceived && !synSent) {
-            // SYN wanneer nog geen syn ontvangen
+            // SYN wanneer nog geen syn ontvangen en nog niet verstuurd
             LOGGER.debug("[TL] [RCV] Ik ontvang voor het eerst een SYN");
             synReceived = true;
             nextAck = segment.seq + 1;
