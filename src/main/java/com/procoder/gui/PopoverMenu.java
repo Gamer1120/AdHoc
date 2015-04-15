@@ -2,6 +2,7 @@ package com.procoder.gui;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamException;
+import com.github.sarxos.webcam.WebcamResolution;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -127,31 +128,29 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
         }
         else if(event.getSource().equals(selfieButton)){
 
-            try {
                 if (!capturing.get()) {
                     capturing.set(true);
                     new Thread(() -> {
                         Webcam webcam = Webcam.getDefault();
-                        //webcam.setViewSize(WebcamResolution.VGA.getSize());
-                        webcam.open();
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
                         try {
+                            webcam.open();
                             ImageIO.write(webcam.getImage(), "PNG", new File("webcam.png"));
                             main.sendImage(new File("webcam.png"));
+                        } catch (WebcamException e) {
+                            LOGGER.trace("Webcam capture has failed", e);
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Webcam error");
+                            alert.setHeaderText("Selfie error occurred");
+                            alert.setContentText(e.getMessage());
+                            alert.show();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            LOGGER.trace("Other IO Exception", e);
                         }
                         webcam.close();
                         capturing.set(false);
                     }).start();
                 }
-            } catch (WebcamException e) {
-                LOGGER.trace("Webcam capture has failed", e);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Webcam error");
-                alert.setHeaderText("Selfie error occurred");
-                alert.setContentText(e.getMessage());
-                alert.show();
-            }
 
         }
 
