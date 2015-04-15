@@ -16,6 +16,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.io.IOException;
 /**
  * Created by reneb_000 on 15-4-2015.
  */
+@SuppressWarnings("restriction")
 public class DrawPanel {
 
     private Canvas canvas;
