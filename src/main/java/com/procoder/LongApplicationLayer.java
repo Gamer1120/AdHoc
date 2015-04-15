@@ -1,10 +1,10 @@
 package com.procoder;
 
 /**
- * com.procoder.Application Layer for the Ad hoc multi-client chat application.
+ * Long Application Layer for the Ad hoc multi-client chat application.
  *
  * @author Michael Koopman s1401335, Sven Konings s1534130, Wouter Timmermans
- *         s1004751, René Boschma s???
+ *         s1004751, Rene Boschma s1581899
  */
 
 import java.io.ByteArrayInputStream;
@@ -36,8 +36,6 @@ import com.procoder.transport.TCPLikeTransport;
 import com.procoder.util.ArrayUtils;
 import com.procoder.util.NetworkUtils;
 
-// TODO Gaat stuk bij IPv6 adressen
-
 @SuppressWarnings("restriction")
 public class LongApplicationLayer implements AdhocApplication {
 
@@ -67,13 +65,12 @@ public class LongApplicationLayer implements AdhocApplication {
     // ---------------------------//
 
     /**
-     * Sends a packet to the Transport Layer.
+     * Sends a String as a bytearray to the Transport Layer.
      *
      * @param dest
-     *            The final destination of this packet
+     *            The final destination of this packet.
      * @param input
-     *            The Object that should be sent. This can be either text or a
-     *            file.
+     *            The String that should be sent.
      */
     @Override
     public void sendString(InetAddress dest, String input) {
@@ -87,21 +84,57 @@ public class LongApplicationLayer implements AdhocApplication {
         transportLayer.send(dest, packet);
     }
 
+    /**
+     * Sends a File as a bytearray to the Transport Layer.
+     *
+     * @param dest
+     *            The final destination of this packet.
+     * @param input
+     *            The File that should be sent.
+     */
     @Override
     public void sendFile(InetAddress dest, File input) {
         sendPacket(dest, input, PacketType.FILE);
     }
 
+    /**
+     * Sends an image as a bytearray to the Transport Layer.
+     *
+     * @param dest
+     *            The final destination of this packet.
+     * @param input
+     *            The image that should be sent.
+     */
     @Override
     public void sendImage(InetAddress dest, File input) {
         sendPacket(dest, input, PacketType.IMAGE);
     }
 
+    /**
+     * Sends an audio file as a bytearray to the Transport Layer.
+     *
+     * @param dest
+     *            The final destination of this packet.
+     * @param input
+     *            The image that should be sent.
+     */
     @Override
     public void sendAudio(InetAddress dest, File input) {
         sendPacket(dest, input, PacketType.AUDIO);
     }
 
+    /**
+     * Sends a File to the Transport Layer using the given destination, the File
+     * and the type the File is.
+     * 
+     * @param dest
+     *            The final destination of this packet.
+     * @param input
+     *            The File to send.
+     * @param type
+     *            The PacketType of this packet. Can either be TEXT, IMAGE,
+     *            AUDIO or FILE.
+     */
     public void sendPacket(InetAddress dest, File input, PacketType type) {
         Path path = Paths.get(input.getAbsolutePath());
         String filename = input.getName();
@@ -120,12 +153,16 @@ public class LongApplicationLayer implements AdhocApplication {
     }
 
     /**
+     * Generates a packet to send to the Transport Layer.
+     * 
      * @param destination
-     *            Geaddresseerde van dit bericht
+     *            The final destination of this packet.
      * @param type
-     *            Het type van de data
+     *            The type of this packet.
      * @param data
-     *            De uiteindelijke
+     *            The bytearray that should be sent.
+     * @param filename
+     *            The filename as bytearray.
      * @return
      */
     public byte[] generatePacket(InetAddress destination, PacketType type,
@@ -148,12 +185,17 @@ public class LongApplicationLayer implements AdhocApplication {
         return buf.array();
     }
 
+    // ---------------//
+    // SENDING TO GUI //
+    // ---------------//
+
     /**
-     * After determining which type of packet it is, it sends the data to the
-     * GUI.
+     * After receiving a packet from the Transport Layer, it checks whether it's
+     * a full packet. If yes, send it to the GUI. If no, put it in a Queue and
+     * don't send it until the full packet has been received.
      *
      * @param packet
-     *            The packet to be sent.
+     *            The packet that was received.
      */
     @Override
     public void processPacket(DatagramPacket packet) {
@@ -251,14 +293,13 @@ public class LongApplicationLayer implements AdhocApplication {
         }
     }
 
-    // ---------------//
-    // SENDING TO GUI //
-    // ---------------//
+    // --------------- //
+    // HELPFUL METHODS //
+    // --------------- //
 
     /**
-     * Gets the sender of the packet as String, required for the GUI. The sender
-     * is the 2nd to 5th byte in a packet.
-     *
+     * Gets the IP of the sender of a packet as String, required for the GUI.
+     * 
      * @param byteAddress
      *            Said packet.
      * @return The sender of the packet as String.
@@ -276,12 +317,12 @@ public class LongApplicationLayer implements AdhocApplication {
 
     /**
      * Returns the text that is in the packet as String, required for the GUI.
-     * The data is everything after the first 5 bytes in a packet.
      *
      * @param bytestream
      *            Said packet.
      * @return The text in that packet.
      * @throws UnsupportedEncodingException
+     *             If UTF-8 stops existing somehow.
      */
     public String getData(byte[] bytestream) {
         String data = "";
@@ -293,11 +334,19 @@ public class LongApplicationLayer implements AdhocApplication {
         return data;
     }
 
+    /**
+     * Returns the known host list.
+     * 
+     * @return The known host list.
+     */
     @Override
     public HostList getKnownHostList() {
         return transportLayer.getKnownHostList();
     }
 
+    /**
+     * Enum class for PacketType.
+     */
     public enum PacketType {
         TEXT((byte) 0), IMAGE((byte) 1), AUDIO((byte) 2), FILE((byte) 3), UNDEFINED(
                 (byte) 4);
@@ -308,6 +357,13 @@ public class LongApplicationLayer implements AdhocApplication {
             this.number = number;
         }
 
+        /**
+         * Returns the PacketType a byte is.
+         * 
+         * @param b
+         *            The byte.
+         * @return The PacketType the byte is.
+         */
         public static PacketType parseByte(byte b) {
             PacketType result = UNDEFINED;
             for (PacketType type : PacketType.values()) {
@@ -319,15 +375,20 @@ public class LongApplicationLayer implements AdhocApplication {
             return result;
         }
 
+        /**
+         * Returns the byte a PacketType is.
+         * 
+         * @return The byte the PacketType is.
+         */
         public byte toByte() {
             return number;
         }
     }
 
-    // --------------- //
-    // HELPFUL METHODS //
-    // --------------- //
-
+    /**
+     * Enum class for Queues. This class is used to map multiple Queues to one
+     * InetAddress.
+     */
     class Queues {
         Queue<Byte> incoming;
         Queue<Byte> message;
