@@ -127,7 +127,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             new DrawPanel(main);
         }
         else if(event.getSource().equals(selfieButton)){
-
+            main.getPopover().hide();
                 if (!capturing.get()) {
                     capturing.set(true);
                     new Thread(() -> {
