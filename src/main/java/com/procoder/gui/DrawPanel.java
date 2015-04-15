@@ -1,24 +1,53 @@
 package com.procoder.gui;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by reneb_000 on 15-4-2015.
  */
 public class DrawPanel {
 
+    private Canvas canvas;
+    private Stage stage;
 
+    public DrawPanel(Main main){
+        BorderPane borderpane = new BorderPane();
+        Button sendButton = new Button("Send");
+        sendButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                File file = new File("drawing.png");
+                WritableImage wimg = canvas.snapshot(null, null);
+                BufferedImage bImage = SwingFXUtils.fromFXImage(wimg, null);
+                try {
+                    ImageIO.write(bImage, "png", file);
+                    main.sendImage(file);
+                    stage.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-    public DrawPanel(){
-
-        Canvas canvas = new Canvas(400, 400);
+        canvas = new Canvas(400, 400);
         final GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         initDraw(graphicsContext);
 
@@ -54,9 +83,16 @@ public class DrawPanel {
 
         StackPane root = new StackPane();
         root.getChildren().add(canvas);
-        Scene scene = new Scene(root, 400, 400);
-        Stage stage = new Stage();
-        stage.setTitle("java-buddy.blogspot.com");
+        borderpane.setCenter(root);
+        sendButton.setMinHeight(30);
+        BorderPane.setAlignment(sendButton, Pos.CENTER);
+        borderpane.setBottom(sendButton);
+
+        Scene scene = new Scene(borderpane, 400, 430);
+
+        stage = new Stage();
+        stage.setResizable(false);
+        stage.setTitle("Draw Something");
         stage.setScene(scene);
         stage.show();
     }
