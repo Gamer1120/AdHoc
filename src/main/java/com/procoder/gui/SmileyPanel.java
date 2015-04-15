@@ -16,6 +16,7 @@ import java.util.Set;
 /**
  * Created by reneb_000 on 13-4-2015.
  */
+@SuppressWarnings("restriction")
 public class SmileyPanel extends GridPane {
 
     List<String> smiley = new ArrayList<String>();

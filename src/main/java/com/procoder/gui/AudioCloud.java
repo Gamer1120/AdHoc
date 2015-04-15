@@ -29,6 +29,7 @@ import java.text.DecimalFormatSymbols;
 /**
  * Created by reneb_000 on 11-4-2015.
  */
+@SuppressWarnings("restriction")
 public class AudioCloud extends Cloud {
 
     private boolean play = false;

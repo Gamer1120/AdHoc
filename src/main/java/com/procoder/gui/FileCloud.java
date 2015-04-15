@@ -22,6 +22,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * Created by reneb_000 on 10-4-2015.
  */
+@SuppressWarnings("restriction")
 public class FileCloud extends Cloud {
 
     File file;
