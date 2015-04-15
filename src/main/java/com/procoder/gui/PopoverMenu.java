@@ -128,6 +128,7 @@ public class PopoverMenu extends VBox implements EventHandler<ActionEvent> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            webcam.close();
         }
 
     }
